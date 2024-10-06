@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Monopost.DAL.Entities
+﻿namespace Monopost.DAL.Entities
 {
     public class Post
     {
@@ -13,6 +7,6 @@ namespace Monopost.DAL.Entities
         public DateTime DatePosted { get; set; }
 
         public User Author { get; set; }
-        public ICollection<PostSocialMedia> PostSocialMedia { get; set; }
+        public ICollection<PostMedia> PostMedia { get; set; }
     }
 }

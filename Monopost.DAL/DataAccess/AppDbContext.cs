@@ -11,7 +11,7 @@ namespace Monopost.DAL.DataAccess
 
         public DbSet<User> Users { get; set; }
         public DbSet<Post> Posts { get; set; }
-        public DbSet<PostSocialMedia> PostsSocialMedia { get; set; }
+        public DbSet<PostMedia> PostMedia { get; set; }
         public DbSet<Template> Templates { get; set; }
         public DbSet<TemplateFile> TemplateFiles { get; set; }
         public DbSet<Jar> Jars { get; set; }
@@ -56,9 +56,9 @@ namespace Monopost.DAL.DataAccess
                 .HasForeignKey(r => r.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<PostSocialMedia>()
+            modelBuilder.Entity<PostMedia>()
                 .HasOne(psm => psm.Post)
-                .WithMany(p => p.PostSocialMedia)
+                .WithMany(p => p.PostMedia)
                 .HasForeignKey(psm => psm.PostId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
