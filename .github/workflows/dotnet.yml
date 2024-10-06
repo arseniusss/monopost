@@ -15,22 +15,19 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v2
-        with:
-          dotnet-version: '8.0.x'
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: '8.0.x'
 
-      - name: Install dotnet-ef tool
-        run: dotnet tool install --global dotnet-ef
+    - name: Restore dotnet tools
+      run: dotnet tool restore # Installs local tools specified in dotnet-tools.json
 
-      - name: Add dotnet tools to PATH
-        run: echo "::add-path::$(dotnet tool path)"
+    - name: Restore project dependencies
+      run: dotnet restore # Restores the project dependencies
 
-      - name: Restore dependencies
-        run: dotnet restore
-
-      - name: Build
-        run: dotnet build
+    - name: Build project
+      run: dotnet build # Builds the project
