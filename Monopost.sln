@@ -9,13 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Monopost.Web", "Monopost.We
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Monopost.BLL", "Monopost.BLL\Monopost.BLL.csproj", "{291F2B53-D44F-4C17-8775-65BD898A9900}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{FCABE88F-8D33-40C6-BB14-28A4DBBFAA3A}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{17B86B54-77DE-41CE-A045-BF89E126B503}"
-	ProjectSection(SolutionItems) = preProject
-		dotnet.yml = dotnet.yml
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,9 +30,6 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{17B86B54-77DE-41CE-A045-BF89E126B503} = {FCABE88F-8D33-40C6-BB14-28A4DBBFAA3A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {94234535-F570-4980-8001-6230423325F5}
