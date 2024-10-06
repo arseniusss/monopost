@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
     - name: Checkout code
@@ -22,8 +22,12 @@ jobs:
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: '8.0.x'
-    - name: Restore dependencies
-      run: dotnet restore
 
-    - name: Build
-      run: dotnet build
+    - name: Restore dotnet tools
+      run: dotnet tool restore # Installs local tools specified in dotnet-tools.json
+
+    - name: Restore project dependencies
+      run: dotnet restore # Restores the project dependencies
+
+    - name: Build project
+      run: dotnet build # Builds the project
