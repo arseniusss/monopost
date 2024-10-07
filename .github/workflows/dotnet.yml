@@ -44,8 +44,11 @@ jobs:
     - name: Build project
       run: dotnet build # Builds the project
 
+    - name: List tools directory
+      run: dir $HOME\.dotnet\tools # Verify if Roslynator is in the tools directory
+
     - name: Run Roslynator analysis
-      run: dotnet roslynator analyze './Monopost.sln' # Run analysis using dotnet command
+      run: roslynator analyze './Monopost.sln' # Run analysis using Roslynator directly
 
     env:
       DOTNET_CLI_HOME: ${{ github.workspace }}/temp # Needed for globally installed tools
