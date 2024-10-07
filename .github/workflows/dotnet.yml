@@ -42,4 +42,4 @@ jobs:
       run: roslynator analyze ./Monopost.sln # Adjust the path if needed for your solution
 
     env:
-      DOTNET_CLI_HOME: ${{ runner.temp }} # Needed for globally installed tools
+      DOTNET_CLI_HOME: ${{ github.workspace }}/temp # Needed for globally installed tools
