@@ -9,3 +9,6 @@
 .vs/
 
 **/.sonarqube/
+
+for try
+dotnet.yml
