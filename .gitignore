@@ -8,4 +8,4 @@
 # Ignore .vs config
 .vs/
 
-/.sonarqube/
+**/.sonarqube/
