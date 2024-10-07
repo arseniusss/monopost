@@ -5,10 +5,12 @@ on:
     branches:
       - main
       - test
+      - test2 # Added test2 branch
   pull_request:
     branches:
       - main
       - test
+      - test2 # Added test2 branch
 
 jobs:
   build:
@@ -29,5 +31,14 @@ jobs:
     - name: Restore project dependencies
       run: dotnet restore # Restores the project dependencies
 
+    - name: Install Roslynator globally
+      run: dotnet tool install -g roslynator.dotnet.cli # Installs Roslynator globally
+
     - name: Build project
       run: dotnet build # Builds the project
+
+    - name: Run Roslynator analysis
+      run: roslynator analyze ./Monopost.sln # Adjust the path if needed for your solution
+
+    env:
+      DOTNET_CLI_HOME: ${{ runner.temp }} # Needed for globally installed tools

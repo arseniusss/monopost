@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using DotNetEnv;
-using System;
-using System.IO;
 
 namespace Monopost.DAL.DataAccess
 {
