@@ -45,7 +45,7 @@ jobs:
       run: dotnet build # Builds the project
 
     - name: Run Roslynator analysis
-      run: roslynator analyze ./Monopost.sln # Adjust the path if needed for your solution
+      run: $HOME/.dotnet/tools/roslynator analyze ./Monopost.sln # Use the full path to Roslynator
 
     env:
       DOTNET_CLI_HOME: ${{ github.workspace }}/temp # Needed for globally installed tools
