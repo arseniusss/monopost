@@ -17,7 +17,6 @@ namespace Monopost.Web
             Env.Load(envFilePath);
 
             var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
-
             var serviceCollection = new ServiceCollection();
 
             serviceCollection.AddDbContext<AppDbContext>(options =>
