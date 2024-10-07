@@ -45,7 +45,7 @@ jobs:
       run: dotnet build # Builds the project
 
     - name: Run Roslynator analysis
-      run: "& $env:USERPROFILE\\.dotnet\\tools\\roslynator analyze './Monopost.sln'" # Use double quotes around variable paths and ensure proper syntax
+      run: dotnet roslynator analyze './Monopost.sln' # Run analysis using dotnet command
 
     env:
       DOTNET_CLI_HOME: ${{ github.workspace }}/temp # Needed for globally installed tools
