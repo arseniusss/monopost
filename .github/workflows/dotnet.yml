@@ -35,6 +35,12 @@ jobs:
     - name: Install Roslynator globally
       run: dotnet tool install -g roslynator.dotnet.cli # Installs Roslynator globally
 
+    - name: Set PATH for Roslynator
+      run: echo "$HOME/.dotnet/tools" >> $GITHUB_ENV
+
+    - name: Check Roslynator Installation
+      run: dotnet tool list -g
+
     - name: Build project
       run: dotnet build # Builds the project
 
