@@ -42,7 +42,7 @@ jobs:
       run: dotnet build # Builds the project
 
     - name: Run Roslynator analysis
-      run: $HOME/.dotnet/tools/roslynator analyze Monopost.sln # Use explicit path to run the analysis
+      run: & "$HOME/.dotnet/tools/roslynator" analyze Monopost.sln # Use PowerShell syntax to invoke Roslynator
 
     env:
       DOTNET_CLI_HOME: ${{ github.workspace }}/temp # Needed for globally installed tools
