@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Monopost.Web", "Monopost.We
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Monopost.BLL", "Monopost.BLL\Monopost.BLL.csproj", "{291F2B53-D44F-4C17-8775-65BD898A9900}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Monopost.Logging", "Monopost.Logging\Monopost.Logging.csproj", "{689B2E1A-583F-4CE4-B871-77993F1F878D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{291F2B53-D44F-4C17-8775-65BD898A9900}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{291F2B53-D44F-4C17-8775-65BD898A9900}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{291F2B53-D44F-4C17-8775-65BD898A9900}.Release|Any CPU.Build.0 = Release|Any CPU
+		{689B2E1A-583F-4CE4-B871-77993F1F878D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{689B2E1A-583F-4CE4-B871-77993F1F878D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{689B2E1A-583F-4CE4-B871-77993F1F878D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{689B2E1A-583F-4CE4-B871-77993F1F878D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

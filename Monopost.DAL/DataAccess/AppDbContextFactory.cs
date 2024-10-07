@@ -6,7 +6,7 @@ namespace Monopost.DAL.DataAccess
 {
     public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     {
-        public AppDbContext CreateDbContext(string[] args = null)
+        public AppDbContext CreateDbContext(string[]? args = null)
         {
             var envFilePath = Path.Combine(Directory.GetCurrentDirectory(), "..\\.env");
 
