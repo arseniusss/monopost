@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Monopost.DAL.DataAccess;
 using Monopost.DAL.Entities;
+using Monopost.DAL.Repositories.Interfaces;
 
 namespace Monopost.DAL.Repositories.Implementations
 {

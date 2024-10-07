@@ -61,6 +61,7 @@ namespace Monopost.DAL.Repositories.Implementations
         }
 
         // Specific methods for Credential entity
+        //Changed here
         public async Task<IEnumerable<Credential>> GetByTypeAsync(string credentialType)
         {
             return await _context.Credentials

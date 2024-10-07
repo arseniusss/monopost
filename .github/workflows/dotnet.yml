@@ -5,12 +5,12 @@ on:
     branches:
       - main
       - test
-      - test2 # Added test2 branch
+      - test2
   pull_request:
     branches:
       - main
       - test
-      - test2 # Added test2 branch
+      - test2
 
 jobs:
   build:
@@ -18,7 +18,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v2
@@ -26,10 +26,10 @@ jobs:
         dotnet-version: '8.0.x'
 
     - name: Restore dotnet tools
-      run: dotnet tool restore # Installs local tools specified in dotnet-tools.json
-
+      run: dotnet tool restore
+      
     - name: Restore project dependencies
-      run: dotnet restore # Restores the project dependencies
+      run: dotnet restore
 
     - name: Install Roslynator globally
       run: dotnet tool install -g roslynator.dotnet.cli # Installs Roslynator globally

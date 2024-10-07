@@ -1,0 +1,5 @@
+﻿D:\New C#\Monopost\monopost\Monopost.Web\App.xaml
+D:\New C#\Monopost\monopost\Monopost.Web\App.xaml.cs
+D:\New C#\Monopost\monopost\Monopost.Web\AssemblyInfo.cs
+D:\New C#\Monopost\monopost\Monopost.Web\MainWindow.xaml.cs
+D:\New C#\Monopost\monopost\Monopost.Web\MainWindow.xaml
