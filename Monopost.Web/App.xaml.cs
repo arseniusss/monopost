@@ -18,42 +18,40 @@ namespace Monopost.Web
             LoggerConfig.ConfigureLogging();
             Log.Debug("Application is starting...");
 
-            var currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            // Simplified: Retrieve the correct root directory
+            var rootDirectory = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory)?.Parent?.Parent?.Parent?.Parent?.FullName;
 
-            var parentDirectory = Directory.GetParent(currentDirectory);
-            if (parentDirectory == null) throw new InvalidOperationException("Parent directory not found.");
-
-            var grandparentDirectory = parentDirectory.Parent;
-            if (grandparentDirectory == null) throw new InvalidOperationException("Grandparent directory not found.");
-
-            var greatGrandparentDirectory = grandparentDirectory.Parent;
-            if (greatGrandparentDirectory == null) throw new InvalidOperationException("Great-grandparent directory not found.");
-
-            var rootDirectory = greatGrandparentDirectory.FullName;
+            if (rootDirectory == null)
+            {
+                throw new InvalidOperationException("Could not find the solution's root directory.");
+            }
 
             var envFilePath = Path.Combine(rootDirectory, ".env");
-
             Log.Information($"Looking for .env file at: {envFilePath}");
 
+            // Load environment variables from the .env file
             Env.Load(envFilePath);
 
+            // Set up the service collection
             var serviceCollection = new ServiceCollection();
-
             var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
 
             Log.Information($"Connected to db using URL {connectionString}");
 
+            // Add DbContext
             serviceCollection.AddDbContext<AppDbContext>(options =>
                 options.UseNpgsql(connectionString));
 
+            // Build the service provider
             ServiceProvider = serviceCollection.BuildServiceProvider();
 
             base.OnStartup(e);
         }
+
         protected override void OnExit(ExitEventArgs e)
         {
             Log.Debug("Exiting...");
-            Log.CloseAndFlush();
+            Log.CloseAndFlush(); // Ensure to flush and close the log
             base.OnExit(e);
         }
     }
