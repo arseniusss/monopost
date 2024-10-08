@@ -3,7 +3,6 @@ using Monopost.DAL.DataAccess;
 using Monopost.DAL.Entities;
 using Monopost.DAL.Repositories.Interfaces;
 
-
 namespace Monopost.DAL.Repositories.Implementations
 {
     public class CredentialRepository: ICredentialRepository
@@ -15,15 +14,18 @@ namespace Monopost.DAL.Repositories.Implementations
             _context = context;
         }
 
-        // Implementation of GetByIdAsync
         public async Task<Credential> GetByIdAsync(int id)
         {
-            return await _context.Credentials
+            var credential = await _context.Credentials
                 .Include(c => c.Author)
                 .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (credential == null)
+                throw new Exception("Credential not found");
+
+            return credential;
         }
 
-        // Implementation of GetAllAsync
         public async Task<IEnumerable<Credential>> GetAllAsync()
         {
             return await _context.Credentials
@@ -31,14 +33,11 @@ namespace Monopost.DAL.Repositories.Implementations
                 .ToListAsync();
         }
 
-        // Implementation of AddAsync
         public async Task AddAsync(Credential entity)
         {
             await _context.Credentials.AddAsync(entity);
             await _context.SaveChangesAsync();
         }
-
-        // Implementation of DeleteAsync
         public async Task DeleteAsync(int id)
         {
             var entity = await _context.Credentials.FindAsync(id);
@@ -49,7 +48,6 @@ namespace Monopost.DAL.Repositories.Implementations
             }
         }
 
-        // Implementation of UpdateAsync
         public async Task UpdateAsync(Credential entity)
         {
             var existingEntity = await _context.Credentials.FindAsync(entity.Id);
@@ -60,8 +58,6 @@ namespace Monopost.DAL.Repositories.Implementations
             }
         }
 
-        // Specific methods for Credential entity
-        //Changed here
         public async Task<IEnumerable<Credential>> GetByTypeAsync(string credentialType)
         {
             return await _context.Credentials

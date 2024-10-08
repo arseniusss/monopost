@@ -17,8 +17,20 @@ namespace Monopost.Web
         {
             LoggerConfig.ConfigureLogging();
             Log.Debug("Application is starting...");
-            
-            var rootDirectory = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory).Parent.Parent.Parent.Parent.FullName;
+
+            var currentDirectory = AppDomain.CurrentDomain.BaseDirectory;
+
+            var parentDirectory = Directory.GetParent(currentDirectory);
+            if (parentDirectory == null) throw new InvalidOperationException("Parent directory not found.");
+
+            var grandparentDirectory = parentDirectory.Parent;
+            if (grandparentDirectory == null) throw new InvalidOperationException("Grandparent directory not found.");
+
+            var greatGrandparentDirectory = grandparentDirectory.Parent;
+            if (greatGrandparentDirectory == null) throw new InvalidOperationException("Great-grandparent directory not found.");
+
+            var rootDirectory = greatGrandparentDirectory.FullName;
+
             var envFilePath = Path.Combine(rootDirectory, ".env");
 
             Log.Information($"Looking for .env file at: {envFilePath}");
@@ -38,7 +50,6 @@ namespace Monopost.Web
 
             base.OnStartup(e);
         }
-
         protected override void OnExit(ExitEventArgs e)
         {
             Log.Debug("Exiting...");

@@ -7,8 +7,16 @@ namespace Monopost.DAL.DataAccess
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
+            Users = Set<User>();
+            Posts = Set<Post>();
+            PostMedia = Set<PostMedia>();
+            Templates = Set<Template>();
+            TemplateFiles = Set<TemplateFile>();
+            Jars = Set<Jar>();
+            Credentials = Set<Credential>();
+            Restrictions = Set<Restriction>();
         }
-        
+
         public DbSet<User> Users { get; set; }
         public DbSet<Post> Posts { get; set; }
         public DbSet<PostMedia> PostMedia { get; set; }

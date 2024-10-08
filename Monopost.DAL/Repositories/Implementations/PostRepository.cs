@@ -16,10 +16,15 @@ namespace Monopost.DAL.Repositories.Implementations
 
         public async Task<Post> GetByIdAsync(int id)
         {
-            return await _context.Posts
+            var post = await _context.Posts
                 .Include(p => p.PostMedia)
                 .Include(p => p.Author)
                 .FirstOrDefaultAsync(p => p.PostId == id);
+
+            if (post == null)
+                throw new Exception("Post not found");
+
+            return post;
         }
 
         public async Task<IEnumerable<Post>> GetAllAsync()
@@ -58,4 +63,3 @@ namespace Monopost.DAL.Repositories.Implementations
         }
     }
 }
-

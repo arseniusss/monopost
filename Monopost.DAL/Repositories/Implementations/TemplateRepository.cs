@@ -16,9 +16,13 @@ namespace Monopost.DAL.Repositories.Implementations
 
         public async Task<Template> GetByIdAsync(int id)
         {
-            return await _context.Templates
+            var template = await _context.Templates
                 .Include(t => t.TemplateFiles)
                 .FirstOrDefaultAsync(t => t.Id == id);
+            if (template == null)
+                throw new Exception("Template not found");
+
+            return template;
         }
 
         public async Task<IEnumerable<Template>> GetAllAsync()
@@ -59,9 +63,13 @@ namespace Monopost.DAL.Repositories.Implementations
 
         public async Task<Template> GetTemplateWithMediaAsync(int templateId)
         {
-            return await _context.Templates
+            var template = await _context.Templates
                 .Include(t => t.TemplateFiles)
                 .FirstOrDefaultAsync(t => t.Id == templateId);
+            if (template == null)
+                throw new Exception("Template not found");
+
+            return template;
         }
     }
 }

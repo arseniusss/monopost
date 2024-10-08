@@ -3,7 +3,6 @@ using Monopost.DAL.DataAccess;
 using Monopost.DAL.Entities;
 using Monopost.DAL.Repositories.Interfaces;
 
-
 namespace Monopost.DAL.Repositories.Implementations
 {
     public class PostMediaRepository : IPostMediaRepository
@@ -17,7 +16,12 @@ namespace Monopost.DAL.Repositories.Implementations
 
         public async Task<PostMedia> GetByIdAsync(int id)
         {
-            return await _context.PostMedia.FirstOrDefaultAsync(p => p.Id == id);
+            var postMedia = await _context.PostMedia.FirstOrDefaultAsync(p => p.Id == id);
+
+            if (postMedia == null)
+                throw new Exception("PostMedia not found");
+
+            return postMedia;
         }
 
         public async Task<IEnumerable<PostMedia>> GetAllAsync()

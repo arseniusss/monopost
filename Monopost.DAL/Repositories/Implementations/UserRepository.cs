@@ -3,7 +3,6 @@ using Monopost.DAL.Entities;
 using Monopost.DAL.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-
 namespace Monopost.DAL.Repositories.Implementations
 {
     public class UserRepository : IUserRepository
@@ -17,9 +16,10 @@ namespace Monopost.DAL.Repositories.Implementations
 
         public async Task<User> GetByIdAsync(int id)
         {
-            return await _context.Users.Include(u => u.Posts).FirstOrDefaultAsync(u => u.Id == id);
+            var user = await _context.Users.Include(u => u.Posts).FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null) throw new Exception("User not found");
+            return user;
         }
-
         public async Task<IEnumerable<User>> GetAllAsync()
         {
             return await _context.Users.Include(u => u.Posts).ToListAsync();
@@ -49,8 +49,9 @@ namespace Monopost.DAL.Repositories.Implementations
 
         public async Task<User> GetByEmailAsync(string email)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null) throw new Exception("User not found");
+            return user;
         }
     }
-
 }

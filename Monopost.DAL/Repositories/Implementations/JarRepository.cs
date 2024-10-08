@@ -16,7 +16,12 @@ namespace Monopost.DAL.Repositories.Implementations
 
         public async Task<Jar> GetByIdAsync(int id)
         {
-            return await _context.Jars.FirstOrDefaultAsync(j => j.Id == id);
+            var jar = await _context.Jars.FirstOrDefaultAsync(j => j.Id == id);
+
+            if (jar == null)
+                throw new Exception("Jar not found");
+
+            return jar;
         }
 
         public async Task<IEnumerable<Jar>> GetAllAsync()
@@ -51,5 +56,4 @@ namespace Monopost.DAL.Repositories.Implementations
             return await _context.Jars.Where(j => j.OwnerId == ownerId).ToListAsync();
         }
     }
-
 }

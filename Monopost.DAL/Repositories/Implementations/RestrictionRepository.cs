@@ -3,7 +3,6 @@ using Monopost.DAL.DataAccess;
 using Monopost.DAL.Entities;
 using Monopost.DAL.Repositories.Interfaces;
 
-
 namespace Monopost.DAL.Repositories.Implementations
 {
     public class RestrictionRepository : IRestrictionRepository
@@ -17,7 +16,9 @@ namespace Monopost.DAL.Repositories.Implementations
 
         public async Task<Restriction> GetByIdAsync(int id)
         {
-            return await _context.Restrictions.FirstOrDefaultAsync(r => r.Id == id);
+            var restriction = await _context.Restrictions.FirstOrDefaultAsync(r => r.Id == id);
+            if (restriction == null) throw new Exception("Restriction not found");
+            return restriction;
         }
 
         public async Task<IEnumerable<Restriction>> GetAllAsync()

@@ -3,7 +3,6 @@ using Monopost.DAL.DataAccess;
 using Monopost.DAL.Entities;
 using Monopost.DAL.Repositories.Interfaces;
 
-
 namespace Monopost.DAL.Repositories.Implementations
 {
     public class TemplateFileRepository : ITemplateFileRepository
@@ -17,7 +16,9 @@ namespace Monopost.DAL.Repositories.Implementations
 
         public async Task<TemplateFile> GetByIdAsync(int id)
         {
-            return await _context.TemplateFiles.FirstOrDefaultAsync(tf => tf.Id == id);
+            var templateFile = await _context.TemplateFiles.FirstOrDefaultAsync(tf => tf.Id == id);
+            if (templateFile == null) throw new Exception("TemplateFile not found");
+            return templateFile;
         }
 
         public async Task<IEnumerable<TemplateFile>> GetAllAsync()

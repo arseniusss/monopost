@@ -6,6 +6,5 @@ namespace Monopost.DAL.Repositories.Interfaces
     {
         Task<IEnumerable<Template>> GetTemplatesByAuthorIdAsync(int authorId);
         Task<Template> GetTemplateWithMediaAsync(int templateId);
-
     }
 }

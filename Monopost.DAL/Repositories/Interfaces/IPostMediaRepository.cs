@@ -7,4 +7,3 @@ namespace Monopost.DAL.Repositories.Interfaces
         Task<IEnumerable<PostMedia>> GetPostMediaByPostIdAsync(int postId);
     }
 }
-

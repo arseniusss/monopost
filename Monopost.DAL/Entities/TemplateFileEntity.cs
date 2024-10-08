@@ -4,9 +4,9 @@
     {
         public int Id { get; set; }
         public int TemplateId { get; set; }
-        public string FileName { get; set; }
-        public byte[] FileData { get; set; }
+        public required string FileName { get; set; }
+        public required byte[] FileData { get; set; }
 
-        public Template Template { get; set; }
+        public Template? Template { get; set; }
     }
 }
