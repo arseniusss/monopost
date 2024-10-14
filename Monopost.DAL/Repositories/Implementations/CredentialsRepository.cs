@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Monopost.DAL.DataAccess;
 using Monopost.DAL.Entities;
+using Monopost.DAL.Enums;
 using Monopost.DAL.Repositories.Interfaces;
 
 namespace Monopost.DAL.Repositories.Implementations
@@ -19,10 +20,6 @@ namespace Monopost.DAL.Repositories.Implementations
             var credential = await _context.Credentials
                 .Include(c => c.Author)
                 .FirstOrDefaultAsync(c => c.Id == id);
-
-            if (credential == null)
-                throw new Exception("Credential not found");
-
             return credential;
         }
 
@@ -38,6 +35,7 @@ namespace Monopost.DAL.Repositories.Implementations
             await _context.Credentials.AddAsync(entity);
             await _context.SaveChangesAsync();
         }
+
         public async Task DeleteAsync(int id)
         {
             var entity = await _context.Credentials.FindAsync(id);
@@ -58,7 +56,7 @@ namespace Monopost.DAL.Repositories.Implementations
             }
         }
 
-        public async Task<IEnumerable<Credential>> GetByTypeAsync(string credentialType)
+        public async Task<IEnumerable<Credential>> GetByTypeAsync(CredentialType credentialType)
         {
             return await _context.Credentials
                 .Where(c => c.CredentialType == credentialType)
@@ -70,6 +68,13 @@ namespace Monopost.DAL.Repositories.Implementations
         {
             return await _context.Credentials
                 .Where(c => c.StoredLocally)
+                .Include(c => c.Author)
+                .ToListAsync();
+        }
+        public async Task<IEnumerable<Credential>> GetByUserIdAsync(int userId)
+        {
+            return await _context.Credentials
+                .Where(c => c.AuthorId == userId)
                 .Include(c => c.Author)
                 .ToListAsync();
         }

@@ -19,8 +19,6 @@ namespace Monopost.DAL.Repositories.Implementations
             var template = await _context.Templates
                 .Include(t => t.TemplateFiles)
                 .FirstOrDefaultAsync(t => t.Id == id);
-            if (template == null)
-                throw new Exception("Template not found");
 
             return template;
         }
@@ -35,13 +33,52 @@ namespace Monopost.DAL.Repositories.Implementations
         public async Task AddAsync(Template template)
         {
             await _context.Templates.AddAsync(template);
+
+            if (template.TemplateFiles != null && template.TemplateFiles.Any())
+            {
+                foreach (var templateFile in template.TemplateFiles)
+                {
+                    _context.TemplateFiles.Add(templateFile);
+                }
+            }
+
             await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(Template template)
         {
-            _context.Templates.Update(template);
-            await _context.SaveChangesAsync();
+            var existingTemplate = await GetByIdAsync(template.Id);
+
+            if (existingTemplate != null)
+            {
+                existingTemplate.Name = template.Name;
+                existingTemplate.Text = template.Text;
+
+                var existingFiles = existingTemplate.TemplateFiles.ToList();
+                foreach (var existingFile in existingFiles)
+                {
+                    if (!template.TemplateFiles.Any(f => f.Id == existingFile.Id))
+                    {
+                        _context.TemplateFiles.Remove(existingFile);
+                    }
+                }
+
+                foreach (var newFile in template.TemplateFiles)
+                {
+                    var existingFile = existingFiles.FirstOrDefault(f => f.Id == newFile.Id);
+                    if (existingFile != null)
+                    {
+                        _context.Entry(existingFile).CurrentValues.SetValues(newFile);
+                    }
+                    else
+                    {
+                        await _context.TemplateFiles.AddAsync(newFile);
+                    }
+                }
+
+                _context.Templates.Update(existingTemplate);
+                await _context.SaveChangesAsync();
+            }
         }
 
         public async Task DeleteAsync(int id)
@@ -49,6 +86,11 @@ namespace Monopost.DAL.Repositories.Implementations
             var template = await GetByIdAsync(id);
             if (template != null)
             {
+                if (template.TemplateFiles != null)
+                {
+                    _context.TemplateFiles.RemoveRange(template.TemplateFiles);
+                }
+
                 _context.Templates.Remove(template);
                 await _context.SaveChangesAsync();
             }
@@ -58,6 +100,7 @@ namespace Monopost.DAL.Repositories.Implementations
         {
             return await _context.Templates
                 .Where(t => t.AuthorId == authorId)
+                .Include(t => t.TemplateFiles)
                 .ToListAsync();
         }
 
@@ -66,6 +109,7 @@ namespace Monopost.DAL.Repositories.Implementations
             var template = await _context.Templates
                 .Include(t => t.TemplateFiles)
                 .FirstOrDefaultAsync(t => t.Id == templateId);
+
             if (template == null)
                 throw new Exception("Template not found");
 

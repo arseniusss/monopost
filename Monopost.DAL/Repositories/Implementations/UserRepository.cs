@@ -13,6 +13,10 @@ namespace Monopost.DAL.Repositories.Implementations
         {
             _context = context;
         }
+        public async Task<bool> UserExistsAsync(int id)
+        {
+            return await _context.Users.AnyAsync(u => u.Id == id);
+        }
 
         public async Task<User> GetByIdAsync(int id)
         {

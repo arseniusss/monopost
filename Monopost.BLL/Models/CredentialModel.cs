@@ -1,7 +1,7 @@
 ﻿using Monopost.DAL.Enums;
-namespace Monopost.DAL.Entities
+namespace Monopost.BLL.Models
 {
-    public class Credential
+    public class CredentialModel
     {
         public int Id { get; set; }
         public int AuthorId { get; set; }
@@ -9,7 +9,5 @@ namespace Monopost.DAL.Entities
         public string? CredentialValue { get; set; }
         public bool StoredLocally { get; set; }
         public string? LocalPath { get; set; }
-
-        public User? Author { get; set; }
     }
 }

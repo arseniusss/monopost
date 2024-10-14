@@ -33,13 +33,6 @@ namespace Monopost.DAL.DataAccess
                 .WithMany(u => u.Posts)
                 .HasForeignKey(p => p.AuthorId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<Template>()
-                .HasOne(t => t.Author)
-                .WithMany(u => u.Templates)
-                .HasForeignKey(t => t.AuthorId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             modelBuilder.Entity<TemplateFile>()
                 .HasOne(tf => tf.Template)
                 .WithMany(t => t.TemplateFiles)

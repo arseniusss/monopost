@@ -54,5 +54,17 @@ namespace Monopost.DAL.Repositories.Implementations
                 .Where(tf => tf.TemplateId == templateId)
                 .ToListAsync();
         }
+
+        public async Task DeleteAllByTemplateIdAsync(int templateId)
+        {
+            var templateFiles = await _context.TemplateFiles
+                .Where(tf => tf.TemplateId == templateId)
+                .ToListAsync();
+            if (templateFiles.Any())
+            {
+                _context.TemplateFiles.RemoveRange(templateFiles);
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 }

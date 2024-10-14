@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Monopost.DAL.DataAccess;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Monopost.DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241008124123_AddedUserAge2")]
+    partial class AddedUserAge2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -33,10 +36,12 @@ namespace Monopost.DAL.Migrations
                     b.Property<int>("AuthorId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("CredentialType")
-                        .HasColumnType("integer");
+                    b.Property<string>("CredentialType")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("CredentialValue")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("LocalPath")
@@ -174,12 +179,9 @@ namespace Monopost.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("AuthorId");
 
                     b.ToTable("Templates");
                 });
@@ -299,9 +301,13 @@ namespace Monopost.DAL.Migrations
 
             modelBuilder.Entity("Monopost.DAL.Entities.Template", b =>
                 {
-                    b.HasOne("Monopost.DAL.Entities.User", null)
+                    b.HasOne("Monopost.DAL.Entities.User", "Author")
                         .WithMany("Templates")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Author");
                 });
 
             modelBuilder.Entity("Monopost.DAL.Entities.TemplateFile", b =>
