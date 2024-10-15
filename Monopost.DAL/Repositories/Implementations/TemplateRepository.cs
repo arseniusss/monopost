@@ -20,7 +20,11 @@ namespace Monopost.DAL.Repositories.Implementations
                 .Include(t => t.TemplateFiles)
                 .FirstOrDefaultAsync(t => t.Id == id);
 
-            return template;
+             if (template == null)
+             {
+                 throw new Exception($"Template with ID {id} not found.");
+             }
+          return template;
         }
 
         public async Task<IEnumerable<Template>> GetAllAsync()
@@ -53,17 +57,17 @@ namespace Monopost.DAL.Repositories.Implementations
             {
                 existingTemplate.Name = template.Name;
                 existingTemplate.Text = template.Text;
+                var existingFiles = existingTemplate.TemplateFiles?.ToList() ?? new List<TemplateFile>();
 
-                var existingFiles = existingTemplate.TemplateFiles.ToList();
                 foreach (var existingFile in existingFiles)
                 {
-                    if (!template.TemplateFiles.Any(f => f.Id == existingFile.Id))
+                    if (!template.TemplateFiles?.Any(f => f.Id == existingFile.Id) ?? false)
                     {
                         _context.TemplateFiles.Remove(existingFile);
                     }
                 }
 
-                foreach (var newFile in template.TemplateFiles)
+                foreach (var newFile in template.TemplateFiles ?? Enumerable.Empty<TemplateFile>())
                 {
                     var existingFile = existingFiles.FirstOrDefault(f => f.Id == newFile.Id);
                     if (existingFile != null)
