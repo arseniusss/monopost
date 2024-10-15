@@ -178,15 +178,11 @@ namespace Monopost.UnitTests.Services
             var result = await _templateManagementService.GetTemplatesByUserIdAsync(user1.Id);
 
             Assert.True(result.Success);
-
-           
-            Assert.NotNull(result.Data);
-            Assert.Equal(2, result.Data.Count());
+            Assert.Equal(2, result.Data?.Count());
             Assert.Equal("Templates retrieved successfully.", result.Message);
 
             Assert.All(result.Data, template => Assert.Equal(user1.Id, template.AuthorId));
         }
-
 
         [Fact]
         public async Task GetTemplatesByUserIdAsync_ShouldReturnNoTemplates_WhenNoTemplatesExist()
@@ -276,7 +272,7 @@ namespace Monopost.UnitTests.Services
             var templateModel = new TemplateModel
             {
                 Id = 1,
-                Name = string.Empty,
+                Name = null,
                 Text = "Valid text.",
                 AuthorId = user.Id
             };
@@ -287,7 +283,7 @@ namespace Monopost.UnitTests.Services
             Assert.Equal("Name and Text are required.", result.Message);
 
             templateModel.Name = "Valid name";
-            templateModel.Text = string.Empty;
+            templateModel.Text = null;
 
             result = await _templateManagementService.AddTemplateAsync(templateModel);
 
@@ -327,9 +323,6 @@ namespace Monopost.UnitTests.Services
             var result = await _templateManagementService.GetAllTemplatesAsync();
 
             Assert.True(result.Success);
-
-            
-            Assert.NotNull(result.Data);
             Assert.Empty(result.Data);
             Assert.Equal("Templates retrieved successfully.", result.Message);
         }

@@ -1,8 +1,5 @@
 ﻿using Monopost.BLL.Enums;
 using Monopost.BLL.Services.Implementations;
-using System;
-using System.IO;
-using Xunit;
 
 public class TransactionServiceTests
 {
@@ -12,7 +9,6 @@ public class TransactionServiceTests
 
     public TransactionServiceTests()
     {
-        // Initialize the service and set up the test file with transaction data
         SetupTestFile();
         _service = new DataScienceService(_testFilePath);
     }
