@@ -181,7 +181,14 @@ namespace Monopost.UnitTests.Services
             Assert.Equal(2, result.Data?.Count());
             Assert.Equal("Templates retrieved successfully.", result.Message);
 
-            Assert.All(result.Data, template => Assert.Equal(user1.Id, template.AuthorId));
+            if (result.Data == null)
+            {
+                Assert.Fail("result.Data should not be null.");
+            }
+            else
+            {
+                Assert.All(result.Data, template => Assert.Equal(user1.Id, template.AuthorId));
+            }
         }
 
         [Fact]
@@ -259,7 +266,7 @@ namespace Monopost.UnitTests.Services
             var result = await _templateManagementService.AddTemplateAsync(templateModel2);
 
             Assert.False(result.Success);
-            Assert.Equal("Template with this Id already exists.", result.Message);
+            Assert.Equal("Template with id 1 already exists.", result.Message);
         }
 
         [Fact]
@@ -272,7 +279,7 @@ namespace Monopost.UnitTests.Services
             var templateModel = new TemplateModel
             {
                 Id = 1,
-                Name = null,
+                Name = "",
                 Text = "Valid text.",
                 AuthorId = user.Id
             };
@@ -283,7 +290,7 @@ namespace Monopost.UnitTests.Services
             Assert.Equal("Name and Text are required.", result.Message);
 
             templateModel.Name = "Valid name";
-            templateModel.Text = null;
+            templateModel.Text = "";
 
             result = await _templateManagementService.AddTemplateAsync(templateModel);
 
@@ -323,7 +330,7 @@ namespace Monopost.UnitTests.Services
             var result = await _templateManagementService.GetAllTemplatesAsync();
 
             Assert.True(result.Success);
-            Assert.Empty(result.Data);
+            Assert.Equal(result.Data?.Count(), 0);
             Assert.Equal("Templates retrieved successfully.", result.Message);
         }
 

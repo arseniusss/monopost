@@ -127,7 +127,6 @@ namespace Monopost.BLL.Services.Implementations
 
         public Result<Dictionary<string, List<Transaction>>> AggregateTransactions(DateTime? from, DateTime? to, AggregateBy aggregateBy = AggregateBy.HourOfDay, TransactionType transactionType = TransactionType.Donation)
         {
-            // Validate the date range
             var dateValidationResult = DateTimeValidator.ValidateDateRange(from, to);
             if (!dateValidationResult.Success)
             {
@@ -136,6 +135,10 @@ namespace Monopost.BLL.Services.Implementations
 
             var aggregatedResults = new Dictionary<string, List<Transaction>>();
             var prefilteredTransactions = FilterTransactionsByDay(from, to);
+            if (prefilteredTransactions.Data == null || prefilteredTransactions.Data.Count == 0)
+            {
+                return new Result<Dictionary<string, List<Transaction>>>(true, "No transactions found in the specified date range.", aggregatedResults);
+            }
             var filteredTransactions = FilterTransactionsByType(prefilteredTransactions.Data, transactionType);
 
             foreach (var transaction in filteredTransactions)
@@ -238,8 +241,12 @@ namespace Monopost.BLL.Services.Implementations
                 return new Result<List<Transaction>>(false, validationResult.Message);
             }
 
-            var prefilteredTransactions = FilterTransactionsByDay(from, to).Data;
-            var filteredTransactions = FilterTransactionsByType(prefilteredTransactions, transactionType);
+            var prefilteredTransactions = FilterTransactionsByDay(from, to);
+            if (prefilteredTransactions.Data == null || prefilteredTransactions.Data.Count == 0)
+            {
+                return new Result<List<Transaction>>(true, "No transactions found in the specified date range.", new List<Transaction>());
+            }
+            var filteredTransactions = FilterTransactionsByType(prefilteredTransactions.Data, transactionType);
 
             return new Result<List<Transaction>>(true, $"Top {limit} transactions retrieved.", filteredTransactions.OrderByDescending(t => t.Amount).Take(limit).ToList());
         }
@@ -252,8 +259,12 @@ namespace Monopost.BLL.Services.Implementations
                 return new Result<List<Transaction>>(false, validationResult.Message);
             }
 
-            var prefilteredTransactions = FilterTransactionsByDay(from, to).Data;
-            var filteredTransactions = FilterTransactionsByType(prefilteredTransactions, transactionType);
+            var prefilteredTransactions = FilterTransactionsByDay(from, to);
+            if (prefilteredTransactions.Data == null || prefilteredTransactions.Data.Count == 0)
+            {
+                return new Result<List<Transaction>>(true, "No transactions found in the specified date range.", new List<Transaction>());
+            }
+            var filteredTransactions = FilterTransactionsByType(prefilteredTransactions.Data, transactionType);
 
             return new Result<List<Transaction>>(true, $"Smallest {limit} transactions retrieved.", filteredTransactions.OrderBy(t => t.Amount).Take(limit).ToList());
         }
@@ -267,6 +278,12 @@ namespace Monopost.BLL.Services.Implementations
             }
 
             var prefilteredTransactions = FilterTransactionsByDay(from, to).Data;
+
+            if (prefilteredTransactions == null)
+            {
+                return new Result<decimal>(true, "No transactions found in the specified date range.", 0);
+            }
+
             var filteredTransactions = FilterTransactionsByType(prefilteredTransactions, transactionType);
             return new Result<decimal>(true, "Total transaction amount calculated.", filteredTransactions.Sum(t => t.Amount));
         }
@@ -279,15 +296,20 @@ namespace Monopost.BLL.Services.Implementations
                 return new Result<decimal>(false, validationResult.Message);
             }
 
-            var prefilteredTransactions = FilterTransactionsByDay(from, to).Data;
-            var filteredTransactions = FilterTransactionsByType(prefilteredTransactions, transactionType);
+            var prefilteredTransactions = FilterTransactionsByDay(from, to);
+            if (prefilteredTransactions.Data == null || prefilteredTransactions.Data.Count == 0)
+            {
+                return new Result<decimal>(true, "No transactions found in the specified date range.", 0);
+            }
+            var filteredTransactions = FilterTransactionsByType(prefilteredTransactions.Data, transactionType);
             return new Result<decimal>(true, "Average transaction amount calculated.", filteredTransactions.Any() ? filteredTransactions.Average(t => t.Amount) : 0);
         }
     }
 
 
-    public class ChartManager
+    public static class ChartManager
     {
+        [Obsolete]
         public static void PlotData<T>(Dictionary<string, T> data, string title, ChartType chartType)
             where T : struct
         {

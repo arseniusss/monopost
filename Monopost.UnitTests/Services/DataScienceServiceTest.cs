@@ -1,11 +1,10 @@
 ﻿using Monopost.BLL.Enums;
 using Monopost.BLL.Services.Implementations;
-
+using Monopost.BLL.Models;
 public class TransactionServiceTests
 {
     private readonly DataScienceService _service;
     private readonly string _testFilePath = "test_transactions.csv";
-    private readonly string _outputFilePath = "output_transactions.txt";
 
     public TransactionServiceTests()
     {
@@ -31,34 +30,6 @@ public class TransactionServiceTests
     }
 
     [Fact]
-    public void WriteDonationsToFile()
-    {
-        var donations = _service.FilterTransactionsByType(_service.FilterTransactionsByDay(null, null).Data, TransactionType.Donation);
-        using (var writer = new StreamWriter(_outputFilePath, true)) // Append to file
-        {
-            writer.WriteLine("Donations:");
-            foreach (var donation in donations)
-            {
-                writer.WriteLine($"Date: {donation.DateTime}, Amount: {donation.Amount}, From: {donation.From}, Comment: {donation.Comment}");
-            }
-        }
-    }
-
-    [Fact]
-    public void WriteWithdrawalsToFile()
-    {
-        var withdrawals = _service.GetWithdrawals().Data;
-        using (var writer = new StreamWriter(_outputFilePath, true))
-        {
-            writer.WriteLine("Withdrawals:");
-            foreach (var withdrawal in withdrawals)
-            {
-                writer.WriteLine($"Date: {withdrawal.DateTime}, Amount: {withdrawal.Amount}, From: {withdrawal.From}, Comment: {withdrawal.Comment}");
-            }
-        }
-    }
-
-    [Fact]
     public void FilterTransactionsByDay_ValidDateRange_ReturnsFilteredTransactions()
     {
         var from = new DateTime(2023, 10, 12);
@@ -66,7 +37,7 @@ public class TransactionServiceTests
         var result = _service.FilterTransactionsByDay(from, to);
 
         Assert.True(result.Success);
-        Assert.Equal(8, result.Data.Count);
+        Assert.Equal(8, result.Data?.Count);
     }
 
     [Fact]
@@ -83,8 +54,16 @@ public class TransactionServiceTests
     [Fact]
     public void FilterTransactionsByType_ReturnsCorrectDonations()
     {
-        var transactions = _service.FilterTransactionsByType(_service.FilterTransactionsByDay(null, null).Data, TransactionType.Donation);
-
+        var prefilteredResult = _service.FilterTransactionsByDay(null, null);
+        List<Transaction> transactions = new();
+        if (!prefilteredResult.Success || prefilteredResult.Data == null)
+        {
+            transactions = new List<Transaction>();
+        }
+        else
+        {
+            transactions = _service.FilterTransactionsByType(prefilteredResult.Data, TransactionType.Donation);
+        }
         Assert.NotEmpty(transactions);
         Assert.All(transactions, t => Assert.True(!t.IsWithdrawal)); // Assuming each transaction has a Type property
     }
@@ -92,10 +71,14 @@ public class TransactionServiceTests
     [Fact]
     public void FilterTransactionsByType_ReturnsCorrectWithdrawals()
     {
-        var transactions = _service.FilterTransactionsByType(_service.GetWithdrawals().Data, TransactionType.Withdrawal);
+        var withdrawalsResult = _service.GetWithdrawals();
+
+        Assert.True(withdrawalsResult.Success, withdrawalsResult.Message);
+
+        var transactions = _service.FilterTransactionsByType(withdrawalsResult.Data ?? new List<Transaction>(), TransactionType.Withdrawal);
 
         Assert.NotEmpty(transactions);
-        Assert.All(transactions, t => Assert.True(t.IsWithdrawal)); // Assuming each transaction has a Type property
+        Assert.All(transactions, t => Assert.True(t.IsWithdrawal)); // Assuming each transaction has an IsWithdrawal property
     }
 
     [Fact]
@@ -106,7 +89,7 @@ public class TransactionServiceTests
         var result = _service.AggregateTransactions(from, to, AggregateBy.DayOfMonth, TransactionType.Donation);
 
         Assert.True(result.Success);
-        Assert.Equal(5, result.Data.Count);
+        Assert.Equal(5, result.Data?.Count);
     }
 
     [Fact]
@@ -128,7 +111,7 @@ public class TransactionServiceTests
         var result = _service.GetBiggestTransactions(from, to, TransactionType.Donation, 1);
 
         Assert.True(result.Success);
-        Assert.Equal(200.00m, result.Data[0].Amount);
+        Assert.Equal(200.00m, result.Data?[0].Amount);
     }
 
     [Fact]
@@ -150,7 +133,7 @@ public class TransactionServiceTests
         var result = _service.GetSmallestTransactions(from, to, TransactionType.Donation, 1);
 
         Assert.True(result.Success);
-        Assert.Equal(50.00m, result.Data[0].Amount);
+        Assert.Equal(50.00m, result.Data?[0].Amount);
     }
 
     [Fact]
@@ -178,7 +161,11 @@ public class TransactionServiceTests
     [Fact]
     public void TestEdgeCase_TransactionsAreClassifiedCorrectly()
     {
-        var transactions = _service.FilterTransactionsByDay(new DateTime(2023, 10, 10), new DateTime(2023, 10, 15)).Data;
+        var transactionsResult = _service.FilterTransactionsByDay(new DateTime(2023, 10, 10), new DateTime(2023, 10, 15));
+
+        Assert.True(transactionsResult.Success, transactionsResult.Message);
+
+        var transactions = transactionsResult.Data ?? new List<Transaction>();
 
         Assert.Contains(transactions, t => t.Comment == "Morning donation" && !t.IsWithdrawal);
         Assert.Contains(transactions, t => t.Comment == "ATM withdrawal" && t.IsWithdrawal);

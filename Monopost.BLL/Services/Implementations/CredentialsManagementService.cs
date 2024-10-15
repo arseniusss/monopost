@@ -36,12 +36,13 @@ namespace Monopost.BLL.Services
             {
                 return new Result<CredentialModel>(false, "Invalid AuthorId: User does not exist.");
             }
-
-            var idTaken = await _credentialRepository.GetByIdAsync(model.Id);
-            if(idTaken != null)
+            try
             {
+                await _credentialRepository.GetByIdAsync(model.Id);
                 return new Result<CredentialModel>(false, "Id is already taken.");
+
             }
+            catch { };
 
             var existingUserCredentials = await _credentialRepository.GetByUserIdAsync(model.AuthorId);
             var credentialOfSameType = existingUserCredentials.Any(c => c.CredentialType == model.CredentialType);
@@ -67,24 +68,24 @@ namespace Monopost.BLL.Services
 
         public async Task<Result<CredentialModel>> GetCredentialByIdAsync(int id)
         {
-            var credential = await _credentialRepository.GetByIdAsync(id);
-
-            if (credential == null)
+            try
+            {
+                var credential = await _credentialRepository.GetByIdAsync(id);
+                var credentialDto = new CredentialModel
+                {
+                    Id = credential.Id,
+                    AuthorId = credential.AuthorId,
+                    CredentialType = credential.CredentialType,
+                    CredentialValue = credential.CredentialValue,
+                    StoredLocally = credential.StoredLocally,
+                    LocalPath = credential.LocalPath
+                };
+                return new Result<CredentialModel>(true, "Credential retrieved successfully.", credentialDto);
+            }
+            catch
             {
                 return new Result<CredentialModel>(false, "Credential not found.");
             }
-
-            var credentialDto = new CredentialModel
-            {
-                Id = credential.Id,
-                AuthorId = credential.AuthorId,
-                CredentialType = credential.CredentialType,
-                CredentialValue = credential.CredentialValue,
-                StoredLocally = credential.StoredLocally,
-                LocalPath = credential.LocalPath
-            };
-
-            return new Result<CredentialModel>(true, "Credential retrieved successfully.", credentialDto);
         }
 
         public async Task<Result<IEnumerable<CredentialModel>>> GetAllCredentialsAsync()
@@ -125,14 +126,17 @@ namespace Monopost.BLL.Services
             {
                 return new Result<CredentialModel>(false, "Invalid AuthorId: User does not exist.");
             }
-
-            var idTaken = await _credentialRepository.GetByIdAsync(model.Id);
-
-            if (idTaken == null)
+            
+            try
+            {
+                await _credentialRepository.GetByIdAsync(model.Id);
+            }
+            catch
             {
                 return new Result<CredentialModel>(false, "Credential with such id doesnt exist.");
-            }
 
+            }
+          
             if (model == null)
             {
                 return new Result<CredentialModel>(false, "Credential data is required.");
@@ -162,9 +166,13 @@ namespace Monopost.BLL.Services
 
         public async Task<Result> DeleteCredentialAsync(int id)
         {
-            if (_credentialRepository.GetByIdAsync(id).Result == null)
+            try
             {
-                return new Result(false, "Credential not found.");
+                await _credentialRepository.GetByIdAsync(id);
+            }
+            catch
+            {
+                return new Result(false, $"Credential with id {id} not found.");
             }
 
             await _credentialRepository.DeleteAsync(id);

@@ -23,9 +23,8 @@ namespace Monopost.DAL.Repositories.Implementations
 
             if (credential == null)
             {
-                throw new InvalidOperationException($"Credential with ID {id} not found.");
+                throw new ArgumentException($"Credential with id {id} not found.");
             }
-
             return credential;
         }
 

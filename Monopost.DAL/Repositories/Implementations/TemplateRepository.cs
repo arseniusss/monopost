@@ -20,11 +20,11 @@ namespace Monopost.DAL.Repositories.Implementations
                 .Include(t => t.TemplateFiles)
                 .FirstOrDefaultAsync(t => t.Id == id);
 
-             if (template == null)
-             {
-                 throw new Exception($"Template with ID {id} not found.");
-             }
-          return template;
+            if (template == null)
+            {
+                throw new ArgumentException($"Template with id {id} not found.");
+            }
+            return template;
         }
 
         public async Task<IEnumerable<Template>> GetAllAsync()
@@ -36,14 +36,16 @@ namespace Monopost.DAL.Repositories.Implementations
 
         public async Task AddAsync(Template template)
         {
+            var templateExists = await _context.Templates.AnyAsync(t => t.Id == template.Id);
+            if (templateExists)
+            {
+                throw new ArgumentException($"Template with id {template.Id} already exists.");
+            }
             await _context.Templates.AddAsync(template);
 
-            if (template.TemplateFiles != null && template.TemplateFiles.Any())
+            if (template.TemplateFiles != null && template.TemplateFiles.Count != 0)
             {
-                foreach (var templateFile in template.TemplateFiles)
-                {
-                    _context.TemplateFiles.Add(templateFile);
-                }
+                _context.TemplateFiles.AddRange(template.TemplateFiles);
             }
 
             await _context.SaveChangesAsync();
@@ -113,10 +115,10 @@ namespace Monopost.DAL.Repositories.Implementations
             var template = await _context.Templates
                 .Include(t => t.TemplateFiles)
                 .FirstOrDefaultAsync(t => t.Id == templateId);
-
-            if (template == null)
-                throw new Exception("Template not found");
-
+            if(template == null)
+            {
+                throw new ArgumentException($"Template with id {templateId} not found.");
+            }
             return template;
         }
     }

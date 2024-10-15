@@ -311,8 +311,9 @@ namespace Monopost.UnitTests.Services
 
             Assert.True(result.Success);
             Assert.Equal("Credential deleted successfully.", result.Message);
-            var deletedCredential = await _credentialRepository.GetByIdAsync(1);
-            Assert.Null(deletedCredential);
+
+            var exception = await Assert.ThrowsAsync<ArgumentException>(() => _credentialRepository.GetByIdAsync(1));
+            Assert.Equal("Credential with id 1 not found.", exception.Message);
         }
 
         [Fact]
@@ -321,7 +322,7 @@ namespace Monopost.UnitTests.Services
             var result = await _credentialManagementService.DeleteCredentialAsync(99);
 
             Assert.False(result.Success);
-            Assert.Equal("Credential not found.", result.Message);
+            Assert.Equal("Credential with id 99 not found.", result.Message);
         }
 
         [Fact]

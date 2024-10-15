@@ -24,19 +24,21 @@ namespace Monopost.BLL.Services
             {
                 return new Result<TemplateModel>(false, "Invalid AuthorId: User does not exist.");
             }
-
-            if(_templateRepository.GetByIdAsync(model.Id).Result != null)
+            try
             {
+                await _templateFileRepository.GetByIdAsync(model.Id);
                 return new Result<TemplateModel>(false, "Template with this Id already exists.");
             }
+            catch { }
 
-            if(model.Name == null || model.Text == null)
+            if(model.Name == null || model.Name == string.Empty || model.Text == null || model.Text == string.Empty)
             {
                 return new Result<TemplateModel>(false, "Name and Text are required.");
             }
 
             var template = new Template
             {
+                Id = model.Id,
                 Name = model.Name,
                 Text = model.Text,
                 AuthorId = model.AuthorId,
@@ -47,38 +49,58 @@ namespace Monopost.BLL.Services
                 }).ToList()
             };
 
-            await _templateRepository.AddAsync(template);
-
-            return new Result<TemplateModel>(true, "Template created successfully.", model);
+            try
+            {
+                await _templateRepository.AddAsync(template);
+                return new Result<TemplateModel>(true, "Template created successfully.", model);
+            }
+            catch (Exception e)
+            {
+                return new Result<TemplateModel>(false, e.Message);
+            }
         }
 
         public async Task<Result> DeleteTemplateAsync(int templateId)
         {
-            var template = await _templateRepository.GetByIdAsync(templateId);
-            if (template == null)
+            try
+            {
+                var template = await _templateRepository.GetByIdAsync(templateId);
+                await _templateFileRepository.DeleteAllByTemplateIdAsync(templateId);
+                await _templateRepository.DeleteAsync(templateId);
+
+                return new Result(true, "Template and its files deleted successfully.");
+            }
+            catch
             {
                 return new Result(false, "Template not found.");
             }
-
-            await _templateFileRepository.DeleteAllByTemplateIdAsync(templateId);
-            await _templateRepository.DeleteAsync(templateId);
-
-            return new Result(true, "Template and its files deleted successfully.");
         }
 
         public async Task<Result> UpdateTemplateAsync(TemplateModel model)
         {
-            var template = await _templateRepository.GetByIdAsync(model.Id);
-            if (template == null)
+            if (model == null)
             {
-                return new Result(false, "Template not found.");
+                return new Result(false, "Template model is required.");
             }
 
-            template.Name = model.Name;
-            template.Text = model.Text;
+            if (model.Name == null || model.Name == string.Empty || model.Text == null || model.Text == string.Empty)
+            {
+                return new Result(false, "Name and Text are required.");
+            }
 
-            await _templateRepository.UpdateAsync(template);
-            return new Result(true, "Template updated successfully.");
+            try
+            {
+                var template = await _templateRepository.GetByIdAsync(model.Id);
+                template.Name = model.Name;
+                template.Text = model.Text;
+
+                await _templateRepository.UpdateAsync(template);
+                return new Result(true, "Template updated successfully.");
+            }
+            catch
+            {
+                return new Result(false, "Template not found.");
+            }            
         }
 
         public async Task<Result<IEnumerable<TemplateModel>>> GetAllTemplatesAsync()
@@ -104,21 +126,23 @@ namespace Monopost.BLL.Services
 
         public async Task<Result<IEnumerable<TemplateFileModel>>> GetTemplateFilesByTemplateIdAsync(int templateId)
         {
-            var templateFiles = await _templateFileRepository.GetTemplateFilesByTemplateIdAsync(templateId);
-            if (_templateRepository.GetByIdAsync(templateId).Result == null)
+            try
+            {
+                var templateFiles = await _templateFileRepository.GetTemplateFilesByTemplateIdAsync(templateId);
+                var templateFileDtos = templateFiles.Select(tf => new TemplateFileModel
+                {
+                    Id = tf.Id,
+                    FileName = tf.FileName,
+                    FileData = tf.FileData,
+                    TemplateId = tf.TemplateId
+                }).ToList();
+
+                return new Result<IEnumerable<TemplateFileModel>>(true, "Template files retrieved successfully.", templateFileDtos);
+            }
+            catch
             {
                 return new Result<IEnumerable<TemplateFileModel>>(false, "Template not found.");
             }
-
-            var templateFileDtos = templateFiles.Select(tf => new TemplateFileModel
-            {
-                Id = tf.Id,
-                FileName = tf.FileName,
-                FileData = tf.FileData,
-                TemplateId = tf.TemplateId
-            }).ToList();
-
-            return new Result<IEnumerable<TemplateFileModel>>(true, "Template files retrieved successfully.", templateFileDtos);
         }
 
         public async Task<Result<IEnumerable<TemplateModel>>> GetTemplatesByUserIdAsync(int userId)
