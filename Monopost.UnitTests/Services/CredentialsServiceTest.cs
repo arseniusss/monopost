@@ -453,7 +453,9 @@ namespace Monopost.UnitTests.Services
             var result = await _credentialManagementService.GetByTypeAsync(CredentialType.TelegramAppID);
 
             Assert.True(result.Success);
-            IEnumerable<CredentialModel>? data = result.Data;
+
+            Assert.NotNull(result.Data);
+            IEnumerable<CredentialModel> data = result.Data;
             Assert.Single(data);
             Assert.Equal("Credentials retrieved successfully.", result.Message);
         }
@@ -464,7 +466,8 @@ namespace Monopost.UnitTests.Services
             var result = await _credentialManagementService.GetByTypeAsync(CredentialType.TelegramAppID);
 
             Assert.True(result.Success);
-            Assert.Empty(result.Data);
+            Assert.NotNull(result.Data);
+            Assert.Empty(result.Data); 
         }
     }
 }

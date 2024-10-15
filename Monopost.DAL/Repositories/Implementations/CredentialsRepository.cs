@@ -20,6 +20,12 @@ namespace Monopost.DAL.Repositories.Implementations
             var credential = await _context.Credentials
                 .Include(c => c.Author)
                 .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (credential == null)
+            {
+                throw new InvalidOperationException($"Credential with ID {id} not found.");
+            }
+
             return credential;
         }
 

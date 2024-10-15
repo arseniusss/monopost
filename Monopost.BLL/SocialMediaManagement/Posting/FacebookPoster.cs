@@ -58,7 +58,6 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
             return jsonResponse.GetProperty("id").GetString() ?? "";
         }
 
-
         public async Task<(int likes, int comments, int shares)> GetPostStatsAsync(string postId)
         {
             var url = $"https://graph.facebook.com/v12.0/{postId}?fields=shares,likes.summary(true),comments.summary(true)&access_token={_accessToken}";

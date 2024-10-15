@@ -23,17 +23,17 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
                     "api_id" => apiId,
                     "api_hash" => apiHash,
                     "phone_number" => phoneNumber,
-                    "password" => password ?? "",
+                    "password" => password ?? string.Empty,
                     "verification_code" => GetVerificationCode(),
                     "session_pathname" => "telegram_session.dat",
-                    _ => null
+                    _ => string.Empty
                 };
             }
 
             string GetVerificationCode()
             {
                 Console.Write("Code: ");
-                return Console.ReadLine();
+                return Console.ReadLine() ?? string.Empty;
             }
         }
 
@@ -110,7 +110,6 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
                 throw new Exception("Message not found");
             }
 
-
             int views = 0;
             int reactions = 0;
             int forwards = 0;
@@ -122,14 +121,12 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
 
                 if (msg.reactions != null && msg.reactions.results != null)
                 {
-
                     foreach (var reaction in msg.reactions.results)
                     {
                         reactions += reaction.count;
                     }
                 }
             }
-
 
             return (views, forwards, reactions);
         }

@@ -13,12 +13,10 @@ namespace Monopost.BLL.Services
         private readonly ICredentialRepository _credentialRepository;
         private readonly IUserRepository _userRepository;
 
-
         public CredentialManagementService(ICredentialRepository credentialRepository, IUserRepository userRepository)
         {
             _credentialRepository = credentialRepository;
             _userRepository = userRepository;
-
         }
 
         public async Task<Result<CredentialModel>> AddCredentialAsync(CredentialModel model)
@@ -40,7 +38,6 @@ namespace Monopost.BLL.Services
             }
 
             var idTaken = await _credentialRepository.GetByIdAsync(model.Id);
-            
             if(idTaken != null)
             {
                 return new Result<CredentialModel>(false, "Id is already taken.");
@@ -53,7 +50,6 @@ namespace Monopost.BLL.Services
             {
                 return new Result<CredentialModel>(false, $"A credential of type '{model.CredentialType}' already exists for this user.");
             }
-
 
             var credential = new Credential
             {
@@ -171,7 +167,6 @@ namespace Monopost.BLL.Services
                 return new Result(false, "Credential not found.");
             }
 
-                
             await _credentialRepository.DeleteAsync(id);
             return new Result(true, "Credential deleted successfully.");
         }

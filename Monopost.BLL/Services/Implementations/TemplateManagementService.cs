@@ -10,7 +10,6 @@ namespace Monopost.BLL.Services
         private readonly ITemplateFileRepository _templateFileRepository;
         private readonly IUserRepository _userRepository;
 
-
         public TemplateManagementService(ITemplateRepository templateRepository, ITemplateFileRepository templateFileRepository, IUserRepository userRepository)
         {
             _templateRepository = templateRepository;
