@@ -4,8 +4,6 @@ using Monopost.BLL.Services;
 using Monopost.DAL.Entities;
 using Monopost.DAL.Repositories.Implementations;
 using Monopost.DAL.DataAccess;
-using Monopost.DAL.Repositories.Interfaces;
-using Moq;
 
 namespace Monopost.UnitTests.Services
 {
