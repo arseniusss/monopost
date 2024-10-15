@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Monopost.DAL\Monopost.DAL.csproj" />
+    <ProjectReference Include="..\Monopost.Logging\Monopost.Logging.csproj" />
   </ItemGroup>
 
 </Project>

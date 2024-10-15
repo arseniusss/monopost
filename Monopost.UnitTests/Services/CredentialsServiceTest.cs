@@ -5,7 +5,8 @@ using Monopost.DAL.DataAccess;
 using Monopost.DAL.Entities;
 using Monopost.DAL.Enums;
 using Monopost.DAL.Repositories.Implementations;
-
+using Monopost.Logging;
+using Serilog;
 
 namespace Monopost.UnitTests.Services
 {
@@ -22,6 +23,8 @@ namespace Monopost.UnitTests.Services
                 .UseInMemoryDatabase($"TestDb_{Guid.NewGuid()}")
                 .Options;
 
+            LoggerConfig.ConfigureLogging();
+
             _dbContext = new AppDbContext(options);
             _dbContext.Database.EnsureCreated();
 
@@ -34,6 +37,7 @@ namespace Monopost.UnitTests.Services
         {
             _dbContext.Database.EnsureDeleted();
             _dbContext.Dispose();
+            Log.CloseAndFlush();
         }
 
         [Fact]

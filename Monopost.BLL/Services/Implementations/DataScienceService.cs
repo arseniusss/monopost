@@ -4,8 +4,9 @@ using System.Text;
 using Monopost.BLL.Enums;
 using Monopost.BLL.Services.Interfaces;
 using Monopost.BLL.Models;
-
+using Serilog;
 using Transaction = Monopost.BLL.Models.Transaction;
+using Monopost.Logging;
 
 namespace Monopost.BLL.Services.Implementations
 {
@@ -49,9 +50,11 @@ namespace Monopost.BLL.Services.Implementations
     public class DataScienceService : IDataScienceService
     {
         private List<Transaction> transactions;
+        public static ILogger logger = LoggerConfig.GetLogger();
 
         public DataScienceService(string filepath)
         {
+            logger.Information("DataScienceService created.");
             transactions = new List<Transaction>();
             LoadFromCsv(filepath);
             SetWithdrawals();
@@ -60,19 +63,24 @@ namespace Monopost.BLL.Services.Implementations
         private void LoadFromCsv(string filePath)
         {
             var lines = File.ReadAllLines(filePath, Encoding.UTF8).Skip(1);
+            logger.Information($"Transactions parsed from CSV: {lines.Count()} transaction(s)");
             foreach (var line in lines)
             {
                 transactions.Add(Transaction.ParseFromCsv(line));
+                logger.Information($"Transaction parsed from CSV: {line}");
             }
         }
+
         private void SetWithdrawals()
         {
             if (transactions.Count < 2)
             {
+                logger.Information("Not enough transactions to set withdrawals.");
                 return;
             }
 
             transactions = transactions.OrderByDescending(t => t.DateTime).ToList();
+            logger.Information($"Transactions ordered by date: {string.Join(", ", transactions.Select(t => t.DateTime))}");
 
             for (int i = 0; i < transactions.Count - 1; i++)
             {
@@ -87,6 +95,7 @@ namespace Monopost.BLL.Services.Implementations
         {
             if (transactions.Count < 2)
             {
+                logger.Information("Not enough transactions to detect withdrawals.");
                 return new Result<List<Transaction>>(true, "Not enough transactions to detect withdrawals.", new List<Transaction>());
             }
 
@@ -94,6 +103,7 @@ namespace Monopost.BLL.Services.Implementations
                 .Where(transaction => transaction.IsWithdrawal)
                 .ToList();
 
+            logger.Information($"Withdrawals retrieved: {withdrawals.Count} transactions.");
             return new Result<List<Transaction>>(true, "Withdrawals retrieved.", withdrawals);
         }
 
@@ -102,6 +112,7 @@ namespace Monopost.BLL.Services.Implementations
             var validationResult = DateTimeValidator.ValidateDateRange(from, to);
             if (!validationResult.Success)
             {
+                logger.Warning($"Date range validation failed: {validationResult.Message}");
                 return new Result<List<Transaction>>(false, validationResult.Message);
             }
 
@@ -110,12 +121,15 @@ namespace Monopost.BLL.Services.Implementations
                 (!to.HasValue || t.DateTime.Date <= to.Value.Date)
             ).ToList();
 
+            logger.Information($"Transactions filtered by date range from {from?.ToString("yyyy-MM-dd")} to {to?.ToString("yyyy-MM-dd")}: {filteredTransactions.Count} transactions found.");
             return new Result<List<Transaction>>(true, "Transactions filtered by date range.", filteredTransactions);
         }
 
         public List<Transaction> FilterTransactionsByType(List<Transaction> transactions, TransactionType transactionType)
         {
-            return transactions.Where(transaction =>
+            logger.Information($"Filtering transactions by type: {transactionType}");
+
+            var filteredTransactions = transactions.Where(transaction =>
                 transactionType switch
                 {
                     TransactionType.Donation => !transaction.IsWithdrawal,
@@ -123,13 +137,18 @@ namespace Monopost.BLL.Services.Implementations
                     TransactionType.Any => true,
                     _ => false,
                 }).ToList();
+                    
+            logger.Information($"Filtered transactions: {filteredTransactions.Count} transactions found.");
+            return filteredTransactions;
         }
 
         public Result<Dictionary<string, List<Transaction>>> AggregateTransactions(DateTime? from, DateTime? to, AggregateBy aggregateBy = AggregateBy.HourOfDay, TransactionType transactionType = TransactionType.Donation)
         {
+            logger.Information($"Aggregating {transactions.Count} transactionsof type {transactionType} from {from} to {to} by {aggregateBy}.");
             var dateValidationResult = DateTimeValidator.ValidateDateRange(from, to);
             if (!dateValidationResult.Success)
             {
+                logger.Warning($"Date range validation failed: {dateValidationResult.Message}");
                 return new Result<Dictionary<string, List<Transaction>>>(false, dateValidationResult.Message);
             }
 
@@ -137,8 +156,10 @@ namespace Monopost.BLL.Services.Implementations
             var prefilteredTransactions = FilterTransactionsByDay(from, to);
             if (prefilteredTransactions.Data == null || prefilteredTransactions.Data.Count == 0)
             {
+                logger.Warning("No transactions found in the specified date range.");
                 return new Result<Dictionary<string, List<Transaction>>>(true, "No transactions found in the specified date range.", aggregatedResults);
             }
+
             var filteredTransactions = FilterTransactionsByType(prefilteredTransactions.Data, transactionType);
 
             foreach (var transaction in filteredTransactions)
@@ -153,13 +174,16 @@ namespace Monopost.BLL.Services.Implementations
                 aggregatedResults[key].Add(transaction);
             }
 
+            logger.Information($"Aggregation successful: {aggregatedResults.Count} keys aggregated.");
             return new Result<Dictionary<string, List<Transaction>>>(true, "Aggregation successful.", aggregatedResults.OrderBy(kvp => kvp.Key)
                                                                                                                    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
         }
+
         public Dictionary<string, decimal> ApplyAggregationOperation(
             Dictionary<string, List<Transaction>> aggregatedResults,
             AggregationOperation operation)
         {
+            logger.Information($"Applying aggrefation operation {operation}. It always results in success.");
             var results = new Dictionary<string, decimal>();
 
             foreach (var kvp in aggregatedResults)
@@ -187,7 +211,8 @@ namespace Monopost.BLL.Services.Implementations
                         result = transactions.Any() ? transactions.Min(t => t.Amount) : 0;
                         break;
                     default:
-                        throw new ArgumentException("Invalid aggregation operation");
+                        logger.Warning("Invalid aggregation operation");
+                        break;
                 }
 
                 results[key] = result;
@@ -235,45 +260,60 @@ namespace Monopost.BLL.Services.Implementations
 
         public Result<List<Transaction>> GetBiggestTransactions(DateTime? from, DateTime? to, TransactionType transactionType = TransactionType.Donation, int limit = 1)
         {
+            logger.Information("Retrieving biggest transactions.");
+
             var validationResult = DateTimeValidator.ValidateDateRange(from, to);
             if (!validationResult.Success)
             {
+                logger.Warning($"Date range validation failed: {validationResult.Message}");
                 return new Result<List<Transaction>>(false, validationResult.Message);
             }
 
             var prefilteredTransactions = FilterTransactionsByDay(from, to);
             if (prefilteredTransactions.Data == null || prefilteredTransactions.Data.Count == 0)
             {
+                logger.Warning("No transactions found in the specified date range.");
                 return new Result<List<Transaction>>(true, "No transactions found in the specified date range.", new List<Transaction>());
             }
+
             var filteredTransactions = FilterTransactionsByType(prefilteredTransactions.Data, transactionType);
+            logger.Information($"Top {limit} transactions retrieved: {filteredTransactions.Count} transactions found.");
 
             return new Result<List<Transaction>>(true, $"Top {limit} transactions retrieved.", filteredTransactions.OrderByDescending(t => t.Amount).Take(limit).ToList());
         }
 
         public Result<List<Transaction>> GetSmallestTransactions(DateTime? from, DateTime? to, TransactionType transactionType = TransactionType.Donation, int limit = 1)
         {
+            logger.Information("Retrieving smallest transactions.");
+
             var validationResult = DateTimeValidator.ValidateDateRange(from, to);
             if (!validationResult.Success)
             {
+                logger.Warning($"Date range validation failed: {validationResult.Message}");
                 return new Result<List<Transaction>>(false, validationResult.Message);
             }
 
             var prefilteredTransactions = FilterTransactionsByDay(from, to);
             if (prefilteredTransactions.Data == null || prefilteredTransactions.Data.Count == 0)
             {
+                logger.Warning("No transactions found in the specified date range.");
                 return new Result<List<Transaction>>(true, "No transactions found in the specified date range.", new List<Transaction>());
             }
+
             var filteredTransactions = FilterTransactionsByType(prefilteredTransactions.Data, transactionType);
+            logger.Information($"Smallest {limit} transactions retrieved: {filteredTransactions.Count} transactions found.");
 
             return new Result<List<Transaction>>(true, $"Smallest {limit} transactions retrieved.", filteredTransactions.OrderBy(t => t.Amount).Take(limit).ToList());
         }
 
         public Result<decimal> TotalTransactionAmount(DateTime? from, DateTime? to, TransactionType transactionType)
         {
+            logger.Information("Calculating total transaction amount.");
+
             var validationResult = DateTimeValidator.ValidateDateRange(from, to);
             if (!validationResult.Success)
             {
+                logger.Warning($"Date range validation failed: {validationResult.Message}");
                 return new Result<decimal>(false, validationResult.Message);
             }
 
@@ -281,113 +321,99 @@ namespace Monopost.BLL.Services.Implementations
 
             if (prefilteredTransactions == null)
             {
+                logger.Warning("No transactions found in the specified date range.");
                 return new Result<decimal>(true, "No transactions found in the specified date range.", 0);
             }
 
             var filteredTransactions = FilterTransactionsByType(prefilteredTransactions, transactionType);
-            return new Result<decimal>(true, "Total transaction amount calculated.", filteredTransactions.Sum(t => t.Amount));
+            decimal totalAmount = filteredTransactions.Sum(t => t.Amount);
+            logger.Information($"Total transaction amount calculated: {totalAmount}");
+
+            return new Result<decimal>(true, "Total transaction amount calculated.", totalAmount);
         }
 
         public Result<decimal> AverageTransactionAmount(DateTime? from, DateTime? to, TransactionType transactionType)
         {
+            logger.Information("Calculating average transaction amount.");
+
             var validationResult = DateTimeValidator.ValidateDateRange(from, to);
             if (!validationResult.Success)
             {
+                logger.Warning($"Date range validation failed: {validationResult.Message}");
                 return new Result<decimal>(false, validationResult.Message);
             }
 
             var prefilteredTransactions = FilterTransactionsByDay(from, to);
             if (prefilteredTransactions.Data == null || prefilteredTransactions.Data.Count == 0)
             {
+                logger.Warning("No transactions found in the specified date range.");
                 return new Result<decimal>(true, "No transactions found in the specified date range.", 0);
             }
+
             var filteredTransactions = FilterTransactionsByType(prefilteredTransactions.Data, transactionType);
-            return new Result<decimal>(true, "Average transaction amount calculated.", filteredTransactions.Any() ? filteredTransactions.Average(t => t.Amount) : 0);
+            decimal averageAmount = filteredTransactions.Any() ? filteredTransactions.Average(t => t.Amount) : 0;
+            logger.Information($"Average transaction amount calculated: {averageAmount}");
+
+            return new Result<decimal>(true, "Average transaction amount calculated.", averageAmount);
         }
-    }
 
-
-    public static class ChartManager
-    {
         [Obsolete]
-        public static void PlotData<T>(Dictionary<string, T> data, string title, ChartType chartType)
-            where T : struct
+        public void PlotData<T>(Dictionary<string, T> data, string title, ChartType chartType) where T : struct
         {
-            var plt = new Plot(800, 600);
+            logger.Information($"Plotting data with title: '{title}' and chart type: '{chartType}'");
+            ChartManager.PlotData<T>(data, title, chartType);
+        }
 
-
-            var keys = data.Keys.ToArray();
-            var values = data.Values.Select(v => Convert.ToDouble(v)).ToArray();
-
-            switch (chartType)
+        private static class ChartManager
+        {
+            [Obsolete]
+            public static void PlotData<T>(Dictionary<string, T> data, string title, ChartType chartType)
+                where T : struct
             {
-                case ChartType.Line:
-                    plt.AddScatter(Enumerable.Range(0, values.Length).Select(x => (double)x).ToArray(), values);
-                    plt.Title($"{title} (Line Chart)");
-                    plt.XTicks(Enumerable.Range(0, keys.Length).Select(x => (double)x).ToArray(), keys);
-                    break;
+                var plt = new Plot(800, 600);
+                var keys = data.Keys.ToArray();
+                var values = data.Values.Select(v => Convert.ToDouble(v)).ToArray();
 
-                case ChartType.Bar:
-                    plt.AddBar(values);
-                    plt.Title($"{title} (Bar Chart)");
-                    plt.XTicks(Enumerable.Range(0, keys.Length).Select(x => (double)x).ToArray(), keys);
-                    break;
+                switch (chartType)
+                {
+                    case ChartType.Line:
+                        plt.AddScatter(Enumerable.Range(0, values.Length).Select(x => (double)x).ToArray(), values);
+                        plt.Title($"{title} (Line Chart)");
+                        plt.XTicks(Enumerable.Range(0, keys.Length).Select(x => (double)x).ToArray(), keys);
+                        break;
 
-                case ChartType.Pie:
-                    var pie = plt.AddPie(values);
-                    pie.SliceLabels = keys;
-                    pie.ShowValues = false;
-                    pie.ShowPercentages = true;
-                    pie.OutlineSize = 0;
-                    plt.Title(title);
-                    plt.Legend(location: ScottPlot.Alignment.LowerRight);
-                    plt.SetAxisLimits(-1.5, 1.5, -1.5, 1.5);
-                    plt.Layout(left: 0, right: 0, top: 50, bottom: 50);
-                    plt.SaveFig("pie_chart.png", 800, 800);
-                    plt.Grid(false);
-                    plt.Frame(false);
-                    break;
+                    case ChartType.Bar:
+                        plt.AddBar(values);
+                        plt.Title($"{title} (Bar Chart)");
+                        plt.XTicks(Enumerable.Range(0, keys.Length).Select(x => (double)x).ToArray(), keys);
+                        break;
+
+                    case ChartType.Pie:
+                        var pie = plt.AddPie(values);
+                        pie.SliceLabels = keys;
+                        pie.ShowValues = false;
+                        pie.ShowPercentages = true;
+                        pie.OutlineSize = 0;
+                        plt.Title(title);
+                        plt.Legend(location: ScottPlot.Alignment.LowerRight);
+                        plt.SetAxisLimits(-1.5, 1.5, -1.5, 1.5);
+                        plt.Layout(left: 0, right: 0, top: 50, bottom: 50);
+                        plt.SaveFig("pie_chart.png", 800, 800);
+                        plt.Grid(false);
+                        plt.Frame(false);
+                        break;
 
 
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(chartType), "Invalid chart type selected.");
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(chartType), "Invalid chart type selected.");
+                }
+
+                plt.SetAxisLimits(yMin: 0);
+
+                plt.SaveFig($"{title.Replace(" ", "_")}.png");
+
+                Console.WriteLine($"Chart saved as {title.Replace(" ", "_")}.png");
             }
-
-            plt.SetAxisLimits(yMin: 0);
-
-            plt.SaveFig($"{title.Replace(" ", "_")}.png");
-
-            Console.WriteLine($"Chart saved as {title.Replace(" ", "_")}.png");
-        }
-
-
-        private static Color[] GenerateUniqueColors(int count)
-        {
-            return Enumerable.Range(0, count)
-                .Select(i => ColorFromHSV((float)i / count, 0.7f, 0.9f))
-                .ToArray();
-        }
-
-        private static Color ColorFromHSV(float hue, float saturation, float value)
-        {
-            int hi = Convert.ToInt32(Math.Floor(hue * 6)) % 6;
-            float f = hue * 6 - (float)Math.Floor(hue * 6);
-
-            value *= 255;
-            int v = Convert.ToInt32(value);
-            int p = Convert.ToInt32(value * (1 - saturation));
-            int q = Convert.ToInt32(value * (1 - f * saturation));
-            int t = Convert.ToInt32(value * (1 - (1 - f) * saturation));
-
-            return hi switch
-            {
-                0 => Color.FromArgb(255, v, t, p),
-                1 => Color.FromArgb(255, q, v, p),
-                2 => Color.FromArgb(255, p, v, t),
-                3 => Color.FromArgb(255, p, q, v),
-                4 => Color.FromArgb(255, t, p, v),
-                _ => Color.FromArgb(255, v, p, q)
-            };
         }
     }
 }

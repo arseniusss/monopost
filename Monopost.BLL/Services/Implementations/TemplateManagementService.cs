@@ -1,6 +1,8 @@
 ﻿using Monopost.BLL.Models;
 using Monopost.DAL.Entities;
 using Monopost.DAL.Repositories.Interfaces;
+using Monopost.Logging;
+using Serilog;
 
 namespace Monopost.BLL.Services
 {
@@ -9,30 +11,39 @@ namespace Monopost.BLL.Services
         private readonly ITemplateRepository _templateRepository;
         private readonly ITemplateFileRepository _templateFileRepository;
         private readonly IUserRepository _userRepository;
+        public static ILogger logger = LoggerConfig.GetLogger();
 
         public TemplateManagementService(ITemplateRepository templateRepository, ITemplateFileRepository templateFileRepository, IUserRepository userRepository)
         {
             _templateRepository = templateRepository;
             _templateFileRepository = templateFileRepository;
             _userRepository = userRepository;
+            logger.Information("TemplateManagementService created.");
         }
 
         public async Task<Result<TemplateModel>> AddTemplateAsync(TemplateModel model)
         {
+            logger.Information($"Trying to add a new template. AuthorId: {model.AuthorId}, Name: {model.Name}");
             var userExists = await _userRepository.UserExistsAsync(model.AuthorId);
             if (!userExists)
             {
+                logger.Warning($"Result: Failure\nReason: Invalid AuthorId: User does not exist.");
                 return new Result<TemplateModel>(false, "Invalid AuthorId: User does not exist.");
             }
+
             try
             {
                 await _templateFileRepository.GetByIdAsync(model.Id);
+                logger.Warning($"Result: Failure\nReason: Template with this Id already exists.");
                 return new Result<TemplateModel>(false, "Template with this Id already exists.");
             }
-            catch { }
-
-            if(model.Name == null || model.Name == string.Empty || model.Text == null || model.Text == string.Empty)
+            catch
             {
+            }
+
+            if (string.IsNullOrWhiteSpace(model.Name) || string.IsNullOrWhiteSpace(model.Text))
+            {
+                logger.Warning($"Result: Failure\nReason: Name and Text are required.");
                 return new Result<TemplateModel>(false, "Name and Text are required.");
             }
 
@@ -52,39 +63,47 @@ namespace Monopost.BLL.Services
             try
             {
                 await _templateRepository.AddAsync(template);
+                logger.Information($"Result: Success\nMessage: Template created successfully.");
                 return new Result<TemplateModel>(true, "Template created successfully.", model);
             }
             catch (Exception e)
             {
+                logger.Warning($"Result: Failure\nReason: {e.Message}");
                 return new Result<TemplateModel>(false, e.Message);
             }
         }
 
         public async Task<Result> DeleteTemplateAsync(int templateId)
         {
+            logger.Information($"Trying to delete template with id = {templateId}");
             try
             {
                 var template = await _templateRepository.GetByIdAsync(templateId);
                 await _templateFileRepository.DeleteAllByTemplateIdAsync(templateId);
                 await _templateRepository.DeleteAsync(templateId);
 
+                logger.Information($"Result: Success\nMessage: Template and its files deleted successfully.");
                 return new Result(true, "Template and its files deleted successfully.");
             }
             catch
             {
+                logger.Warning($"Result: Failure\nReason: Template not found.");
                 return new Result(false, "Template not found.");
             }
         }
 
         public async Task<Result> UpdateTemplateAsync(TemplateModel model)
         {
+            logger.Information($"Trying to update template. Id: {model.Id}");
             if (model == null)
             {
+                logger.Warning($"Result: Failure\nReason: Template model is required.");
                 return new Result(false, "Template model is required.");
             }
 
-            if (model.Name == null || model.Name == string.Empty || model.Text == null || model.Text == string.Empty)
+            if (string.IsNullOrWhiteSpace(model.Name) || string.IsNullOrWhiteSpace(model.Text))
             {
+                logger.Warning($"Result: Failure\nReason: Name and Text are required.");
                 return new Result(false, "Name and Text are required.");
             }
 
@@ -95,16 +114,19 @@ namespace Monopost.BLL.Services
                 template.Text = model.Text;
 
                 await _templateRepository.UpdateAsync(template);
+                logger.Information($"Result: Success\nMessage: Template updated successfully.");
                 return new Result(true, "Template updated successfully.");
             }
             catch
             {
+                logger.Warning($"Result: Failure\nReason: Template not found.");
                 return new Result(false, "Template not found.");
-            }            
+            }
         }
 
         public async Task<Result<IEnumerable<TemplateModel>>> GetAllTemplatesAsync()
         {
+            logger.Information($"Trying to retrieve all templates...");
             var templates = await _templateRepository.GetAllAsync();
             var templateDtos = templates.Select(t => new TemplateModel
             {
@@ -121,11 +143,13 @@ namespace Monopost.BLL.Services
                 }).ToList()
             }).ToList();
 
+            logger.Information($"Result: Success\nMessage: Templates retrieved successfully.");
             return new Result<IEnumerable<TemplateModel>>(true, "Templates retrieved successfully.", templateDtos);
         }
 
         public async Task<Result<IEnumerable<TemplateFileModel>>> GetTemplateFilesByTemplateIdAsync(int templateId)
         {
+            logger.Information($"Trying to get template files for templateId = {templateId}");
             try
             {
                 var templateFiles = await _templateFileRepository.GetTemplateFilesByTemplateIdAsync(templateId);
@@ -137,20 +161,24 @@ namespace Monopost.BLL.Services
                     TemplateId = tf.TemplateId
                 }).ToList();
 
+                logger.Information($"Result: Success\nMessage: Template files retrieved successfully.");
                 return new Result<IEnumerable<TemplateFileModel>>(true, "Template files retrieved successfully.", templateFileDtos);
             }
             catch
             {
+                logger.Warning($"Result: Failure\nReason: Template not found.");
                 return new Result<IEnumerable<TemplateFileModel>>(false, "Template not found.");
             }
         }
 
         public async Task<Result<IEnumerable<TemplateModel>>> GetTemplatesByUserIdAsync(int userId)
         {
+            logger.Information($"Trying to get templates for userId = {userId}");
             var templates = await _templateRepository.GetTemplatesByAuthorIdAsync(userId);
 
             if (templates == null || !templates.Any())
             {
+                logger.Warning($"Result: Failure\nReason: No templates found for the specified user.");
                 return new Result<IEnumerable<TemplateModel>>(false, "No templates found for the specified user.");
             }
 
@@ -169,6 +197,7 @@ namespace Monopost.BLL.Services
                 }).ToList()
             }).ToList();
 
+            logger.Information($"Result: Success\nMessage: Templates retrieved successfully.");
             return new Result<IEnumerable<TemplateModel>>(true, "Templates retrieved successfully.", templateDtos);
         }
     }

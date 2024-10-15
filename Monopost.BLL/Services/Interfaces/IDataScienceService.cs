@@ -14,5 +14,7 @@ namespace Monopost.BLL.Services.Interfaces
         Result<List<Transaction>> GetSmallestTransactions(DateTime? from, DateTime? to, TransactionType transactionType = TransactionType.Donation, int limit = 1);
         Result<decimal> TotalTransactionAmount(DateTime? from, DateTime? to, TransactionType transactionType);
         Result<decimal> AverageTransactionAmount(DateTime? from, DateTime? to, TransactionType transactionType);
+        [Obsolete("This method is obsolete. Use the new version with improved functionality.")]
+        void PlotData<T>(Dictionary<string, T> data, string title, ChartType chartType) where T : struct;
     }
 }

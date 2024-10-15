@@ -9,5 +9,10 @@ namespace Monopost.BLL.Models
         public string? CredentialValue { get; set; }
         public bool StoredLocally { get; set; }
         public string? LocalPath { get; set; }
+        public override string ToString()
+        {
+            return $"CredentialModel: Id={Id}, AuthorId={AuthorId}, CredentialType={CredentialType}, " +
+                   $"StoredLocally={StoredLocally}, LocalPath={LocalPath ?? "null"}";
+        }
     }
 }

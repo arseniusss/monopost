@@ -4,6 +4,8 @@ using Monopost.BLL.Services;
 using Monopost.DAL.Entities;
 using Monopost.DAL.Repositories.Implementations;
 using Monopost.DAL.DataAccess;
+using Monopost.Logging;
+using Serilog;
 
 namespace Monopost.UnitTests.Services
 {
@@ -22,6 +24,8 @@ namespace Monopost.UnitTests.Services
             _dbContext = new AppDbContext(options);
             _dbContext.Database.EnsureCreated();
 
+            LoggerConfig.ConfigureLogging();
+
             var templateRepository = new TemplateRepository(_dbContext);
             _userRepository = new UserRepository(_dbContext);
             var templateFileRepository = new TemplateFileRepository(_dbContext);
@@ -33,6 +37,7 @@ namespace Monopost.UnitTests.Services
         {
             _dbContext.Database.EnsureDeleted();
             _dbContext.Dispose();
+            Log.CloseAndFlush();
         }
 
         [Fact]
