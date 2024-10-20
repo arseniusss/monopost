@@ -7,12 +7,14 @@ on:
       - test
       - test2
       - sprint-5
+      - sprint-6
   pull_request:
     branches:
       - main
       - test
       - test2
       - sprint-5
+      - sprint-6
   workflow_dispatch:
 
 jobs:
