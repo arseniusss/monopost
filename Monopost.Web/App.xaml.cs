@@ -6,6 +6,7 @@ using Monopost.DAL.DataAccess;
 using System.IO;
 using Monopost.Logging;
 using Serilog;
+using Monopost.BLL.Services.Implementations;
 
 namespace Monopost.Web
 {
@@ -40,6 +41,9 @@ namespace Monopost.Web
 
             ServiceProvider = serviceCollection.BuildServiceProvider();
 
+            PdfManager pdf = new PdfManager("Jar_statement_13.10.2024_193241.csv");
+        
+            pdf.SaveResults();
             base.OnStartup(e);
         }
 
@@ -49,5 +53,6 @@ namespace Monopost.Web
             Log.CloseAndFlush();
             base.OnExit(e);
         }
+
     }
 }

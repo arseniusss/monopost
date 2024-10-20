@@ -15,6 +15,6 @@ namespace Monopost.BLL.Services.Interfaces
         Result<decimal> TotalTransactionAmount(DateTime? from, DateTime? to, TransactionType transactionType);
         Result<decimal> AverageTransactionAmount(DateTime? from, DateTime? to, TransactionType transactionType);
         [Obsolete("This method is obsolete. Use the new version with improved functionality.")]
-        void PlotData<T>(Dictionary<string, T> data, string title, ChartType chartType) where T : struct;
+        string PlotData<T>(Dictionary<string, T> data, string title, ChartType chartType,int width = 800, int height = 800) where T : struct;
     }
 }

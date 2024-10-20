@@ -52,15 +52,15 @@ namespace Monopost.BLL.Services.Implementations
         private List<Transaction> transactions;
         public static ILogger logger = LoggerConfig.GetLogger();
 
-        public DataScienceService(string filepath)
+        public DataScienceService()
         {
             logger.Information("DataScienceService created.");
             transactions = new List<Transaction>();
-            LoadFromCsv(filepath);
-            SetWithdrawals();
+            //LoadFromCsv(filepath);
+            
         }
 
-        private void LoadFromCsv(string filePath)
+        public void LoadFromCsv(string filePath)
         {
             var lines = File.ReadAllLines(filePath, Encoding.UTF8).Skip(1);
             logger.Information($"Transactions parsed from CSV: {lines.Count()} transaction(s)");
@@ -69,6 +69,7 @@ namespace Monopost.BLL.Services.Implementations
                 transactions.Add(Transaction.ParseFromCsv(line));
                 logger.Information($"Transaction parsed from CSV: {line}");
             }
+            SetWithdrawals();
         }
 
         private void SetWithdrawals()
@@ -358,21 +359,24 @@ namespace Monopost.BLL.Services.Implementations
         }
 
         [Obsolete]
-        public void PlotData<T>(Dictionary<string, T> data, string title, ChartType chartType) where T : struct
+        public string PlotData<T>(Dictionary<string, T> data, string title, ChartType chartType, int width = 800, int height = 800) where T : struct
         {
             logger.Information($"Plotting data with title: '{title}' and chart type: '{chartType}'");
-            ChartManager.PlotData<T>(data, title, chartType);
+            ChartManager.PlotData<T>(data, title, chartType,width,height);
+            string fileName = $"{title.Replace(" ", "_")}_{chartType}.png";
+            return fileName;
         }
 
         private static class ChartManager
         {
             [Obsolete]
-            public static void PlotData<T>(Dictionary<string, T> data, string title, ChartType chartType)
-                where T : struct
+            public static string PlotData<T>(Dictionary<string, T> data, string title, ChartType chartType, int width = 800, int height = 800)
+        where T : struct
             {
-                var plt = new Plot(800, 600);
+                var plt = new Plot(width, height);
                 var keys = data.Keys.ToArray();
                 var values = data.Values.Select(v => Convert.ToDouble(v)).ToArray();
+              
 
                 switch (chartType)
                 {
@@ -381,38 +385,36 @@ namespace Monopost.BLL.Services.Implementations
                         plt.Title($"{title} (Line Chart)");
                         plt.XTicks(Enumerable.Range(0, keys.Length).Select(x => (double)x).ToArray(), keys);
                         break;
-
                     case ChartType.Bar:
                         plt.AddBar(values);
                         plt.Title($"{title} (Bar Chart)");
                         plt.XTicks(Enumerable.Range(0, keys.Length).Select(x => (double)x).ToArray(), keys);
                         break;
-
                     case ChartType.Pie:
                         var pie = plt.AddPie(values);
                         pie.SliceLabels = keys;
                         pie.ShowValues = false;
                         pie.ShowPercentages = true;
                         pie.OutlineSize = 0;
-                        plt.Title(title);
+                        plt.Title($"{title} (Pie Chart)");
                         plt.Legend(location: ScottPlot.Alignment.LowerRight);
                         plt.SetAxisLimits(-1.5, 1.5, -1.5, 1.5);
                         plt.Layout(left: 0, right: 0, top: 50, bottom: 50);
-                        plt.SaveFig("pie_chart.png", 800, 800);
                         plt.Grid(false);
                         plt.Frame(false);
                         break;
-
-
                     default:
                         throw new ArgumentOutOfRangeException(nameof(chartType), "Invalid chart type selected.");
                 }
 
-                plt.SetAxisLimits(yMin: 0);
+                if (chartType != ChartType.Pie)
+                {
+                    plt.SetAxisLimits(yMin: 0);
+                }
 
-                plt.SaveFig($"{title.Replace(" ", "_")}.png");
-
-                Console.WriteLine($"Chart saved as {title.Replace(" ", "_")}.png");
+                string fileName = $"{title.Replace(" ", "_")}_{chartType}.png";
+                plt.SaveFig(fileName);
+                return fileName;
             }
         }
     }

@@ -14,7 +14,8 @@ namespace Monopost.UnitTests.Services
         public TransactionServiceTests()
         {
             SetupTestFile();
-            _service = new DataScienceService(_testFilePath);
+            _service = new DataScienceService();
+            _service.LoadFromCsv(_testFilePath);
 
             LoggerConfig.ConfigureLogging();
         }
