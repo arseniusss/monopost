@@ -166,7 +166,7 @@ namespace Monopost.BLL.Services.Implementations
         }
 
         //2 параметри: шлях_до папки, ім'я файла
-        public void SaveResults(string pathToFolder, string fileName)
+        public void SaveResults()
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
