@@ -41,9 +41,10 @@ namespace Monopost.Web
 
             ServiceProvider = serviceCollection.BuildServiceProvider();
 
-            PdfManager pdf = new PdfManager("Jar_statement_13.10.2024_193241.csv");
+
+            DataScienceSavingPdfService pdf = new DataScienceSavingPdfService("Jar_statement_13.10.2024_193241.csv");
         
-            pdf.SaveResults();
+            pdf.SaveResults("FinalReport.pdf");
             base.OnStartup(e);
         }
 

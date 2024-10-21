@@ -155,21 +155,15 @@ namespace Monopost.BLL.Services.Implementations
             }
         }
 
-        public Result<string> SaveResults(string pathToFolder, string fileName)
+        public Result<string> SaveResults(string fileName)
         {
             try
             {
-                logger.Information($"Saving results to {pathToFolder} with file name {fileName}");
+                logger.Information($"Saving results to file {fileName}");
                 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
                 DateTime? from = null;
                 DateTime? to = null;
-
-                if (!Directory.Exists(pathToFolder))
-                {
-                    logger.Information($"Creating a new directory at {pathToFolder}");
-                    Directory.CreateDirectory(pathToFolder);
-                }
 
                 var donationAmountsByTimeOfDay = manager.AggregateTransactions(from, to, AggregateBy.TimeOfDay, TransactionType.Donation).Data;
                 var donationTotalAmountsByTimeOfDay = manager.ApplyAggregationOperation(donationAmountsByTimeOfDay, AggregationOperation.Sum);
@@ -207,12 +201,6 @@ namespace Monopost.BLL.Services.Implementations
                 };
                 logger.Information("Charts generated.");
 
-                string statisticsReportPath = Path.Combine(pathToFolder, "StatisticsReport.pdf");
-                string chartsReportPath = Path.Combine(pathToFolder, "ChartsReport.pdf");
-                string finalReportPath = Path.Combine(pathToFolder, fileName);
-
-
-
                 GenerateStatisticsPdf(
                     donationTotalAmountsByTimeOfDay,
                     donationCountsByTimeOfDay,
@@ -227,11 +215,11 @@ namespace Monopost.BLL.Services.Implementations
                 );
                 logger.Information("Statistics report generated.");
 
-                GenerateChartsPdf(chartPaths, chartsReportPath);
+                GenerateChartsPdf(chartPaths, "ChartsReport.pdf");
                 logger.Information("Charts report generated.");
 
-                MergePdfs(statisticsReportPath, chartsReportPath, finalReportPath);
-                logger.Information($"PDFs merged into {finalReportPath}. Final report generated.");
+                MergePdfs("StatisticsReport.pdf", "ChartsReport.pdf", "FinalReport.pdf");
+                logger.Information($"Final report generated.");
 
 
                 return new Result<string>(true, $"Final report generated: {fileName}");
