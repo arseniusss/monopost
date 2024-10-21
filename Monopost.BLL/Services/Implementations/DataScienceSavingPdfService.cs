@@ -1,36 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 using PdfSharp.Pdf;
 using PdfSharp.Drawing;
 using PdfSharp.Pdf.IO;
-using Monopost.BLL.Services.Interfaces;
 using Monopost.Logging;
 using Serilog;
 using Monopost.BLL.Enums;
 using Transaction = Monopost.BLL.Models.Transaction;
-using static System.Net.Mime.MediaTypeNames;
+using Monopost.BLL.Models;
+using Monopost.BLL.Services.Interfaces;
 
 namespace Monopost.BLL.Services.Implementations
 {
-    //Зробити потім інтерфейс власний
-    public class PdfManager
+    public class DataScienceSavingPdfService : IDataScienceSavingPdfService
     {
         public static ILogger logger = LoggerConfig.GetLogger();
         private List<Transaction> transactions;
-        private DataScienceService manager = new DataScienceService();
+        private DataScienceService? manager = new DataScienceService();
 
-        public PdfManager(string filepath)
+        public DataScienceSavingPdfService(string filepath)
         {
             logger.Information("DataScienceSavingPdf created.");
             transactions = new List<Transaction>();
             manager.LoadFromCsv(filepath);
 
         }
-        public static void GenerateStatisticsPdf(
+        private void GenerateStatisticsPdf(
          Dictionary<string, decimal> donationTotalAmountsByTimeOfDay,
          Dictionary<string, decimal> donationCountByTimeOfDay,
          Dictionary<string, decimal> totalAmountByHour,
@@ -102,11 +96,10 @@ namespace Monopost.BLL.Services.Implementations
                 }
 
                 document.Save(pdfPath);
-                //Console.WriteLine($"Statistics PDF saved at: {pdfPath}");
             }
         }
 
-        public static void GenerateChartsPdf(List<string> chartPaths, string pdfPath)
+        private void GenerateChartsPdf(List<string> chartPaths, string pdfPath)
         {
             using (PdfDocument document = new PdfDocument())
             {
@@ -133,12 +126,11 @@ namespace Monopost.BLL.Services.Implementations
                 }
 
                 document.Save(pdfPath);
-                //Console.WriteLine($"Charts PDF saved at: {pdfPath}");
             }
         }
 
 
-        public static void MergePdfs(string statsPdfPath, string chartsPdfPath, string outputPdfPath)
+        private void MergePdfs(string statsPdfPath, string chartsPdfPath, string outputPdfPath)
         {
             PdfDocument outputDocument = new PdfDocument();
 
@@ -152,12 +144,10 @@ namespace Monopost.BLL.Services.Implementations
                 CopyPages(chartsDocument, outputDocument);
             }
 
-
             outputDocument.Save(outputPdfPath);
-            Console.WriteLine($"Merged PDF saved at: {outputPdfPath}");
         }
 
-        private static void CopyPages(PdfDocument from, PdfDocument to)
+        private void CopyPages(PdfDocument from, PdfDocument to)
         {
             for (int i = 0; i < from.PageCount; i++)
             {
@@ -165,15 +155,22 @@ namespace Monopost.BLL.Services.Implementations
             }
         }
 
-        //2 параметри: шлях_до папки, ім'я файла
-        public void SaveResults()
+        public Result<string> SaveResults(string pathToFolder, string fileName)
         {
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            try
+            {
+                logger.Information($"Saving results to {pathToFolder} with file name {fileName}");
+                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
-            DateTime? from = null;
+                DateTime? from = null;
                 DateTime? to = null;
 
-               
+                if (!Directory.Exists(pathToFolder))
+                {
+                    logger.Information($"Creating a new directory at {pathToFolder}");
+                    Directory.CreateDirectory(pathToFolder);
+                }
+
                 var donationAmountsByTimeOfDay = manager.AggregateTransactions(from, to, AggregateBy.TimeOfDay, TransactionType.Donation).Data;
                 var donationTotalAmountsByTimeOfDay = manager.ApplyAggregationOperation(donationAmountsByTimeOfDay, AggregationOperation.Sum);
                 var donationCountsByTimeOfDay = manager.ApplyAggregationOperation(donationAmountsByTimeOfDay, AggregationOperation.Count);
@@ -193,21 +190,28 @@ namespace Monopost.BLL.Services.Implementations
                 var withdrawalsSumByDayOfWeek = manager.AggregateTransactions(from, to, AggregateBy.DayOfWeek, TransactionType.Withdrawal).Data;
                 var withdrawalSumByDayOfWeek = manager.ApplyAggregationOperation(withdrawalsSumByDayOfWeek, AggregationOperation.Sum);
 
-              
+
 
                 List<string> chartPaths = new List<string>
-            {
-                manager.PlotData(donationTotalAmountsByTimeOfDay, "Donation Amounts by Time of Day", ChartType.Pie),
-                manager.PlotData(donationCountsByTimeOfDay, "Donation Counts by Time of Day", ChartType.Line),
-                manager.PlotData(totalAmountByHour, "Total Amounts by Hour of Day", ChartType.Bar),
-                manager.PlotData(averageAmountByHour, "Average Amounts by Hour of Day", ChartType.Bar),
-                manager.PlotData(maxAmountByHour, "Max Donation Amounts by Hour of Day", ChartType.Line),
-                manager.PlotData(donationCountByDayOfWeek, "Donation Count by Day of Week", ChartType.Pie),
+                {
+                    manager.PlotData(donationTotalAmountsByTimeOfDay, "Donation Amounts by Time of Day", ChartType.Pie),
+                    manager.PlotData(donationCountsByTimeOfDay, "Donation Counts by Time of Day", ChartType.Line),
+                    manager.PlotData(totalAmountByHour, "Total Amounts by Hour of Day", ChartType.Bar),
+                    manager.PlotData(averageAmountByHour, "Average Amounts by Hour of Day", ChartType.Bar),
+                    manager.PlotData(maxAmountByHour, "Max Donation Amounts by Hour of Day", ChartType.Line),
+                    manager.PlotData(donationCountByDayOfWeek, "Donation Count by Day of Week", ChartType.Pie),
 
-                manager.PlotData(withdrawalCountByTimeOfDay, "Withdrawal Counts by Time of Day", ChartType.Bar),
-                manager.PlotData(withdrawalAmountsByTimeOfDay, "Withdrawal Amounts by Time of Day", ChartType.Line),
-                manager.PlotData(withdrawalSumByDayOfWeek, "Withdrawal Sum by Day of Week", ChartType.Line)
-            };
+                    manager.PlotData(withdrawalCountByTimeOfDay, "Withdrawal Counts by Time of Day", ChartType.Bar),
+                    manager.PlotData(withdrawalAmountsByTimeOfDay, "Withdrawal Amounts by Time of Day", ChartType.Line),
+                    manager.PlotData(withdrawalSumByDayOfWeek, "Withdrawal Sum by Day of Week", ChartType.Line)
+                };
+                logger.Information("Charts generated.");
+
+                string statisticsReportPath = Path.Combine(pathToFolder, "StatisticsReport.pdf");
+                string chartsReportPath = Path.Combine(pathToFolder, "ChartsReport.pdf");
+                string finalReportPath = Path.Combine(pathToFolder, fileName);
+
+
 
                 GenerateStatisticsPdf(
                     donationTotalAmountsByTimeOfDay,
@@ -221,11 +225,22 @@ namespace Monopost.BLL.Services.Implementations
                     withdrawalSumByDayOfWeek,
                     "StatisticsReport.pdf"
                 );
+                logger.Information("Statistics report generated.");
 
-                 GenerateChartsPdf(chartPaths, "ChartsReport.pdf");
-                 MergePdfs("StatisticsReport.pdf", "ChartsReport.pdf", "FinalReport.pdf");
+                GenerateChartsPdf(chartPaths, chartsReportPath);
+                logger.Information("Charts report generated.");
 
-                Console.WriteLine("Final report generated: FinalReport.pdf");
+                MergePdfs(statisticsReportPath, chartsReportPath, finalReportPath);
+                logger.Information($"PDFs merged into {finalReportPath}. Final report generated.");
+
+
+                return new Result<string>(true, $"Final report generated: {fileName}");
+            }
+            catch( Exception ex )
+            {
+                logger.Warning(ex,"An error occurred while generating the report.");
+                return new Result<string>(false, $"An error occurred while generating the report: {ex.Message}");
+            }
         }
     }
 }
