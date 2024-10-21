@@ -254,5 +254,69 @@ namespace Monopost.BLL.Services
             logger.Information($"Result:Success\nMessage: User credentials retrieved successfully.");
             return new Result<IEnumerable<CredentialModel>>(true, "User credentials retrieved successfully.", credentialDtos);
         }
+
+        public async Task<Result<IEnumerable<DecodedCredential>>> GetDecodedCredentialsByUserIdAsync(int userId)
+        {
+            // Step 1: Retrieve the credentials
+            var result = await GetCredentialsByUserIdAsync(userId);
+
+            if (!result.Success)
+            {
+                return new Result<IEnumerable<DecodedCredential>>(false, result.Message);
+            }
+
+            var credentialModels = new List<CredentialModel>();
+            if (result.Data != null)
+            {
+                credentialModels = result.Data.ToList();
+            }
+            var decodedCredentials = new List<DecodedCredential>();
+
+            foreach (var credential in credentialModels)
+            {
+                var decodedCredential = new DecodedCredential
+                {
+                    Id = credential.Id,
+                    AuthorId = credential.AuthorId,
+                    CredentialType = credential.CredentialType,
+                    CredentialValue = credential.StoredLocally && !string.IsNullOrEmpty(credential.LocalPath)
+                        ? await DecodeCredentialValueFromFileAsync(credential)
+                        : credential.CredentialValue ?? string.Empty // Use the original value if not stored locally
+                };
+                decodedCredentials.Add(decodedCredential);
+            }
+
+            if (decodedCredentials.Any(c => string.IsNullOrEmpty(c.CredentialValue)))
+            {
+                logger.Warning("Result:Failure\nReason: One or more credentials have an empty value.");
+                return new Result<IEnumerable<DecodedCredential>>(false, "One or more credentials have an empty value.");
+            }
+
+            logger.Information("Result:Success\nMessage: User decoded credentials retrieved successfully.");
+            return new Result<IEnumerable<DecodedCredential>>(true, "User decoded credentials retrieved successfully.", decodedCredentials);
+        }
+
+        private async Task<string> DecodeCredentialValueFromFileAsync(CredentialModel credential)
+        {
+            try
+            {
+                var lines = await File.ReadAllLinesAsync(credential.LocalPath);
+
+                foreach (var line in lines)
+                {
+                    var parts = line.Split(new[] { '=' }, 2);
+                    if (parts.Length == 2 && parts[0].Trim() == credential.CredentialType.ToString())
+                    {
+                        return parts[1].Trim();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Warning($"Error reading local credential file for Credential Id {credential.Id}: {ex.Message}");
+            }
+
+            return string.Empty;
+        }
     }
 }

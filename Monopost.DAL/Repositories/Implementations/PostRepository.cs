@@ -38,6 +38,10 @@ namespace Monopost.DAL.Repositories.Implementations
         public async Task AddAsync(Post post)
         {
             await _context.Posts.AddAsync(post);
+            if (post.PostMedia != null && post.PostMedia.Any())
+            {
+                await _context.PostMedia.AddRangeAsync(post.PostMedia);
+            }
             await _context.SaveChangesAsync();
         }
 

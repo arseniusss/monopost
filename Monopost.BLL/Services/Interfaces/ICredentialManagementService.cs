@@ -14,5 +14,6 @@ namespace Monopost.BLL.Services.Interfaces
         Task<Result> DeleteCredentialAsync(int id);
         Task<Result<IEnumerable<CredentialModel>>> GetByTypeAsync(CredentialType credentialType);
         Task<Result<IEnumerable<CredentialModel>>> GetCredentialsByUserIdAsync(int userId);
+        Task<Result<IEnumerable<DecodedCredential>>> GetDecodedCredentialsByUserIdAsync(int userId);
     }
 }

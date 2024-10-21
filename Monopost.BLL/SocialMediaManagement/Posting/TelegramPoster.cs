@@ -1,21 +1,20 @@
-﻿using System.Threading.Channels;
-using System.Threading.Tasks;
-using Monopost.DAL.DataAccess;
-using TL;
+﻿using TL;
+using TL.Methods;
 using WTelegram;
+using Monopost.BLL.Models;
+using Monopost.BLL.SocialMediaManagement.Models;
+using Monopost.DAL.Enums;
 
 namespace Monopost.BLL.SocialMediaManagement.Posting
 {
-    public class TelegramPoster
+    public class TelegramPoster : ISocialMediaPoster
     {
         private readonly Client _client;
-        private readonly List<string> _postIds;
-
-        public TelegramPoster(string apiId, string apiHash, string phoneNumber, string? password = null)
+        private readonly string _channelId;
+        public TelegramPoster(string apiId, string apiHash, string phoneNumber, string channelId, string? password = null)
         {
             _client = new Client(Config);
-            _postIds = new List<string>();
-
+            _channelId = channelId;
             string Config(string what)
             {
                 return what switch
@@ -37,87 +36,84 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
             }
         }
 
-        public async Task LoginAsync()
+        private async Task LoginAsync()
         {
             var user = await _client.LoginUserIfNeeded();
-            Console.WriteLine($"Hello, {user.first_name}!");
         }
 
-        public async Task<string> PostToChannelAsync(string? channelName = null, long? channelId = null, string? text = null, List<string>? filePaths = null)
+        public async Task<Result<PostPageAndId>> CreatePostAsync(string text, List<string> filePaths)
         {
-            if (string.IsNullOrEmpty(channelName) && !channelId.HasValue)
-                throw new ArgumentException("Either channelName or channelId must be provided.");
+            await LoginAsync();
 
             var dialogs = await _client.Messages_GetAllDialogs();
             TL.Channel? chat = null;
 
-            if (!string.IsNullOrEmpty(channelName))
-            {
-                chat = dialogs.chats.Values.OfType<TL.Channel>().FirstOrDefault(c => c.title == channelName);
-            }
-            else if (channelId.HasValue)
-            {
-                chat = dialogs.chats.Values.OfType<TL.Channel>().FirstOrDefault(c => c.id == channelId.Value);
-            }
+            chat = dialogs.chats.Values.OfType<TL.Channel>().FirstOrDefault(c => c.ID.ToString() == _channelId);
 
             if (chat == null)
             {
-                throw new Exception("Channel not found");
+                return new Result<PostPageAndId>(false, "Chat is not found", new PostPageAndId("-1", "-1", SocialMediaType.Telegram));
             }
 
             var inputMedias = new List<InputMedia>();
 
-            if (filePaths != null && filePaths.Count > 0)
-            {
-                var fileResults = await Task.WhenAll(filePaths.Select(filePath => _client.UploadFileAsync(filePath)));
+            var fileResults = await Task.WhenAll(filePaths.Select(filePath => _client.UploadFileAsync(filePath)));
 
-                inputMedias.AddRange(fileResults.Select(fileResult => new InputMediaUploadedPhoto
-                {
-                    file = fileResult
-                }));
-            }
+            inputMedias.AddRange(fileResults.Select(fileResult => new InputMediaUploadedPhoto
+            {
+                file = fileResult
+            }));
 
             if (inputMedias.Count > 0)
             {
-                await _client.SendAlbumAsync(chat, inputMedias, text ?? string.Empty);
+                try
+                {
+                    var result = await _client.SendAlbumAsync(chat, inputMedias, text);
+                    return new Result<PostPageAndId>(true, "Message successfully posted", new PostPageAndId (_channelId, result.FirstOrDefault()?.id.ToString(), SocialMediaType.Telegram));
+                }
+                catch (Exception ex)
+                {
+                    return new Result<PostPageAndId>(false, ex.Message, new PostPageAndId("-1", "-1", SocialMediaType.Telegram));
+                }
             }
-            else if (!string.IsNullOrEmpty(text))
+            else
             {
-                var result = await _client.SendMessageAsync(chat, text);
-                _postIds.Add(result.id.ToString());
-                return result.id.ToString();
+                return new Result<PostPageAndId>(false, "No files to upload.", new PostPageAndId("-1", "-1", SocialMediaType.Telegram));
             }
-
-            return "No media or text provided.";
         }
 
-        public async Task<(int views, int forwards, int reactions)> GetPostStatsAsync(string channelName, int messageId)
+        public async Task<Result<EngagementStats>> GetEngagementStatsAsync(string postId)
         {
+            await LoginAsync();
+
             var dialogs = await _client.Messages_GetAllDialogs();
-            var chat = dialogs.chats.Values.OfType<TL.Channel>().FirstOrDefault(c => c.title == channelName);
+            var chat = dialogs.chats.Values.OfType<TL.Channel>().FirstOrDefault(c => c.ID.ToString() == _channelId);
 
             if (chat == null)
             {
-                throw new Exception("Channel not found");
+                return new Result<EngagementStats>(false, "Channel not found", new EngagementStats(-1, -1, -1, -1));
             }
 
-            var messages = await _client.Channels_GetMessages(chat, messageId);
+            var messages = await _client.Channels_GetMessages(chat, int.Parse(postId));
 
             var message = messages.Messages.FirstOrDefault();
 
             if (message == null)
             {
+                return new Result<EngagementStats>(false, "Message not found", new EngagementStats(-1, -1, -1, -1));
                 throw new Exception("Message not found");
             }
 
             int views = 0;
             int reactions = 0;
             int forwards = 0;
+            int comments = 0;
 
             if (message is TL.Message msg)
             {
                 views = msg.views;
                 forwards = msg.forwards;
+                comments = msg.replies.replies;
 
                 if (msg.reactions != null && msg.reactions.results != null)
                 {
@@ -128,33 +124,33 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
                 }
             }
 
-            return (views, forwards, reactions);
+            return new Result<EngagementStats>(true, "Engagement stats retrieved successfully", new EngagementStats(views, reactions, comments, forwards));
         }
 
-        public async Task<string> GeneratePostLinkByChannelNameAsync(string channelName, string postId)
+        public async Task<Result<string>> GeneratePostLinkByChannelIdAsync(string postId)
         {
             if (string.IsNullOrWhiteSpace(postId))
             {
-                throw new ArgumentException("Post ID cannot be null or empty.");
+                return new Result<string>(false, "Post ID cannot be null or empty.", string.Empty);
             }
 
             var dialogs = await _client.Messages_GetAllDialogs();
             var channel = dialogs.chats.Values
-                .OfType<TL.Channel>()
-                .FirstOrDefault(c => c.title.Equals(channelName, StringComparison.OrdinalIgnoreCase));
+                .OfType<Channel>()
+                .FirstOrDefault(c => c.ID.ToString() == _channelId);
 
             if (channel == null)
             {
-                throw new Exception("Channel not found.");
+                return new Result<string>(false, "Channel not found.", string.Empty);
             }
 
             if (!string.IsNullOrEmpty(channel.username))
             {
-                return $"https://t.me/{channel.username}/{postId}";
+                return new Result<string>(true, "Post link generated successfully", $"https://t.me/{channel.username}/{postId}");
             }
             else
             {
-                return $"https://t.me/c/{channel.id}/{postId}";
+                return new Result<string>(true, "Post link generated successfully", $"https://t.me/c/{channel.id}/{postId}");
             }
         }
     }
