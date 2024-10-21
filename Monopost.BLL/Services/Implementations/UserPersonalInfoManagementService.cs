@@ -51,7 +51,7 @@ namespace Monopost.BLL.Services.Implementations
             }
             catch
             {
-                logger.Warning("Result: Failure\nReason: Template not found.");
+                logger.Warning("Result: Failure\nReason: User with such Id does not exist.");
                 return new Result(false, "User with such Id does not exist.");
             }
 
