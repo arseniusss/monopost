@@ -41,10 +41,17 @@ namespace Monopost.Web
 
             ServiceProvider = serviceCollection.BuildServiceProvider();
 
+            //Я ДОДАЛА
+
+            string outputDirectory = Environment.GetEnvironmentVariable("OUTPUT_DIRECTORY");
+            if (string.IsNullOrEmpty(outputDirectory))
+            {
+                outputDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Monopost");
+                Directory.CreateDirectory(outputDirectory);
+            }
 
             DataScienceSavingPdfService pdf = new DataScienceSavingPdfService("Jar_statement_13.10.2024_193241.csv");
-        
-            pdf.SaveResults("FinalReport.pdf");
+            pdf.SaveResults("FinalReport.pdf", outputDirectory);
             base.OnStartup(e);
         }
 

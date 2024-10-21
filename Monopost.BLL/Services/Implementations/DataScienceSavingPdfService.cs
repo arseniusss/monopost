@@ -155,11 +155,21 @@ namespace Monopost.BLL.Services.Implementations
             }
         }
 
-        public Result<string> SaveResults(string fileName)
+        //Залишається оновити параметри SaveResults() і те саме в інтерфейсі
+        public Result<string> SaveResults(string fileName, string outputDirectory)
         {
             try
             {
-                logger.Information($"Saving results to file {fileName}");
+                if (!Directory.Exists(outputDirectory))
+                {
+                    //return new Result<string>(false, $"Output directory does not exist: {outputDirectory}");
+                    logger.Warning($"Output directory does not exist: {outputDirectory}");
+                    Directory.CreateDirectory(outputDirectory);
+                    logger.Information($"Created output directory: {outputDirectory}");
+                }
+
+                string fullPath = Path.Combine(outputDirectory, fileName);
+                logger.Information($"Saving results to file {fullPath}");
                 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
                 DateTime? from = null;
@@ -211,18 +221,23 @@ namespace Monopost.BLL.Services.Implementations
                     withdrawalCountByTimeOfDay,
                     withdrawalAmountsByTimeOfDay,
                     withdrawalSumByDayOfWeek,
-                    "StatisticsReport.pdf"
+                    Path.Combine(outputDirectory, "StatisticsReport.pdf")
                 );
                 logger.Information("Statistics report generated.");
 
-                GenerateChartsPdf(chartPaths, "ChartsReport.pdf");
+                GenerateChartsPdf(chartPaths, Path.Combine(outputDirectory, "ChartsReport.pdf"));
+
                 logger.Information("Charts report generated.");
 
-                MergePdfs("StatisticsReport.pdf", "ChartsReport.pdf", "FinalReport.pdf");
+                MergePdfs(
+                Path.Combine(outputDirectory, "StatisticsReport.pdf"),
+                Path.Combine(outputDirectory, "ChartsReport.pdf"),
+                fullPath
+            );
+
                 logger.Information($"Final report generated.");
 
-
-                return new Result<string>(true, $"Final report generated: {fileName}");
+                return new Result<string>(true, $"Final report generated: {fullPath}");
             }
             catch( Exception ex )
             {
