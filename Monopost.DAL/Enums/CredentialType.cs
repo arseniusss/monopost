@@ -5,7 +5,11 @@
         MonobankAPIToken,
         TelegramAppID,
         TelegramAppHash,
-        FacebookAccessToken,
-        FacebookPageID,
+        TelegramChannelId,
+        TelegramPhoneNumber,
+        TelegramPassword,
+        InstagramAccessToken,
+        InstagramUserId,
+        ImgbbApiKey
     }
 }

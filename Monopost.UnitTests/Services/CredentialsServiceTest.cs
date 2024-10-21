@@ -97,7 +97,7 @@ namespace Monopost.UnitTests.Services
             {
                 Id = 1,
                 AuthorId = user.Id,
-                CredentialType = CredentialType.FacebookAccessToken,
+                CredentialType = CredentialType.InstagramAccessToken,
                 CredentialValue = "someValue",
                 StoredLocally = true,
                 LocalPath = null
@@ -116,7 +116,7 @@ namespace Monopost.UnitTests.Services
             {
                 Id = 1,
                 AuthorId = 99,
-                CredentialType = CredentialType.FacebookPageID,
+                CredentialType = CredentialType.TelegramChannelId,
                 CredentialValue = "someValue",
                 StoredLocally = false,
                 LocalPath = null
@@ -350,7 +350,7 @@ namespace Monopost.UnitTests.Services
             {
                 Id = 2,
                 AuthorId = user.Id,
-                CredentialType = CredentialType.FacebookAccessToken,
+                CredentialType = CredentialType.InstagramAccessToken,
                 CredentialValue = "someValue2",
                 StoredLocally = true,
                 LocalPath = "path/to/credential"
@@ -387,7 +387,7 @@ namespace Monopost.UnitTests.Services
             {
                 Id = 2,
                 AuthorId = user.Id,
-                CredentialType = CredentialType.FacebookAccessToken,
+                CredentialType = CredentialType.InstagramAccessToken,
                 CredentialValue = "someValue2",
                 StoredLocally = true,
                 LocalPath = "path/to/credential"
@@ -446,7 +446,7 @@ namespace Monopost.UnitTests.Services
             {
                 Id = 2,
                 AuthorId = user.Id,
-                CredentialType = CredentialType.FacebookAccessToken,
+                CredentialType = CredentialType.InstagramAccessToken,
                 CredentialValue = "someValue2",
                 StoredLocally = true,
                 LocalPath = "path/to/credential"

@@ -6,7 +6,7 @@ using Monopost.DAL.Repositories.Interfaces;
 
 namespace Monopost.DAL.Repositories.Implementations
 {
-    public class CredentialRepository: ICredentialRepository
+    public class CredentialRepository : ICredentialRepository
     {
         private readonly AppDbContext _context;
 
