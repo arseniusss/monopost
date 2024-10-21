@@ -129,8 +129,8 @@ namespace Monopost.BLL.Services.Implementations
             }
         }
 
-
-        private void MergePdfs(string statsPdfPath, string chartsPdfPath, string outputPdfPath)
+        //private -> public
+        public void MergePdfs(string statsPdfPath, string chartsPdfPath, string outputPdfPath)
         {
             PdfDocument outputDocument = new PdfDocument();
 
@@ -155,17 +155,14 @@ namespace Monopost.BLL.Services.Implementations
             }
         }
 
-        //Залишається оновити параметри SaveResults() і те саме в інтерфейсі
         public Result<string> SaveResults(string fileName, string outputDirectory)
         {
             try
             {
                 if (!Directory.Exists(outputDirectory))
                 {
-                    //return new Result<string>(false, $"Output directory does not exist: {outputDirectory}");
-                    logger.Warning($"Output directory does not exist: {outputDirectory}");
-                    Directory.CreateDirectory(outputDirectory);
-                    logger.Information($"Created output directory: {outputDirectory}");
+                    return new Result<string>(false, $"Output directory does not exist: {outputDirectory}");
+                   
                 }
 
                 string fullPath = Path.Combine(outputDirectory, fileName);
