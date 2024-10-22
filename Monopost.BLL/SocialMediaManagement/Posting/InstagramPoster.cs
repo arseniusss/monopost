@@ -2,10 +2,15 @@
 using Monopost.BLL.SocialMediaManagement.Models;
 using Newtonsoft.Json;
 using Monopost.DAL.Enums;
+using Monopost.Logging;
+using Serilog;
+
 namespace Monopost.BLL.SocialMediaManagement.Posting
 {
     public class InstagramPoster : ISocialMediaPoster
     {
+        private ILogger logger = LoggerConfig.GetLogger();
+
         private readonly HttpClient _client;
         private readonly string _accessToken;
         private readonly string _userId;
@@ -17,6 +22,7 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
             _accessToken = accessToken;
             _userId = userId;
             _imgbbApiKey = imgbbApiKey;
+            logger.Information("Instagram poster created");
         }
 
         private async Task<List<string>> UploadImagesAsync(List<string> imagePaths)

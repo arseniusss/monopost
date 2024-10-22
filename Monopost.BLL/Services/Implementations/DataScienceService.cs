@@ -1,5 +1,4 @@
 ﻿using ScottPlot;
-using System.Drawing;
 using System.Text;
 using Monopost.BLL.Enums;
 using Monopost.BLL.Services.Interfaces;
@@ -239,11 +238,11 @@ namespace Monopost.BLL.Services.Implementations
         {
             return hour switch
             {
-                < 6 => "Ніч",
-                < 12 => "Ранок",
-                < 18 => "День",
-                < 22 => "Вечір",
-                _ => "Ніч",
+                < 6 => "Night",
+                < 12 => "Morning",
+                < 18 => "Day",
+                < 22 => "Evening",
+                _ => "Night",
             };
         }
 
