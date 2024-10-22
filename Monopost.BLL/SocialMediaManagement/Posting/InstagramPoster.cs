@@ -141,22 +141,38 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
                     return new Result<PostPageAndId>(false, "Failed to create media objects.", new PostPageAndId("-1", "-1", SocialMediaType.Instagram));
                 }
             }
-            string carouselId = string.Empty;
+
             try
             {
-                carouselId = await CreateCarouselAsync(mediaIds, text);
-                if (carouselId == null)
+                if (mediaIds.Count == 1) 
                 {
-                    return new Result<PostPageAndId>(false, "Faild to create carousel", new PostPageAndId("-1", "-1", SocialMediaType.Instagram));
+                    var response = await _client.PostAsync($"https://graph.facebook.com/{_userId}/media_publish?creation_id={mediaIds[0]}&access_token={_accessToken}", null);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var publishedId = JsonConvert.DeserializeObject<dynamic>(await response.Content.ReadAsStringAsync()).id;
+                        return new Result<PostPageAndId>(true, "Posted successfully", new PostPageAndId(_userId, publishedId, SocialMediaType.Instagram));
+                    }
+                    else
+                    {
+                        return new Result<PostPageAndId>(false, $"Error publishing photo: {response.StatusCode}, {await response.Content.ReadAsStringAsync()}", new PostPageAndId("-1", "-1", SocialMediaType.Instagram));
+                    }
                 }
-                return new Result<PostPageAndId>(true, "Posted successfully", new PostPageAndId(_userId, carouselId, SocialMediaType.Instagram));
+                else 
+                {
+                    string carouselId = await CreateCarouselAsync(mediaIds, text);
+                    if (carouselId == null)
+                    {
+                        return new Result<PostPageAndId>(false, "Failed to create carousel", new PostPageAndId("-1", "-1", SocialMediaType.Instagram));
+                    }
+                    return new Result<PostPageAndId>(true, "Posted successfully", new PostPageAndId(_userId, carouselId, SocialMediaType.Instagram));
+                }
             }
             catch (Exception e)
             {
-                return new Result<PostPageAndId>(false, $"Failed to create carousel: {e.Message}", new PostPageAndId("-1", "-1", SocialMediaType.Instagram));
+                return new Result<PostPageAndId>(false, $"Failed to create post: {e.Message}", new PostPageAndId("-1", "-1", SocialMediaType.Instagram));
             }
         }
-        
+
         public async Task<Result<EngagementStats>> GetEngagementStatsAsync(string postId)
         {
             if (!string.IsNullOrEmpty(postId))
