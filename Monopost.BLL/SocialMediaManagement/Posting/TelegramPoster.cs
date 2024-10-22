@@ -1,19 +1,26 @@
 ﻿using TL;
-using TL.Methods;
 using WTelegram;
 using Monopost.BLL.Models;
 using Monopost.BLL.SocialMediaManagement.Models;
 using Monopost.DAL.Enums;
+using Monopost.Logging;
+using Serilog;
 
 namespace Monopost.BLL.SocialMediaManagement.Posting
 {
     public class TelegramPoster : ISocialMediaPoster
     {
+        private ILogger logger = LoggerConfig.GetLogger();
+
         private readonly Client _client;
         private readonly string _channelId;
         public TelegramPoster(string apiId, string apiHash, string phoneNumber, string channelId, string? password = null)
         {
+            string sessionFilePath = "telegram_session_.dat";
+
+            logger.Information($"api_id={apiId}, apiHash={apiHash}, phone={phoneNumber}, pass={password}");
             _client = new Client(Config);
+
             _channelId = channelId;
             string Config(string what)
             {
@@ -24,8 +31,8 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
                     "phone_number" => phoneNumber,
                     "password" => password ?? string.Empty,
                     "verification_code" => GetVerificationCode(),
-                    "session_pathname" => "telegram_session.dat",
-                    _ => string.Empty
+                    "session_pathname" => sessionFilePath,
+                    _ => null // не чіпати бо все впаде
                 };
             }
 
@@ -34,11 +41,13 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
                 Console.Write("Code: ");
                 return Console.ReadLine() ?? string.Empty;
             }
+            // _client.LoginUserIfNeeded().Wait();
         }
 
         private async Task LoginAsync()
         {
             var user = await _client.LoginUserIfNeeded();
+            logger.Information($"logging into telegram");
         }
 
         public async Task<Result<PostPageAndId>> CreatePostAsync(string text, List<string> filePaths)
@@ -54,7 +63,6 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
             {
                 return new Result<PostPageAndId>(false, "Chat is not found", new PostPageAndId("-1", "-1", SocialMediaType.Telegram));
             }
-
             var inputMedias = new List<InputMedia>();
 
             var fileResults = await Task.WhenAll(filePaths.Select(filePath => _client.UploadFileAsync(filePath)));
@@ -101,7 +109,6 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
             if (message == null)
             {
                 return new Result<EngagementStats>(false, "Message not found", new EngagementStats(-1, -1, -1, -1));
-                throw new Exception("Message not found");
             }
 
             int views = 0;
@@ -113,7 +120,8 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
             {
                 views = msg.views;
                 forwards = msg.forwards;
-                comments = msg.replies.replies;
+                if(msg.replies != null && msg.replies?.replies != null)
+                    comments = msg.replies.replies;
 
                 if (msg.reactions != null && msg.reactions.results != null)
                 {

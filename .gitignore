@@ -9,6 +9,8 @@
 .vs/
 
 **/.sonarqube/
+**/tempdelete/
 
 for try
 dotnet.yml
+constants.txt

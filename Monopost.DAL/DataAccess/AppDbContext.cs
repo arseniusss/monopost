@@ -56,12 +56,6 @@ namespace Monopost.DAL.DataAccess
                 .WithMany(u => u.Restrictions)
                 .HasForeignKey(r => r.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<PostMedia>()
-                .HasOne(psm => psm.Post)
-                .WithMany(p => p.PostMedia)
-                .HasForeignKey(psm => psm.PostId)
-                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

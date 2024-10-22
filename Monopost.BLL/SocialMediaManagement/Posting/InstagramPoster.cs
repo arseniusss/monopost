@@ -145,6 +145,10 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
             try
             {
                 carouselId = await CreateCarouselAsync(mediaIds, text);
+                if (carouselId == null)
+                {
+                    return new Result<PostPageAndId>(false, "Faild to create carousel", new PostPageAndId("-1", "-1", SocialMediaType.Instagram));
+                }
                 return new Result<PostPageAndId>(true, "Posted successfully", new PostPageAndId(_userId, carouselId, SocialMediaType.Instagram));
             }
             catch (Exception e)

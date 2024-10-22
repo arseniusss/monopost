@@ -257,7 +257,6 @@ namespace Monopost.BLL.Services
 
         public async Task<Result<IEnumerable<DecodedCredential>>> GetDecodedCredentialsByUserIdAsync(int userId)
         {
-            // Step 1: Retrieve the credentials
             var result = await GetCredentialsByUserIdAsync(userId);
 
             if (!result.Success)
@@ -281,14 +280,15 @@ namespace Monopost.BLL.Services
                     CredentialType = credential.CredentialType,
                     CredentialValue = credential.StoredLocally && !string.IsNullOrEmpty(credential.LocalPath)
                         ? await DecodeCredentialValueFromFileAsync(credential)
-                        : credential.CredentialValue ?? string.Empty // Use the original value if not stored locally
+                        : credential.CredentialValue ?? string.Empty
                 };
                 decodedCredentials.Add(decodedCredential);
+                logger.Information($"Decoded credential: {decodedCredential.Id}, {decodedCredential.CredentialType}, val={decodedCredential.CredentialValue}");
             }
 
             if (decodedCredentials.Any(c => string.IsNullOrEmpty(c.CredentialValue)))
             {
-                logger.Warning("Result:Failure\nReason: One or more credentials have an empty value.");
+                logger.Warning($"Result:Failure\nReason: One or more credentials have an empty value.");
                 return new Result<IEnumerable<DecodedCredential>>(false, "One or more credentials have an empty value.");
             }
 

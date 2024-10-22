@@ -1,16 +1,52 @@
 ﻿using Monopost.BLL.SocialMediaManagement.Posting;
-// See https://aka.ms/new-console-template for more information
+using Monopost.Logging;
+using WTelegram;
+using Serilog;
 
-var accessToken = "EAAa9xhnJKfcBOxW4d1STZAZA8LYF0rPHBkX6KT3TnHAB97dlo45FWUEat2EQLAL4b82ZCcsGNGqnFVYNThCaN0WNgZBNJNncPgeXVNOl2zfJivDs1RTYypmPZCgytt9ToavUYjxcfqpmW5NyJ1P37CtywduAeBdpOsYZBPLZBc4N2okJGee6IZCBpqGKJ52eM2RF";
-var userId = "17841459372027912";
-var imgbbApiKey = "e0a110edf2286c29a1a29bf2b6a257ad";
+LoggerConfig.ConfigureLogging();
+TelegramPoster poster = new TelegramPoster("10439443", "2e780917ebaa32ded4269e5a4f14cf3a", "+380662706287", "-1002255912507", "&37ZuY9TYqngH^o7PEoH9SEYMQm2UazWN#awQN9mfnEtwvNnG6Mx5DzNXg^2FF&EK4&cyNr$6ibfB8sHM2YDY%^DpX9&2aVLS#bdt&Lhq4WtNJ^Wb%S2P#ju$a!qeWsT");
+// TelegramPoster poster = new TelegramPoster("25172074", "df2b1683a35445f026d8802d456535a7", "+380957379130", "-1002255912507");
+await poster.LoginAsync();
+public class TelegramPoster
+{
+    private ILogger logger = LoggerConfig.GetLogger();
 
-var instagramPoster = new InstagramPoster(accessToken, userId, imgbbApiKey);
+    private readonly Client _client;
+    private readonly string _channelId;
+    public TelegramPoster(string apiId, string apiHash, string phoneNumber, string channelId, string? password = null)
+    {
+        string sessionFilePath = "telegram_session_.dat";
 
-// Upload images
-// var imagePaths = new List<string> { "D:\\1.jpg", "D:\\2.jpg" };
-var imagePaths = new List<string>();
-var post = await instagramPoster.CreatePostAsync("text", imagePaths);
+        logger.Information($"api_id={apiId}, apiHash={apiHash}, phone={phoneNumber}, pass={password}");
+        _client = new Client(Config);
+        logger.Information("hi");
 
-// Fetch metrics
-// await instagramPoster.FetchLikesAndCommentsAsync(carouselId);
+        _channelId = channelId;
+        string Config(string what)
+        {
+            return what switch
+            {
+                "api_id" => apiId,
+                "api_hash" => apiHash,
+                "phone_number" => phoneNumber,
+                "password" => password ?? string.Empty,
+                "verification_code" => GetVerificationCode(),
+                "session_pathname" => sessionFilePath,
+                _ => null,
+            };
+        }
+
+        string GetVerificationCode()
+        {
+            Console.Write("Code: ");
+            return Console.ReadLine() ?? string.Empty;
+        }
+        // _client.LoginUserIfNeeded().Wait();
+    }
+
+    public async Task LoginAsync()
+    {
+        var user = await _client.LoginUserIfNeeded();
+        logger.Information($"logging into telegram");
+    }
+}
