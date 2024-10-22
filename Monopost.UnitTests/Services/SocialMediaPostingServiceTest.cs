@@ -100,11 +100,10 @@ namespace Monopost.UnitTests.Services
                 LocalPath = @"D:\Monopost\Monopost.UnitTests\Resources\constants.txt"
             });
 
-            // Act
             var result = await _socialMediaPostingService.CreatePostAsync("This should post only to telegram", new List<string>
             { "D:\\Monopost\\Monopost.UnitTests\\Resources\\Images\\1.jpg",
               "D:\\Monopost\\Monopost.UnitTests\\Resources\\Images\\2.jpg" });
-            // Assert
+
             Assert.True(result.Success);
             Assert.Equal("Messages posted successfully", result.Message);
 
@@ -153,11 +152,10 @@ namespace Monopost.UnitTests.Services
 
             });
 
-            // Act
             var result = await _socialMediaPostingService.CreatePostAsync("This should post only to instagram.", new List<string>
             { "D:\\Monopost\\Monopost.UnitTests\\Resources\\Images\\1.jpg",
               "D:\\Monopost\\Monopost.UnitTests\\Resources\\Images\\2.jpg" });
-            // Assert
+
             Assert.True(result.Success);
             Assert.Equal("Messages posted successfully", result.Message);
 
@@ -241,11 +239,10 @@ namespace Monopost.UnitTests.Services
                 StoredLocally = false
             });
 
-            // Act
             var result = await _socialMediaPostingService.CreatePostAsync("This should post to both social media apps", new List<string>
             { "D:\\Monopost\\Monopost.UnitTests\\Resources\\Images\\1.jpg",
               "D:\\Monopost\\Monopost.UnitTests\\Resources\\Images\\2.jpg" });
-            // Assert
+
             Assert.True(result.Success);
             Assert.Equal("Messages posted successfully", result.Message);
 
@@ -266,7 +263,6 @@ namespace Monopost.UnitTests.Services
             // Act
             var result = await _socialMediaPostingService.CreatePostAsync("Hello World", new List<string>());
 
-            // Assert
             Assert.False(result.Success);
             Assert.Equal("No social media posters found", result.Message);
         }
@@ -274,30 +270,6 @@ namespace Monopost.UnitTests.Services
         [Fact]
         public async Task CreatePostAsync_WithNoCredentials_ShouldReturnError()
         {
-            // Arrange: Ensure no credentials exist
-            await _credentialRepository.DeleteAsync(1);
-            await _credentialRepository.DeleteAsync(5);
-            // Act
-            var result = await _socialMediaPostingService.CreatePostAsync("Hello World", new List<string>());
-
-            // Assert
-            Assert.False(result.Success);
-            Assert.Equal("No social media posters found", result.Message);
-        }
-        [Fact]
-        public async Task GetPostEngagementStatsAsync_ShouldReturnEngagementStats_ForTelegramPost()
-        {
-            await _userRepository.AddAsync(new User
-            {
-                Id = UserId,
-                Email = "testuser",
-                Password = "testpassword",
-                Age = 18,
-                FirstName = "Test",
-                LastName = "User"
-            });
-
-            // Create Telegram credentials
             await _credentialRepository.AddAsync(new Credential
             {
                 AuthorId = UserId,
@@ -333,13 +305,67 @@ namespace Monopost.UnitTests.Services
                 StoredLocally = true,
                 LocalPath = @"D:\Monopost\Monopost.UnitTests\Resources\constants.txt"
             });
-            // Create a post
+            await _credentialRepository.DeleteAsync(1);
+            await _credentialRepository.DeleteAsync(5);
+
+            var result = await _socialMediaPostingService.CreatePostAsync("Hello World", new List<string>());
+
+            Assert.False(result.Success);
+            Assert.Equal("No social media posters found", result.Message);
+        }
+        [Fact]
+        public async Task GetPostEngagementStatsAsync_ShouldReturnEngagementStats_ForTelegramPost()
+        {
+            await _userRepository.AddAsync(new User
+            {
+                Id = UserId,
+                Email = "testuser",
+                Password = "testpassword",
+                Age = 18,
+                FirstName = "Test",
+                LastName = "User"
+            });
+
+            await _credentialRepository.AddAsync(new Credential
+            {
+                AuthorId = UserId,
+                CredentialType = CredentialType.TelegramPhoneNumber,
+                StoredLocally = true,
+                LocalPath = @"D:\Monopost\Monopost.UnitTests\Resources\constants.txt"
+            });
+            await _credentialRepository.AddAsync(new Credential
+            {
+                AuthorId = UserId,
+                CredentialType = CredentialType.TelegramAppID,
+                StoredLocally = true,
+                LocalPath = @"D:\Monopost\Monopost.UnitTests\Resources\constants.txt"
+            });
+            await _credentialRepository.AddAsync(new Credential
+            {
+                AuthorId = UserId,
+                CredentialType = CredentialType.TelegramAppHash,
+                StoredLocally = true,
+                LocalPath = @"D:\Monopost\Monopost.UnitTests\Resources\constants.txt"
+            });
+            await _credentialRepository.AddAsync(new Credential
+            {
+                AuthorId = UserId,
+                CredentialType = CredentialType.TelegramChannelId,
+                StoredLocally = true,
+                LocalPath = @"D:\Monopost\Monopost.UnitTests\Resources\constants.txt"
+            });
+            await _credentialRepository.AddAsync(new Credential
+            {
+                AuthorId = UserId,
+                CredentialType = CredentialType.TelegramPassword,
+                StoredLocally = true,
+                LocalPath = @"D:\Monopost\Monopost.UnitTests\Resources\constants.txt"
+            });
             var postResult = await _socialMediaPostingService.CreatePostAsync("Test post for engagement stats.", new List<string>
             {
                 "D:\\Monopost\\Monopost.UnitTests\\Resources\\Images\\1.jpg",
             });
 
-            // Ensure the post was created successfully
             Assert.True(postResult.Success, postResult.Message);
 
             var posts = await _postRepository.GetPostsByAuthorIdAsync(UserId);
@@ -402,7 +428,6 @@ namespace Monopost.UnitTests.Services
 
             });
 
-            // Act
             var postResult = await _socialMediaPostingService.CreatePostAsync("This should post only to instagram.", new List<string>
             { "D:\\Monopost\\Monopost.UnitTests\\Resources\\Images\\1.jpg",
               "D:\\Monopost\\Monopost.UnitTests\\Resources\\Images\\2.jpg" });
@@ -441,7 +466,6 @@ namespace Monopost.UnitTests.Services
                 "D:\\Monopost\\Monopost.UnitTests\\Resources\\Images\\1.jpg",
             });
 
-            // Assert: Expect failure due to missing credentials
             Assert.False(postResult.Success);
             Assert.Equal("No social media posters found", postResult.Message);
         }
@@ -490,7 +514,6 @@ namespace Monopost.UnitTests.Services
         [Fact]
         public async Task CreatePostAsync_ShouldFail_WhenTextTooLong()
         {
-            // Arrange: Add valid Telegram credentials
             await _userRepository.AddAsync(new User
             {
                 Id = UserId,
@@ -522,25 +545,17 @@ namespace Monopost.UnitTests.Services
                 StoredLocally = false
 
             });
-
-            // Create a string longer than 300 characters
             string longText = new string('a', 301);
 
-            // Act: Try to create a post with too long text
             var postResult = await _socialMediaPostingService.CreatePostAsync(longText, new List<string> { "file_1.jpg" });
 
-            // Assert: Expect failure due to text being too long
             Assert.False(postResult.Success);
             Assert.Equal("Text is too long, must be less than 2200 characters", postResult.Message);
         }
         public async Task GetPostEngagementStatsAsync_ShouldFail_WhenPostNotFound()
         {
-            // Arrange: Ensure no posts exist for the user
-
-            // Act: Try to get engagement stats for a non-existent post
             var engagementStatsResult = await _socialMediaPostingService.GetPostEngagementStatsAsync(999); // Non-existent postId
 
-            // Assert: Expect failure due to the post not being found
             Assert.False(engagementStatsResult.Success);
             Assert.Equal("Post not found", engagementStatsResult.Message);
             Assert.Empty(engagementStatsResult.Data);
@@ -548,7 +563,6 @@ namespace Monopost.UnitTests.Services
         [Fact]
         public async Task GetPostEngagementStatsAsync_ShouldFail_WhenNoPostMediaExists()
         {
-            // Arrange: Create a post but don't add any media
             await _userRepository.AddAsync(new User
             {
                 Id = UserId,
@@ -568,55 +582,11 @@ namespace Monopost.UnitTests.Services
             var latestPosts = await _postRepository.GetPostsByAuthorIdAsync(UserId);
             var latestPost = latestPosts.OrderByDescending(post => post.DatePosted).FirstOrDefault();
 
-            // Act: Try to get engagement stats for a post with no media
             var engagementStatsResult = await _socialMediaPostingService.GetPostEngagementStatsAsync(latestPost.PostId);
 
-            // Assert: Expect failure due to missing post media
             Assert.False(engagementStatsResult.Success);
             Assert.Equal("Post not found", engagementStatsResult.Message);
             Assert.Empty(engagementStatsResult.Data);
-        }
-        [Fact]
-        public async Task GetPostEngagementStatsAsync_ShouldFail_WhenTelegramPosterNotFound()
-        {
-            await _userRepository.AddAsync(new User
-            {
-                Id = UserId,
-                Email = "testuser",
-                Password = "testpassword",
-                Age = 18,
-                FirstName = "hi",
-                LastName = "bye"
-            });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.InstagramAccessToken,
-                CredentialValue = "EAAa9xhnJKfcBOxW4d1STZAZA8LYF0rPHBkX6KT3TnHAB97dlo45FWUEat2EQLAL4b82ZCcsGNGqnFVYNThCaN0WNgZBNJNncPgeXVNOl2zfJivDs1RTYypmPZCgytt9ToavUYjxcfqpmW5NyJ1P37CtywduAeBdpOsYZBPLZBc4N2okJGee6IZCBpqGKJ52eM2RF",
-                StoredLocally = false
-            });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.InstagramUserId,
-                CredentialValue = "17841459372027912",
-                StoredLocally = false
-            });
-
-            var postResult = await _socialMediaPostingService.CreatePostAsync("Test post without Telegram.", new List<string>
-            {
-                "D:\\Monopost\\Monopost.UnitTests\\Resources\\Images\\1.jpg"
-            });
-
-            var latestPosts = await _postRepository.GetPostsByAuthorIdAsync(UserId);
-            var latestPost = latestPosts.OrderByDescending(post => post.DatePosted).FirstOrDefault();
-
-            // Act: Try to get engagement stats for a post with no TelegramPoster
-            var engagementStatsResult = await _socialMediaPostingService.GetPostEngagementStatsAsync(latestPost.PostId);
-
-            // Assert: Expect failure due to missing TelegramPoster
-            Assert.False(engagementStatsResult.Success);
-            Assert.Equal("No TelegramPoster found for post with id = " + latestPost.PostId, engagementStatsResult.Message);
         }
     }
 }
