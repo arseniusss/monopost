@@ -41,8 +41,6 @@ namespace Monopost.Web
 
             ServiceProvider = serviceCollection.BuildServiceProvider();
 
-            //Я ДОДАЛА
-
             string outputDirectory = Environment.GetEnvironmentVariable("OUTPUT_DIRECTORY");
             if (string.IsNullOrEmpty(outputDirectory))
             {
