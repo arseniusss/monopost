@@ -29,12 +29,8 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
                 {
                     var imageUrl = await UploadImageAsync(imagePath);
                     uploadedUrls.Add(imageUrl);
-                    Console.WriteLine($"Uploaded {imagePath}: {imageUrl}");
                 }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"Error uploading {imagePath}: {e}");
-                }
+                catch {}
             }
 
             return uploadedUrls;
@@ -79,11 +75,6 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
                 {
                     var mediaId = JsonConvert.DeserializeObject<dynamic>(await response.Content.ReadAsStringAsync()).id;
                     mediaIds.Add(mediaId.ToString());
-                    Console.WriteLine($"Created media object: {mediaId} for URL: {url}");
-                }
-                else
-                {
-                    Console.WriteLine($"Error creating media object for {url}: {response.StatusCode}, {await response.Content.ReadAsStringAsync()}");
                 }
             }
 
@@ -98,24 +89,15 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
             if (response.IsSuccessStatusCode)
             {
                 var creationId = JsonConvert.DeserializeObject<dynamic>(await response.Content.ReadAsStringAsync()).id;
-                Console.WriteLine($"Carousel container created with ID: {creationId}");
 
                 var publishResponse = await _client.PostAsync($"https://graph.facebook.com/{_userId}/media_publish?creation_id={creationId}&access_token={_accessToken}", null);
 
                 if (publishResponse.IsSuccessStatusCode)
                 {
                     var publishedId = JsonConvert.DeserializeObject<dynamic>(await publishResponse.Content.ReadAsStringAsync()).id;
-                    Console.WriteLine($"Carousel published successfully with ID: {publishedId}");
                     return publishedId;
                 }
-                else
-                {
-                    Console.WriteLine($"Error publishing carousel: {publishResponse.StatusCode}, {await publishResponse.Content.ReadAsStringAsync()}");
-                }
-            }
-            else
-            {
-                Console.WriteLine($"Error creating carousel container: {response.StatusCode}, {await response.Content.ReadAsStringAsync()}");
+                
             }
 
             return null;
@@ -156,7 +138,7 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
                 return new Result<PostPageAndId>(false, $"Failed to create carousel: {e.Message}", new PostPageAndId("-1", "-1", SocialMediaType.Instagram));
             }
         }
-        
+
         public async Task<Result<EngagementStats>> GetEngagementStatsAsync(string postId)
         {
             if (!string.IsNullOrEmpty(postId))

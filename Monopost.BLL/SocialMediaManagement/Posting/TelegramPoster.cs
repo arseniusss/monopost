@@ -41,7 +41,6 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
                 Console.Write("Code: ");
                 return Console.ReadLine() ?? string.Empty;
             }
-            // _client.LoginUserIfNeeded().Wait();
         }
 
         private async Task LoginAsync()

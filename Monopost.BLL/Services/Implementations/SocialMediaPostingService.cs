@@ -87,59 +87,98 @@ namespace Monopost.BLL.Services
             return _socialMediaPosters.Count != 0;
         }
 
-        public async Task<Result<bool>> CreatePostAsync(string text, List<string> filesToUpload)
+        public async Task<Result<bool>> CreatePostAsync(string text, List<string> filesToUpload, List<int> posterIds = null)
         {
-            logger.Information($"Trying to create a post with text={text} anf {filesToUpload.Count} files");
+            logger.Information($"Trying to create a post with text='{text}' and {filesToUpload.Count} files");
+
+            // Check if any social media posters are available
             if (!AddPosters())
             {
                 logger.Warning("No social media posters found");
                 return new Result<bool>(false, "No social media posters found");
             }
 
+            // Validate the number of files to upload
             if (filesToUpload.Count == 0 || filesToUpload.Count > 10)
             {
                 logger.Warning("Invalid number of files to upload");
                 return new Result<bool>(false, "Invalid number of files to upload, must be between 1 and 10");
             }
 
-            if (text.Length > 300)
+            // Validate the length of the text
+            if (text.Length > 2200)
             {
                 logger.Warning("Text is too long");
                 return new Result<bool>(false, "Text is too long, must be less than 2200 characters");
             }
 
-            logger.Information($"Social media posters added");
-            var postsToSpecificSocialMedia = new List<PostPageAndId>();
-
-            foreach (var socialMediaPoster in _socialMediaPosters)
+            // Validate the posterIds if provided
+            if (posterIds != null)
             {
-                var result = socialMediaPoster.CreatePostAsync(text, filesToUpload).Result;
+                if (posterIds.Count == 0)
+                {
+                    logger.Warning("No poster IDs provided");
+                    return new Result<bool>(false, "Poster IDs cannot be empty");
+                }
+
+                // Validate each ID in posterIds
+                foreach (var id in posterIds)
+                {
+                    if (id < 0 || id >= _socialMediaPosters.Count)
+                    {
+                        logger.Warning($"Invalid poster ID: {id}. It must be between 0 and {_socialMediaPosters.Count - 1}");
+                        return new Result<bool>(false, $"Invalid poster ID: {id}. It must be between 0 and {_socialMediaPosters.Count - 1}");
+                    }
+                }
+            }
+
+            logger.Information("Social media posters added");
+
+            // Create posts for each selected social media poster
+            var postsToSpecificSocialMedia = new List<PostPageAndId>();
+            var postersToUse = posterIds != null && posterIds.Count > 0
+                ? posterIds.Select(id => _socialMediaPosters[id]).ToList()
+                : _socialMediaPosters;
+
+            foreach (var socialMediaPoster in postersToUse)
+            {
+                var result = await socialMediaPoster.CreatePostAsync(text, filesToUpload);
                 if (!result.Success || (result.Success && result.Data == null))
                 {
                     logger.Warning($"Result: Error, Reason: {result.Message}");
                     return new Result<bool>(false, result.Message);
                 }
-                logger.Information($"Debug, result.Data = {result.Data?.Id}, {result.Data?.Page}");
                 postsToSpecificSocialMedia.Add(result.Data);
             }
+
+            // Add the post to the repository
             await _postRepository.AddAsync(new Post
             {
                 AuthorId = _userId,
                 DatePosted = DateTime.Now,
             });
-            var latest_posts = _postRepository.GetPostsByAuthorIdAsync(_userId).Result?.ToList();
-            var latest_post = latest_posts.OrderByDescending(post => post.DatePosted).FirstOrDefault();
-            foreach(var post in postsToSpecificSocialMedia)
+
+            var latestPosts = await _postRepository.GetPostsByAuthorIdAsync(_userId);
+            var latestPost = latestPosts?.OrderByDescending(post => post.DatePosted).FirstOrDefault();
+            if (latestPost == null)
+            {
+                logger.Warning("Failed to get latest post");
+                return new Result<bool>(false, "Failed to get latest post");
+            }
+
+            // Add post media for each social media response
+            foreach (var post in postsToSpecificSocialMedia)
             {
                 await _postMediaRepository.AddAsync(new PostMedia
                 {
-                    PostId = latest_post.PostId,
+                    PostId = latestPost.PostId,
                     ChannelId = post.Page,
                     MessageId = post.Id,
                     SocialMediaName = post.SocialMedia,
                 });
             }
-            logger.Information("Post created usccessfully");
+
+            logger.Information("Post created successfully");
             return new Result<bool>(true, "Messages posted successfully");
         }
 

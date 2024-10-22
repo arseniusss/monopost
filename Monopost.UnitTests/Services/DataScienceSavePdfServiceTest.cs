@@ -14,7 +14,7 @@ namespace Monopost.UnitTests.Services
     public class DataScienceSavingPdfServiceTests : IDisposable
     {
         private const string TestFilePath = "Jar_statement_13.10.2024_193241.csv";
-        private const string OutputDirectory = "C:\\Users\\XPS\\Documents\\Monopost";
+        private const string OutputDirectory = "D:\\temp3";
         private bool _disposedValue;
 
         public DataScienceSavingPdfServiceTests()
@@ -45,15 +45,10 @@ namespace Monopost.UnitTests.Services
 
         private void CleanupTestEnvironment()
         {
-         if (File.Exists(TestFilePath))
-         {
-             File.Delete(TestFilePath);
-         }
-        
-         if (Directory.Exists(OutputDirectory))
-         {
-             Directory.Delete(OutputDirectory, true);
-         }
+            if (File.Exists(TestFilePath))
+            {
+                // File.Delete(TestFilePath);
+            }
         }
 
         public void Dispose()
@@ -85,7 +80,6 @@ namespace Monopost.UnitTests.Services
       
            Assert.False(result.Success);
            Assert.Contains("Output directory does not exist", result.Message);
-       }
-      
+       }      
     }
 }

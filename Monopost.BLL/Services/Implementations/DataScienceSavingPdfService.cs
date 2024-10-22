@@ -154,7 +154,7 @@ namespace Monopost.BLL.Services.Implementations
                 to.AddPage(from.Pages[i]);
             }
         }
-
+        [Obsolete]
         public Result<string> SaveResults(string fileName, string outputDirectory)
         {
             try

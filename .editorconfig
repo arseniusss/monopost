@@ -1,0 +1,22 @@
+root = true
+
+[Monopost.UnitTests/**/*.cs]
+dotnet_diagnostic.CS8603.severity = none
+dontet_diagnostic.CS8604.severity = none
+dotnet_diagnostic.CS8602.severity = none
+dotnet_diagnostic.CS8600.severity = none
+dotnet_analyzer_diagnostic.category-Style.severity = none
+dotnet_analyzer_diagnostic.category-Quality.severity = none
+dotnet_analyzer_diagnostic.category-Usage.severity = none
+
+[*.cs]
+# CS8600: Converting null literal or possible null value to non-nullable type.
+dotnet_diagnostic.CS8600.severity = none
+# CS8604: Possible null reference argument.
+dotnet_diagnostic.CS8604.severity = none
+# CS8602: Dereference of a possibly null reference.
+dotnet_diagnostic.CS8602.severity = none
+# CS8603: Possible null reference return.
+dotnet_diagnostic.CS8603.severity = none
+# CS0612: Type or member is obsolete
+dotnet_diagnostic.CS0612.severity = none

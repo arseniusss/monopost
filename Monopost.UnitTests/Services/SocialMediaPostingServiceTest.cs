@@ -243,6 +243,7 @@ namespace Monopost.UnitTests.Services
             { "D:\\Monopost\\Monopost.UnitTests\\Resources\\Images\\1.jpg",
               "D:\\Monopost\\Monopost.UnitTests\\Resources\\Images\\2.jpg" });
 
+            Assert.Equal(result.Success, true);
             Assert.True(result.Success);
             Assert.Equal("Messages posted successfully", result.Message);
 
@@ -260,7 +261,6 @@ namespace Monopost.UnitTests.Services
         [Fact]
         public async Task CreatePostAsync_NoSocialMediaPosters_ShouldReturnError()
         {
-            // Act
             var result = await _socialMediaPostingService.CreatePostAsync("Hello World", new List<string>());
 
             Assert.False(result.Success);
@@ -374,7 +374,7 @@ namespace Monopost.UnitTests.Services
             var latestPost = posts.OrderByDescending(post => post.DatePosted).FirstOrDefault();
             Assert.NotNull(latestPost);
 
-            Assert.Equal(latestPost.PostId, 1);
+            Assert.Equal(1, latestPost.PostId);
             var postMediaEntries = await _postMediaRepository.GetPostMediaByPostIdAsync(latestPost.PostId);
             Assert.NotEmpty(postMediaEntries);
 
@@ -388,10 +388,10 @@ namespace Monopost.UnitTests.Services
             var engagementStats = engagementStatsResult.Data.FirstOrDefault();
             Assert.NotNull(engagementStats);
             Assert.Equal(latestPost.PostId, engagementStats.PostMediaId);
-            Assert.Equal(engagementStats.Forwards, 0);
-            Assert.Equal(engagementStats.Views, 1);
-            Assert.Equal(engagementStats.Reactions, 0);
-            Assert.Equal(engagementStats.Comments, 0);
+            Assert.Equal(0, engagementStats.Forwards);
+            Assert.Equal(1, engagementStats.Views);
+            Assert.Equal(0, engagementStats.Reactions);
+            Assert.Equal(0, engagementStats.Comments);
         }
         [Fact]
         public async Task GetPostEngagementStatsAsync_ShouldReturnEngagementStats_ForInstagramPost()
@@ -452,11 +452,11 @@ namespace Monopost.UnitTests.Services
 
             var engagementStats = engagementStatsResult.Data.FirstOrDefault();
             Assert.NotNull(engagementStats);
-            Assert.Equal(latestPost.PostId, 1);
-            Assert.Equal(engagementStats.Forwards, 0);
-            Assert.Equal(engagementStats.Views, 0);
-            Assert.Equal(engagementStats.Reactions, 0);
-            Assert.Equal(engagementStats.Comments, 0);
+            Assert.Equal(1, latestPost.PostId);
+            Assert.Equal(0, engagementStats.Forwards);
+            Assert.Equal(0, engagementStats.Views);
+            Assert.Equal(0, engagementStats.Reactions);
+            Assert.Equal(0, engagementStats.Comments);
         }
         [Fact]
         public async Task CreatePostAsync_ShouldFail_WhenNoCredentials()
