@@ -1,7 +1,5 @@
 ﻿using Monopost.BLL.Models;
 using Monopost.DAL.Enums;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Monopost.BLL.Services.Interfaces
 {

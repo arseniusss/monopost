@@ -20,7 +20,6 @@ namespace Monopost.BLL.Services
         {
             _credentialRepository = credentialRepository;
             _userRepository = userRepository;
-            logger.Information($"Credential management service created");
         }
 
         public async Task<Result<CredentialModel>> AddCredentialAsync(CredentialModel model)
@@ -44,13 +43,13 @@ namespace Monopost.BLL.Services
                 logger.Warning($"Result: Failure\nReason: Invalid AuthorId: User does not exist.");
                 return new Result<CredentialModel>(false, "Invalid AuthorId: User does not exist.");
             }
-            try
-            {
-                await _credentialRepository.GetByIdAsync(model.Id);
+            
+            var credentialExists = await _credentialRepository.GetByIdAsync(model.Id);
+            
+            if (credentialExists != null) {
                 logger.Warning($"Result: Failure\nReason: Id is already taken.");
                 return new Result<CredentialModel>(false, "Id is already taken.");
             }
-            catch { };
 
             var existingUserCredentials = await _credentialRepository.GetByUserIdAsync(model.AuthorId);
             var credentialOfSameType = existingUserCredentials.Any(c => c.CredentialType == model.CredentialType);
@@ -143,21 +142,18 @@ namespace Monopost.BLL.Services
                 logger.Warning($"Result: Failure\nReason: Invalid AuthorId: User does not exist.");
                 return new Result<CredentialModel>(false, "Invalid AuthorId: User does not exist.");
             }
-            
-            try
-            {
-                await _credentialRepository.GetByIdAsync(model.Id);
-            }
-            catch
-            {
-                logger.Warning($"Result: Failure\nReason: Credential with such id doesnt exist.");
-                return new Result<CredentialModel>(false, "Credential with such id doesnt exist.");
-            }
           
             if (model == null)
             {
                 logger.Warning($"Result: Failure\nReason: Credential data is required.");
                 return new Result<CredentialModel>(false, "Credential data is required.");
+            }
+
+            var credentialExists = await _credentialRepository.GetByIdAsync(model.Id);
+            if (credentialExists == null)
+            {
+                logger.Warning($"Result: Failure\nReason: Credential with such id doesnt exist.");
+                return new Result<CredentialModel>(false, "Credential with such id doesnt exist.");
             }
 
             var existingUserCredentials = await _credentialRepository.GetByUserIdAsync(model.AuthorId);
@@ -187,15 +183,12 @@ namespace Monopost.BLL.Services
         public async Task<Result> DeleteCredentialAsync(int id)
         {
             logger.Information($"Trying to delete credential with id = {id}");
-            try
-            {
-                await _credentialRepository.GetByIdAsync(id);
-            }
-            catch
+            var existingCredential = await _credentialRepository.GetByIdAsync(id);
+            if (existingCredential == null)
             {
                 logger.Warning($"Result: Failure\nReason: Credential with id {id} not found.");
                 return new Result(false, $"Credential with id {id} not found.");
-            }
+            }   
 
             await _credentialRepository.DeleteAsync(id);
             logger.Information($"Result: Success\nMessage: Credential with id = {id} deleted successfully");

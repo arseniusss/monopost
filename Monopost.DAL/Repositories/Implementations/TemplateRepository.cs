@@ -16,15 +16,9 @@ namespace Monopost.DAL.Repositories.Implementations
 
         public async Task<Template> GetByIdAsync(int id)
         {
-            var template = await _context.Templates
+            return await _context.Templates
                 .Include(t => t.TemplateFiles)
                 .FirstOrDefaultAsync(t => t.Id == id);
-
-            if (template == null)
-            {
-                throw new ArgumentException($"Template with id {id} not found.");
-            }
-            return template;
         }
 
         public async Task<IEnumerable<Template>> GetAllAsync()
@@ -37,10 +31,12 @@ namespace Monopost.DAL.Repositories.Implementations
         public async Task AddAsync(Template template)
         {
             var templateExists = await _context.Templates.AnyAsync(t => t.Id == template.Id);
+
             if (templateExists)
             {
-                throw new ArgumentException($"Template with id {template.Id} already exists.");
+                return;
             }
+
             await _context.Templates.AddAsync(template);
 
             if (template.TemplateFiles != null && template.TemplateFiles.Count != 0)
@@ -115,10 +111,7 @@ namespace Monopost.DAL.Repositories.Implementations
             var template = await _context.Templates
                 .Include(t => t.TemplateFiles)
                 .FirstOrDefaultAsync(t => t.Id == templateId);
-            if(template == null)
-            {
-                throw new ArgumentException($"Template with id {templateId} not found.");
-            }
+
             return template;
         }
     }

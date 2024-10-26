@@ -22,7 +22,6 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
             _accessToken = accessToken;
             _userId = userId;
             _imgbbApiKey = imgbbApiKey;
-            logger.Information("Instagram poster created");
         }
 
         private async Task<List<string>> UploadImagesAsync(List<string> imagePaths)
@@ -59,6 +58,7 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
                 return result?.data.url;
             }
 
+            logger.Warning($"Error uploading image: {response.StatusCode}, {await response.Content.ReadAsStringAsync()}");
             throw new Exception($"Error uploading image: {response.StatusCode}, {await response.Content.ReadAsStringAsync()}");
         }
 
@@ -103,9 +103,7 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
                     var publishedId = JsonConvert.DeserializeObject<dynamic>(await publishResponse.Content.ReadAsStringAsync()).id;
                     return publishedId;
                 }
-                
             }
-
             return null;
         }
 
@@ -119,6 +117,7 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
 
                 if (uploadedUrls == null || !uploadedUrls.Any())
                 {
+                    logger.Warning("Failed to upload images.");
                     return new Result<PostPageAndId>(false, "Failed to upload images.", new PostPageAndId("-1", "-1", SocialMediaType.Instagram));
                 }
 
@@ -126,6 +125,7 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
 
                 if (mediaIds == null || !mediaIds.Any())
                 {
+                    logger.Warning("Failed to create media objects.");
                     return new Result<PostPageAndId>(false, "Failed to create media objects.", new PostPageAndId("-1", "-1", SocialMediaType.Instagram));
                 }
             }
@@ -135,12 +135,14 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
                 carouselId = await CreateCarouselAsync(mediaIds, text);
                 if (carouselId == null)
                 {
+                    logger.Warning("Failed to create carousel.");
                     return new Result<PostPageAndId>(false, "Faild to create carousel", new PostPageAndId("-1", "-1", SocialMediaType.Instagram));
                 }
                 return new Result<PostPageAndId>(true, "Posted successfully", new PostPageAndId(_userId, carouselId, SocialMediaType.Instagram));
             }
             catch (Exception e)
             {
+                logger.Warning($"Unexpected error occured tryung to create carousel: {e.Message}");
                 return new Result<PostPageAndId>(false, $"Failed to create carousel: {e.Message}", new PostPageAndId("-1", "-1", SocialMediaType.Instagram));
             }
         }
@@ -185,15 +187,18 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
                             }
                         }
                     }
+                    logger.Information("Fetched engagement stats successfully");
                     return new Result<EngagementStats>(true, "Fetched engagement stats successfully", new EngagementStats(impressionsValue, likesValue, commentsValue, sharesValue));
                 }
                 else
                 {
+                    logger.Warning($"Error fetching emgagement stats for media ID {postId}: {response.StatusCode}, {await response.Content.ReadAsStringAsync()}");
                     return new Result<EngagementStats>(false, $"Error fetching emgagement stats for media ID {postId}: {response.StatusCode}, {await response.Content.ReadAsStringAsync()}", new EngagementStats(-1, -1, -1, -1));
                 }
             }
             else
             {
+                logger.Warning("No published ID available to fetch likes, comments, shares, impressions.");
                 return new Result<EngagementStats>(false, "No published ID available to fetch likes, comments, shares, impressions.", new EngagementStats(-1, -1, -1, -1));
             }
         }
@@ -212,11 +217,13 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
                 }
                 else
                 {
+                    logger.Warning($"Error generating post link: {responseForLink.StatusCode}, {await responseForLink.Content.ReadAsStringAsync()}");
                     return new Result<string>(false, $"Error generating post link: {responseForLink.StatusCode}, {await responseForLink.Content.ReadAsStringAsync()}", string.Empty);
                 }
             }
             catch (Exception e)
             {
+                logger.Warning($"Error generating post link: {e.Message}");
                 return new Result<string>(false, $"Error generating post link: {e.Message}", string.Empty);
             }
         }

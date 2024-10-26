@@ -16,9 +16,7 @@ namespace Monopost.DAL.Repositories.Implementations
 
         public async Task<Restriction> GetByIdAsync(int id)
         {
-            var restriction = await _context.Restrictions.FirstOrDefaultAsync(r => r.Id == id);
-            if (restriction == null) throw new Exception("Restriction not found");
-            return restriction;
+            return await _context.Restrictions.FirstOrDefaultAsync(r => r.Id == id);
         }
 
         public async Task<IEnumerable<Restriction>> GetAllAsync()

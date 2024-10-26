@@ -14,7 +14,6 @@ namespace Monopost.BLL.Services.Implementations
         public UserPersonalInfoManagementService(IUserRepository? userRepository)
         {
             _userRepository = userRepository;
-            logger.Information("UserPersonalInfoManagementService created.");
         }
 
         public async Task<Result> UpdateUserPersonalInfoAsync(UserPersonalInfoModel model)
@@ -37,23 +36,22 @@ namespace Monopost.BLL.Services.Implementations
                 logger.Warning("Result: Failure\nReason: Valid age is required.");
                 return new Result(false, "Valid Age is required.");
             }
-            try
-            {
-                var existingUser = await _userRepository.GetByIdAsync(model.Id);
-                existingUser.FirstName = model.FirstName;
-                existingUser.LastName = model.LastName;
-                existingUser.Age = model.Age;
 
-                await _userRepository.UpdateAsync(existingUser);
-                logger.Information("Result: Success\nMessage: User information updated successfully.");
-                return new Result(true, "User updated successfully.");
+            var existingUser = await _userRepository.GetByIdAsync(model.Id);
 
-            }
-            catch
+            if (existingUser == null)
             {
                 logger.Warning("Result: Failure\nReason: User with such Id does not exist.");
                 return new Result(false, "User with such Id does not exist.");
             }
+
+            existingUser.FirstName = model.FirstName;
+            existingUser.LastName = model.LastName;
+            existingUser.Age = model.Age;
+
+            await _userRepository.UpdateAsync(existingUser);
+            logger.Information("Result: Success\nMessage: User information updated successfully.");
+            return new Result(true, "User updated successfully.");
 
         }
     }

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Monopost.BLL.Models;
+﻿using Monopost.BLL.Models;
 
 namespace Monopost.BLL.Services.Interfaces
 {

@@ -17,15 +17,9 @@ namespace Monopost.DAL.Repositories.Implementations
 
         public async Task<Credential> GetByIdAsync(int id)
         {
-            var credential = await _context.Credentials
+            return await _context.Credentials
                 .Include(c => c.Author)
                 .FirstOrDefaultAsync(c => c.Id == id);
-
-            if (credential == null)
-            {
-                throw new ArgumentException($"Credential with id {id} not found.");
-            }
-            return credential;
         }
 
         public async Task<IEnumerable<Credential>> GetAllAsync()

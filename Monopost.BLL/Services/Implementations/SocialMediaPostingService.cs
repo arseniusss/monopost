@@ -31,8 +31,6 @@ namespace Monopost.BLL.Services
             _credentialManagementService = new CredentialManagementService(_credentialRepository, _userRepository);
             _socialMediaPosters = new List<ISocialMediaPoster>();
             _userId = userId;
-            logger.Information($"Social media posting service created");
-            AddPosters();
         }
 
         private bool AddPosters()
@@ -41,6 +39,7 @@ namespace Monopost.BLL.Services
             {
                 return true;
             }
+
             _socialMediaPosters = new List<ISocialMediaPoster>();
             var credentialsResult = _credentialManagementService.GetDecodedCredentialsByUserIdAsync(_userId).Result;
             if (!credentialsResult.Success)
@@ -52,67 +51,52 @@ namespace Monopost.BLL.Services
             {
                 return false;
             }
-            logger.Information($"{credentialsResult.Data.ToList().Count.ToString()} credentials found for user with id = {_userId}");
+
+            logger.Information($"{credentialsResult.Data.Count()} credentials found for user with id = {_userId}");
             var credentials = credentialsResult.Data.ToList();
 
-
-            var instagramAccessToken = credentials.FirstOrDefault(c => c.CredentialType == CredentialType.InstagramAccessToken)?.CredentialValue;
-            var instagramUserId = credentials.FirstOrDefault(c => c.CredentialType == CredentialType.InstagramUserId)?.CredentialValue;
-            var imgbbApiKey = credentials.FirstOrDefault(c => c.CredentialType == CredentialType.ImgbbApiKey)?.CredentialValue;
-
-            if (!string.IsNullOrEmpty(instagramAccessToken) &&
-                !string.IsNullOrEmpty(instagramUserId) &&
-                !string.IsNullOrEmpty(imgbbApiKey))
+            var instagramPoster = SocialMediaPosterFactory.CreatePoster(CredentialType.InstagramAccessToken, credentials);
+            if (instagramPoster != null)
             {
-                var instagramPoster = new InstagramPoster(instagramAccessToken, instagramUserId, imgbbApiKey);
                 _socialMediaPosters.Add(instagramPoster);
             }
 
-            var telegramAppId = credentials.FirstOrDefault(c => c.CredentialType == CredentialType.TelegramAppID)?.CredentialValue;
-            var telegramAppHash = credentials.FirstOrDefault(c => c.CredentialType == CredentialType.TelegramAppHash)?.CredentialValue;
-            var telegramChannelId = credentials.FirstOrDefault(c => c.CredentialType == CredentialType.TelegramChannelId)?.CredentialValue;
-            var telegramPhoneNumber = credentials.FirstOrDefault(c => c.CredentialType == CredentialType.TelegramPhoneNumber)?.CredentialValue;
-            var telegramPassword = credentials.FirstOrDefault(c => c.CredentialType == CredentialType.TelegramPassword)?.CredentialValue;
-
-            if (!string.IsNullOrEmpty(telegramAppId) &&
-                !string.IsNullOrEmpty(telegramAppHash) &&
-                !string.IsNullOrEmpty(telegramChannelId) &&
-                !string.IsNullOrEmpty(telegramPhoneNumber))
+            var telegramPoster = SocialMediaPosterFactory.CreatePoster(CredentialType.TelegramAppID, credentials);
+            if (telegramPoster != null)
             {
-                logger.Information($"Creating telegram poster, appId={telegramAppId}, appHash={telegramAppHash}, phoneNumber={telegramPhoneNumber}, channelId={telegramChannelId}, password={telegramPassword}");
-                var telegramPoster = new TelegramPoster(telegramAppId, telegramAppHash, telegramPhoneNumber, telegramChannelId, telegramPassword);
                 _socialMediaPosters.Add(telegramPoster);
             }
+
             logger.Information($"{_socialMediaPosters.Count} social media posters added");
             return _socialMediaPosters.Count != 0;
         }
 
         public async Task<Result<bool>> CreatePostAsync(string text, List<string> filesToUpload, List<int> posterIds = null)
         {
+            const int MIN_ALLOWED_FILES_TO_POST = 1;
+            const int MAX_ALLOWED_FILES_TO_POST = 10;
+            const int MAX_ALLOWED_TEXT_LENGTH = 2200;
+
             logger.Information($"Trying to create a post with text='{text}' and {filesToUpload.Count} files");
 
-            // Check if any social media posters are available
             if (!AddPosters())
             {
                 logger.Warning("No social media posters found");
                 return new Result<bool>(false, "No social media posters found");
             }
 
-            // Validate the number of files to upload
-            if (filesToUpload.Count == 0 || filesToUpload.Count > 10)
+            if (filesToUpload.Count < MIN_ALLOWED_FILES_TO_POST || filesToUpload.Count > MAX_ALLOWED_FILES_TO_POST)
             {
                 logger.Warning("Invalid number of files to upload");
                 return new Result<bool>(false, "Invalid number of files to upload, must be between 1 and 10");
             }
 
-            // Validate the length of the text
-            if (text.Length > 2200)
+            if (text.Length > MAX_ALLOWED_TEXT_LENGTH)
             {
                 logger.Warning("Text is too long");
-                return new Result<bool>(false, "Text is too long, must be less than 2200 characters");
+                return new Result<bool>(false, $"Text is too long, must be less than {MAX_ALLOWED_TEXT_LENGTH} characters");
             }
 
-            // Validate the posterIds if provided
             if (posterIds != null)
             {
                 if (posterIds.Count == 0)
@@ -121,7 +105,6 @@ namespace Monopost.BLL.Services
                     return new Result<bool>(false, "Poster IDs cannot be empty");
                 }
 
-                // Validate each ID in posterIds
                 foreach (var id in posterIds)
                 {
                     if (id < 0 || id >= _socialMediaPosters.Count)
@@ -132,9 +115,8 @@ namespace Monopost.BLL.Services
                 }
             }
 
-            logger.Information("Social media posters added");
+            logger.Information($"{_socialMediaPosters.Count} social media posters added");
 
-            // Create posts for each selected social media poster
             var postsToSpecificSocialMedia = new List<PostPageAndId>();
             var postersToUse = posterIds != null && posterIds.Count > 0
                 ? posterIds.Select(id => _socialMediaPosters[id]).ToList()
@@ -151,7 +133,6 @@ namespace Monopost.BLL.Services
                 postsToSpecificSocialMedia.Add(result.Data);
             }
 
-            // Add the post to the repository
             await _postRepository.AddAsync(new Post
             {
                 AuthorId = _userId,
@@ -166,7 +147,6 @@ namespace Monopost.BLL.Services
                 return new Result<bool>(false, "Failed to get latest post");
             }
 
-            // Add post media for each social media response
             foreach (var post in postsToSpecificSocialMedia)
             {
                 await _postMediaRepository.AddAsync(new PostMedia
@@ -188,7 +168,7 @@ namespace Monopost.BLL.Services
             var postMedia = _postMediaRepository.GetPostMediaByPostIdAsync(postId).Result;
             if (postMedia == null || !postMedia.Any())
             {
-                logger.Warning("Post not found");
+                logger.Warning($"Post with id = {postId} not found");
                 return new Result<List<PostEngagementStats>>(false, "Post not found", new List<PostEngagementStats>());
             }
             List<PostEngagementStats> stats = new List<PostEngagementStats>();
@@ -218,7 +198,7 @@ namespace Monopost.BLL.Services
                             logger.Warning($"Response data is null for post with id = {postId} and social media = {postSpecificSocialMedia.SocialMediaName}");
                             continue;
                         }
-                        logger.Information($"got resp: {response.Success}, {response.Message}");
+
                         if (response.Success)
                         {
                             stats.Add(new PostEngagementStats(postId, response.Data.Views, response.Data.Reactions, response.Data.Comments, response.Data.Forwards));

@@ -1,4 +1,5 @@
 ﻿using Monopost.DAL.Enums;
+
 namespace Monopost.DAL.Entities
 {
     public class PostMedia

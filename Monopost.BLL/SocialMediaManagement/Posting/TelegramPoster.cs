@@ -18,7 +18,6 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
         {
             string sessionFilePath = "telegram_session_.dat";
 
-            logger.Information($"api_id={apiId}, apiHash={apiHash}, phone={phoneNumber}, pass={password}");
             _client = new Client(Config);
 
             _channelId = channelId;
@@ -45,8 +44,8 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
 
         private async Task LoginAsync()
         {
-            var user = await _client.LoginUserIfNeeded();
-            logger.Information($"logging into telegram");
+            await _client.LoginUserIfNeeded();
+            logger.Information($"Client logged in into telegram");
         }
 
         public async Task<Result<PostPageAndId>> CreatePostAsync(string text, List<string> filePaths)

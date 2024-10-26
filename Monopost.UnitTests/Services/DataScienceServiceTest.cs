@@ -13,11 +13,12 @@ namespace Monopost.UnitTests.Services
 
         public TransactionServiceTests()
         {
-            SetupTestFile();
             _service = new DataScienceService();
             _service.LoadFromCsv(_testFilePath);
+            SetupTestFile();
 
             LoggerConfig.ConfigureLogging();
+            var logger = LoggerConfig.GetLogger();
         }
 
         public void Dispose()
@@ -27,8 +28,6 @@ namespace Monopost.UnitTests.Services
 
         private void SetupTestFile()
         {
-            var logger = LoggerConfig.GetLogger();
-            logger.Information("hi");
             File.WriteAllLines(_testFilePath, new[]
             {
                 "DateTime,Category,Amount,Currency,From,Comment,Balance",
@@ -93,7 +92,7 @@ namespace Monopost.UnitTests.Services
             var transactions = _service.FilterTransactionsByType(withdrawalsResult.Data ?? new List<Transaction>(), TransactionType.Withdrawal);
 
             Assert.NotEmpty(transactions);
-            Assert.All(transactions, t => Assert.True(t.IsWithdrawal)); // Assuming each transaction has an IsWithdrawal property
+            Assert.All(transactions, t => Assert.True(t.IsWithdrawal));
         }
 
         [Fact]

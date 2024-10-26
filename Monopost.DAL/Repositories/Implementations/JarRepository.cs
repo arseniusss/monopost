@@ -16,12 +16,7 @@ namespace Monopost.DAL.Repositories.Implementations
 
         public async Task<Jar> GetByIdAsync(int id)
         {
-            var jar = await _context.Jars.FirstOrDefaultAsync(j => j.Id == id);
-
-            if (jar == null)
-                throw new Exception("Jar not found");
-
-            return jar;
+            return await _context.Jars.FirstOrDefaultAsync(j => j.Id == id);
         }
 
         public async Task<IEnumerable<Jar>> GetAllAsync()

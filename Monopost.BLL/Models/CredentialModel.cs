@@ -1,4 +1,5 @@
 ﻿using Monopost.DAL.Enums;
+
 namespace Monopost.BLL.Models
 {
     public class CredentialModel

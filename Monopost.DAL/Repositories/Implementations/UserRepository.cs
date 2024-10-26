@@ -20,9 +20,8 @@ namespace Monopost.DAL.Repositories.Implementations
 
         public async Task<User> GetByIdAsync(int id)
         {
-            var user = await _context.Users.Include(u => u.Posts).FirstOrDefaultAsync(u => u.Id == id);
-            if (user == null) throw new Exception("User not found");
-            return user;
+            return await _context.Users.Include(u => u.Posts)
+                .FirstOrDefaultAsync(u => u.Id == id);
         }
         public async Task<IEnumerable<User>> GetAllAsync()
         {
@@ -49,13 +48,6 @@ namespace Monopost.DAL.Repositories.Implementations
                 _context.Users.Remove(user);
                 await _context.SaveChangesAsync();
             }
-        }
-
-        public async Task<User> GetByEmailAsync(string email)
-        {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-            if (user == null) throw new Exception("User not found");
-            return user;
         }
     }
 }

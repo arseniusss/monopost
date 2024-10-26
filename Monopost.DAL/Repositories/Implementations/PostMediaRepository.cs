@@ -16,12 +16,7 @@ namespace Monopost.DAL.Repositories.Implementations
 
         public async Task<PostMedia> GetByIdAsync(int id)
         {
-            var postMedia = await _context.PostMedia.FirstOrDefaultAsync(p => p.Id == id);
-
-            if (postMedia == null)
-                throw new Exception("PostMedia not found");
-
-            return postMedia;
+            return await _context.PostMedia.FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task<IEnumerable<PostMedia>> GetAllAsync()

@@ -19,22 +19,21 @@ namespace Monopost.BLL.Services.Implementations
 
         public DataScienceSavingPdfService(string filepath)
         {
-            logger.Information("DataScienceSavingPdf created.");
             transactions = new List<Transaction>();
             manager.LoadFromCsv(filepath);
-
         }
+
         private void GenerateStatisticsPdf(
-         Dictionary<string, decimal> donationTotalAmountsByTimeOfDay,
-         Dictionary<string, decimal> donationCountByTimeOfDay,
-         Dictionary<string, decimal> totalAmountByHour,
-         Dictionary<string, decimal> averageAmountByHour,
-         Dictionary<string, decimal> maxAmountByHour,
-         Dictionary<string, decimal> donationCountByDayOfWeek,
-         Dictionary<string, decimal> withdrawalCountByTimeOfDay,
-         Dictionary<string, decimal> withdrawalSumByTimeOfDay,
-         Dictionary<string, decimal> withdrawalSumByDayOfWeek,
-         string pdfPath)
+            Dictionary<string, decimal> donationTotalAmountsByTimeOfDay,
+            Dictionary<string, decimal> donationCountByTimeOfDay,
+            Dictionary<string, decimal> totalAmountByHour,
+            Dictionary<string, decimal> averageAmountByHour,
+            Dictionary<string, decimal> maxAmountByHour,
+            Dictionary<string, decimal> donationCountByDayOfWeek,
+            Dictionary<string, decimal> withdrawalCountByTimeOfDay,
+            Dictionary<string, decimal> withdrawalSumByTimeOfDay,
+            Dictionary<string, decimal> withdrawalSumByDayOfWeek,
+            string pdfPath)
         {
             decimal totalWithdrawalCount = withdrawalCountByTimeOfDay.Values.Sum();
             decimal totalDonationCount = donationCountByTimeOfDay.Values.Sum();
@@ -121,7 +120,7 @@ namespace Monopost.BLL.Services.Implementations
                     }
                     else
                     {
-                        Console.WriteLine($"File not found: {chartPath}");
+                        logger.Warning($"File not found: {chartPath}");
                     }
                 }
 
@@ -129,8 +128,7 @@ namespace Monopost.BLL.Services.Implementations
             }
         }
 
-        //private -> public
-        public void MergePdfs(string statsPdfPath, string chartsPdfPath, string outputPdfPath)
+        private void MergePdfs(string statsPdfPath, string chartsPdfPath, string outputPdfPath)
         {
             PdfDocument outputDocument = new PdfDocument();
 
@@ -154,6 +152,7 @@ namespace Monopost.BLL.Services.Implementations
                 to.AddPage(from.Pages[i]);
             }
         }
+
         [Obsolete]
         public Result<string> SaveResults(string fileName, string outputDirectory)
         {
@@ -227,10 +226,10 @@ namespace Monopost.BLL.Services.Implementations
                 logger.Information("Charts report generated.");
 
                 MergePdfs(
-                Path.Combine(outputDirectory, "StatisticsReport.pdf"),
-                Path.Combine(outputDirectory, "ChartsReport.pdf"),
-                fullPath
-            );
+                    Path.Combine(outputDirectory, "StatisticsReport.pdf"),
+                    Path.Combine(outputDirectory, "ChartsReport.pdf"),
+                    fullPath
+                );
 
                 logger.Information($"Final report generated.");
 

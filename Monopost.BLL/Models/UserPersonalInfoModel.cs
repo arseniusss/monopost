@@ -1,5 +1,4 @@
-﻿
-namespace Monopost.BLL.Models
+﻿namespace Monopost.BLL.Models
 {
     public class UserPersonalInfoModel
     {

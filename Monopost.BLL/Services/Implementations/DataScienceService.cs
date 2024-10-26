@@ -56,7 +56,6 @@ namespace Monopost.BLL.Services.Implementations
             logger.Information("DataScienceService created.");
             transactions = new List<Transaction>();
             //LoadFromCsv(filepath);
-            
         }
 
         public void LoadFromCsv(string filePath)

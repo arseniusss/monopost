@@ -18,7 +18,6 @@ namespace Monopost.BLL.Services
             _templateRepository = templateRepository;
             _templateFileRepository = templateFileRepository;
             _userRepository = userRepository;
-            logger.Information("TemplateManagementService created.");
         }
 
         public async Task<Result<TemplateModel>> AddTemplateAsync(TemplateModel model)
@@ -31,14 +30,11 @@ namespace Monopost.BLL.Services
                 return new Result<TemplateModel>(false, "Invalid AuthorId: User does not exist.");
             }
 
-            try
+            var templateExists = await _templateRepository.GetByIdAsync(model.Id);
+            if (templateExists != null)
             {
-                await _templateFileRepository.GetByIdAsync(model.Id);
-                logger.Warning($"Result: Failure\nReason: Template with this Id already exists.");
-                return new Result<TemplateModel>(false, "Template with this Id already exists.");
-            }
-            catch
-            {
+                logger.Warning($"Result: Failure\nReason: Template with id {model.Id} already exists.");
+                return new Result<TemplateModel>(false, $"Template with id {model.Id} already exists.");
             }
 
             if (string.IsNullOrWhiteSpace(model.Name) || string.IsNullOrWhiteSpace(model.Text))
@@ -76,20 +72,18 @@ namespace Monopost.BLL.Services
         public async Task<Result> DeleteTemplateAsync(int templateId)
         {
             logger.Information($"Trying to delete template with id = {templateId}");
-            try
-            {
-                var template = await _templateRepository.GetByIdAsync(templateId);
-                await _templateFileRepository.DeleteAllByTemplateIdAsync(templateId);
-                await _templateRepository.DeleteAsync(templateId);
-
-                logger.Information($"Result: Success\nMessage: Template and its files deleted successfully.");
-                return new Result(true, "Template and its files deleted successfully.");
-            }
-            catch
+            var templateExists = await _templateRepository.GetByIdAsync(templateId);
+            if (templateExists == null)
             {
                 logger.Warning($"Result: Failure\nReason: Template not found.");
                 return new Result(false, "Template not found.");
             }
+
+            await _templateFileRepository.DeleteAllByTemplateIdAsync(templateId);
+            await _templateRepository.DeleteAsync(templateId);
+
+            logger.Information($"Result: Success\nMessage: Template and its files deleted successfully.");
+            return new Result(true, "Template and its files deleted successfully.");
         }
 
         public async Task<Result> UpdateTemplateAsync(TemplateModel model)
@@ -107,21 +101,19 @@ namespace Monopost.BLL.Services
                 return new Result(false, "Name and Text are required.");
             }
 
-            try
-            {
-                var template = await _templateRepository.GetByIdAsync(model.Id);
-                template.Name = model.Name;
-                template.Text = model.Text;
-
-                await _templateRepository.UpdateAsync(template);
-                logger.Information($"Result: Success\nMessage: Template updated successfully.");
-                return new Result(true, "Template updated successfully.");
-            }
-            catch
+            var template = await _templateRepository.GetByIdAsync(model.Id);
+            if (template == null)
             {
                 logger.Warning($"Result: Failure\nReason: Template not found.");
                 return new Result(false, "Template not found.");
             }
+ 
+            template.Name = model.Name;
+            template.Text = model.Text;
+
+            await _templateRepository.UpdateAsync(template);
+            logger.Information($"Result: Success\nMessage: Template updated successfully.");
+            return new Result(true, "Template updated successfully.");
         }
 
         public async Task<Result<IEnumerable<TemplateModel>>> GetAllTemplatesAsync()
@@ -150,25 +142,25 @@ namespace Monopost.BLL.Services
         public async Task<Result<IEnumerable<TemplateFileModel>>> GetTemplateFilesByTemplateIdAsync(int templateId)
         {
             logger.Information($"Trying to get template files for templateId = {templateId}");
-            try
-            {
-                var templateFiles = await _templateFileRepository.GetTemplateFilesByTemplateIdAsync(templateId);
-                var templateFileDtos = templateFiles.Select(tf => new TemplateFileModel
-                {
-                    Id = tf.Id,
-                    FileName = tf.FileName,
-                    FileData = tf.FileData,
-                    TemplateId = tf.TemplateId
-                }).ToList();
 
-                logger.Information($"Result: Success\nMessage: Template files retrieved successfully.");
-                return new Result<IEnumerable<TemplateFileModel>>(true, "Template files retrieved successfully.", templateFileDtos);
-            }
-            catch
+            var templateExists = await _templateRepository.GetByIdAsync(templateId);
+            if(templateExists == null)
             {
                 logger.Warning($"Result: Failure\nReason: Template not found.");
                 return new Result<IEnumerable<TemplateFileModel>>(false, "Template not found.");
             }
+
+            var templateFiles = await _templateFileRepository.GetTemplateFilesByTemplateIdAsync(templateId);
+            var templateFileDtos = templateFiles.Select(tf => new TemplateFileModel
+            {
+                Id = tf.Id,
+                FileName = tf.FileName,
+                FileData = tf.FileData,
+                TemplateId = tf.TemplateId
+            }).ToList();
+
+            logger.Information($"Result: Success\nMessage: Template files retrieved successfully.");
+            return new Result<IEnumerable<TemplateFileModel>>(true, "Template files retrieved successfully.", templateFileDtos);
         }
 
         public async Task<Result<IEnumerable<TemplateModel>>> GetTemplatesByUserIdAsync(int userId)
