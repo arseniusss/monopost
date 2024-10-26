@@ -5,16 +5,12 @@ on:
     branches:
       - main
       - test
-      - test2
-      - sprint-5
-      - sprint-6
+      - sprint-7
   pull_request:
     branches:
       - main
       - test
-      - test2
-      - sprint-5
-      - sprint-6
+      - sprint-7
   workflow_dispatch:
 
 jobs:
