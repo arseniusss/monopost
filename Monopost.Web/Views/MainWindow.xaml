@@ -1,0 +1,14 @@
+﻿<Window x:Class="Monopost.Web.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Monopost" Width="800" Height="600">
+	<DockPanel>
+		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center">
+			<Button Content="Profile" Command="{Binding NavigateProfileCommand}" />
+			<Button Content="Monobank" Command="{Binding NavigateMonobankCommand}" />
+			<Button Content="Posting" Command="{Binding NavigatePostingCommand}" />
+			<Button Content="Admin panel" Command="{Binding NavigateAdminCommand}" />
+		</StackPanel>
+		<Frame x:Name="MainFrame" NavigationUIVisibility="Hidden" />
+	</DockPanel>
+</Window>
