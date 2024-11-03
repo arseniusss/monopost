@@ -7,6 +7,6 @@
         <TextBox Width="200" Margin="10" Text="Email" />
         <PasswordBox Width="200" Margin="10" />
         <PasswordBox Width="200" Margin="10" />
-        <Button Content="Sign in" Width="150" Margin="10"/>
+        <Button Content="Sign up" Width="150" Margin="10"/>
     </StackPanel>
 </Page>
