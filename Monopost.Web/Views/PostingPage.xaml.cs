@@ -44,10 +44,8 @@ namespace Monopost.Web.Views
 
         private void SaveTemplateButton_Click(object sender, RoutedEventArgs e)
         {
-            // Create a new StackPanel to hold the saved template
             StackPanel templatePanel = new StackPanel { Margin = new Thickness(5) };
 
-            // Create a ToggleButton for expanding/collapsing the template
             ToggleButton toggleButton = new ToggleButton
             {
                 Content = PostTextBox.Text.Length > 20 ? PostTextBox.Text.Substring(0, 20) + "..." : PostTextBox.Text,
@@ -102,14 +100,11 @@ namespace Monopost.Web.Views
 
         private void DeleteImageButton_Click(object sender, RoutedEventArgs e)
         {
-            // Get the button that was clicked
             Button deleteButton = sender as Button;
             if (deleteButton != null)
             {
-                // Get the image that this button is associated with
                 BitmapImage imageToDelete = deleteButton.Tag as BitmapImage;
 
-                // Remove the image from the ItemsControl
                 if (imageToDelete != null)
                 {
                     ImagesControl.Items.Remove(imageToDelete);

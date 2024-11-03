@@ -14,7 +14,7 @@ namespace Monopost.Web.Views
         public MainPage()
         {
             InitializeComponent();
-            DataContext = this; // Set the data context for command binding
+            DataContext = this; 
 
             NavigateProfileCommand = new RelayCommand(_ => NavigateToProfilePage());
             NavigateMonobankCommand = new RelayCommand(_ => NavigateToMonobankPage());
@@ -24,25 +24,21 @@ namespace Monopost.Web.Views
 
         private void NavigateToProfilePage()
         {
-            // Replace with your actual ProfilePage instance
             MainFrame.Navigate(new ProfilePage());
         }
 
         private void NavigateToMonobankPage()
         {
-            // Replace with your actual MonobankPage instance
             MainFrame.Navigate(new MonobankPage());
         }
 
         private void NavigateToPostingPage()
         {
-            // Replace with your actual PostingPage instance
             MainFrame.Navigate(new PostingPage());
         }
 
         private void NavigateToAdminPage()
         {
-            // Replace with your actual AdminPage instance
             MainFrame.Navigate(new AdminPage());
         }
     }
