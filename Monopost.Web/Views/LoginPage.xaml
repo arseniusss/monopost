@@ -4,6 +4,10 @@
       Title="Login">
 
     <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Width="800" Height="600">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="799*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
         <StackPanel HorizontalAlignment="Center">
             <TextBlock Text="MonoPost" FontSize="24" FontWeight="Bold" Margin="0,40,0,20" HorizontalAlignment="Center" Foreground="Black" />
 
@@ -37,6 +41,6 @@
             </Grid>
         </StackPanel>
 
-        <Frame Name="MainFrame" Width="800" Height="600" NavigationUIVisibility="Hidden" />
+        <Frame Name="MainFrame" Width="800" Height="600" NavigationUIVisibility="Hidden" Grid.ColumnSpan="2" />
     </Grid>
 </Page>
