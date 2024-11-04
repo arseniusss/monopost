@@ -7,11 +7,10 @@ using DotNetEnv;
 using Monopost.DAL.DataAccess;
 using Monopost.Logging;
 using Serilog;
-<<<<<<< HEAD
 using Monopost.BLL.Services.Implementations;
-=======
+
+
 using Monopost.Web.Views;
->>>>>>> test_UI
 
 namespace Monopost.Web
 {
@@ -35,7 +34,6 @@ namespace Monopost.Web
 
             ServiceProvider = serviceCollection.BuildServiceProvider();
 
-<<<<<<< HEAD
             string outputDirectory = Environment.GetEnvironmentVariable("OUTPUT_DIRECTORY");
             if (string.IsNullOrEmpty(outputDirectory))
             {
@@ -45,12 +43,10 @@ namespace Monopost.Web
 
             DataScienceSavingPdfService pdf = new DataScienceSavingPdfService("Jar_statement_13.10.2024_193241.csv");
             pdf.SaveResults("FinalReport.pdf", outputDirectory);
-=======
             var mainWindow = new MainWindow();
             mainWindow.Show();
 
 
->>>>>>> test_UI
             base.OnStartup(e);
         }
 
