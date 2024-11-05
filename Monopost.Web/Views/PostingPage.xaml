@@ -26,32 +26,36 @@
             <TextBlock x:Name="CharacterCountText" Text="0/MaxTextLength" Foreground="Gray" HorizontalAlignment="Right"/>
         </StackPanel>
 
-        <ItemsControl Grid.Row="2" x:Name="ImagesControl" Margin="10">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <WrapPanel Orientation="Horizontal" VerticalAlignment="Top"/>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <Border BorderThickness="1" BorderBrush="Gray" Padding="5" Margin="5" Width="150" Height="150">
-                        <Grid>
-                            <Image Source="{Binding Image}" Stretch="UniformToFill" Width="120" Height="120"/>
-                            <Button Content="X" Width="24" Height="24" 
-                                    HorizontalAlignment="Right" VerticalAlignment="Top" 
-                                    Click="DeleteImageButton_Click" Tag="{Binding}"/>
-                        </Grid>
-                    </Border>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+        <ScrollViewer Grid.Row="2" Margin="10" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Height="160">
+            <ItemsControl x:Name="ImagesControl">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border BorderThickness="1" BorderBrush="Gray" Padding="5" Margin="5" Width="150" Height="150">
+                            <Grid>
+                                <Image Source="{Binding Image}" Stretch="UniformToFill" Width="120" Height="120"/>
+                                <Button Content="X" Width="24" Height="24" 
+                                        HorizontalAlignment="Right" VerticalAlignment="Top" 
+                                        Click="DeleteImageButton_Click" Tag="{Binding}"/>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
 
+        <!-- Control Buttons positioned just below the image area -->
         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
             <Button Content="Upload File" Width="150" Margin="5" Click="UploadFileButton_Click"/>
             <Button Content="Save Template" Width="150" Margin="5" Click="SaveTemplateButton_Click"/>
             <Button Content="Update Template" Width="150" Margin="5" Click="UpdateTemplateButton_Click"/>
         </StackPanel>
 
+        <!-- Template Dropdown -->
         <ComboBox x:Name="TemplateDropdown" Grid.Row="4" Width="400" Margin="10" HorizontalAlignment="Center" SelectionChanged="TemplateDropdown_SelectionChanged">
             <ComboBox.ItemTemplate>
                 <DataTemplate>
@@ -63,6 +67,7 @@
             </ComboBox.ItemTemplate>
         </ComboBox>
 
+        <!-- Template Display Area -->
         <StackPanel x:Name="TemplateDisplayArea" Grid.Row="5" Margin="10" HorizontalAlignment="Center">
             <TextBlock x:Name="DisplayTextBlock" FontSize="16" FontWeight="Bold" TextWrapping="Wrap" Margin="0,0,0,10"/>
             <ItemsControl x:Name="DisplayImagesControl">

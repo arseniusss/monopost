@@ -2,7 +2,6 @@ using Microsoft.Win32;
 using Monopost.DAL.Entities;
 using Monopost.DAL.Repositories.Interfaces;
 using Monopost.PresentationLayer.Helpers;
-using Monopost.Web.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +33,7 @@ namespace Monopost.Web.Views
             InitializeComponent();
             _templateRepository = templateRepository;
             _templateFileRepository = templateFileRepository;
+
             CharacterCountText.Text = $"0/{MaxTextLength}";
             TemplateNameTextBox.Visibility = Visibility.Collapsed;
             TemplateDropdown.Visibility = Visibility.Collapsed;
@@ -184,8 +184,7 @@ namespace Monopost.Web.Views
 
                 _currentTemplate.Name = TemplateNameTextBox.Text;
                 _currentTemplate.Text = PostTextBox.Text;
-
-                // Delete existing files to prevent duplicates
+   
                 var existingFiles = await _templateFileRepository.GetTemplateFilesByTemplateIdAsync(_currentTemplate.Id);
                 foreach (var file in existingFiles)
                 {
