@@ -17,7 +17,7 @@ namespace Monopost.DAL.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.8")
+                .HasAnnotation("ProductVersion", "8.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -116,9 +116,8 @@ namespace Monopost.DAL.Migrations
                     b.Property<int>("PostId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("SocialMediaName")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("SocialMediaName")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -277,13 +276,11 @@ namespace Monopost.DAL.Migrations
 
             modelBuilder.Entity("Monopost.DAL.Entities.PostMedia", b =>
                 {
-                    b.HasOne("Monopost.DAL.Entities.Post", "Post")
+                    b.HasOne("Monopost.DAL.Entities.Post", null)
                         .WithMany("PostMedia")
                         .HasForeignKey("PostId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Post");
                 });
 
             modelBuilder.Entity("Monopost.DAL.Entities.Restriction", b =>

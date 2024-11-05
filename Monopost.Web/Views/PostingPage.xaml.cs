@@ -1,6 +1,12 @@
 using Microsoft.Win32;
+using Monopost.DAL.Entities;
+using Monopost.DAL.Repositories.Interfaces;
+using Monopost.PresentationLayer.Helpers;
+using Monopost.Web.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -10,24 +16,75 @@ namespace Monopost.Web.Views
 {
     public partial class PostingPage : Page
     {
-        private class Template
-        {
-            public string Name { get; set; }
-            public string Text { get; set; }
-            public List<BitmapImage> Images { get; set; }
-        }
+        private readonly ITemplateRepository _templateRepository;
+        private readonly ITemplateFileRepository _templateFileRepository;
 
-        private List<Template> savedTemplates = new List<Template>();
-        private int currentTemplateIndex = -1;
-        private int MaxTextLength = 200;
+        private Template _currentTemplate;
+        private const int MaxTextLength = 200;
 
-        public PostingPage()
+        public PostingPage(ITemplateRepository templateRepository, ITemplateFileRepository templateFileRepository)
         {
             InitializeComponent();
+            _templateRepository = templateRepository;
+            _templateFileRepository = templateFileRepository;
             CharacterCountText.Text = $"0/{MaxTextLength}";
             TemplateNameTextBox.Visibility = Visibility.Collapsed;
-            TemplateDropdown.Visibility = Visibility.Collapsed;  // Hide dropdown initially
+            TemplateDropdown.Visibility = Visibility.Collapsed;
+
+            LoadTemplates();
         }
+
+        private ImageSource ConvertByteArrayToImageSource(byte[] fileData)
+        {
+            if (fileData == null || fileData.Length == 0)
+                return null;
+
+            var bitmap = new BitmapImage();
+            using (var memoryStream = new System.IO.MemoryStream(fileData))
+            {
+                bitmap.BeginInit();
+                bitmap.StreamSource = memoryStream;
+                bitmap.EndInit();
+            }
+            return bitmap;
+        }
+
+
+        private async Task LoadTemplates()
+        {
+            var templates = await _templateRepository.GetAllAsync();
+
+            templates = templates.Where(t => t.AuthorId == UserSession.CurrentUserId).ToList();
+
+            TemplateDropdown.Items.Clear();
+
+            foreach (var template in templates)
+            {
+                var templateItem = new TemplateDropdownItem
+                {
+                    Name = template.Name,
+                    PreviewImage = template.TemplateFiles.Any()
+                        ? ConvertByteArrayToImageSource(template.TemplateFiles.First().FileData)
+                        : null,
+                    Template = template
+                };
+
+                TemplateDropdown.Items.Add(templateItem);
+            }
+
+            if (_currentTemplate != null)
+            {
+                var selectedTemplateItem = TemplateDropdown.Items
+                    .Cast<TemplateDropdownItem>()
+                    .FirstOrDefault(item => item.Template.Name == _currentTemplate.Name);
+
+                if (selectedTemplateItem != null)
+                {
+                    TemplateDropdown.SelectedItem = selectedTemplateItem;
+                }
+            }
+        }
+
 
         private void UploadFileButton_Click(object sender, RoutedEventArgs e)
         {
@@ -41,7 +98,6 @@ namespace Monopost.Web.Views
             {
                 string filePath = openFileDialog.FileName;
                 AddImageToDisplay(filePath);
-                UpdateDropdownItem();  // Update dropdown when images change
             }
         }
 
@@ -63,11 +119,10 @@ namespace Monopost.Web.Views
             if (sender is Button deleteButton && deleteButton.Tag is BitmapImage imageToDelete)
             {
                 ImagesControl.Items.Remove(imageToDelete);
-                UpdateDropdownItem();  // Update dropdown when images change
             }
         }
 
-        private void SaveTemplateButton_Click(object sender, RoutedEventArgs e)
+        private async void SaveTemplateButton_Click(object sender, RoutedEventArgs e)
         {
             if (PostTextBox.Text.Length > MaxTextLength)
             {
@@ -81,7 +136,7 @@ namespace Monopost.Web.Views
                 return;
             }
 
-            if (currentTemplateIndex == -1)  // Creating a new template
+            if (_currentTemplate == null)
             {
                 InputDialog inputDialog = new InputDialog();
                 if (inputDialog.ShowDialog() == true)
@@ -92,20 +147,22 @@ namespace Monopost.Web.Views
                     {
                         Name = templateName,
                         Text = PostTextBox.Text,
-                        Images = new List<BitmapImage>()
+                        AuthorId = UserSession.CurrentUserId  
                     };
 
+                    var templateFiles = new List<TemplateFile>();
                     foreach (BitmapImage image in ImagesControl.Items)
                     {
-                        newTemplate.Images.Add(image);
+                        var fileData = ConvertImageToByteArray(image);
+                        templateFiles.Add(new TemplateFile { FileName = "image", FileData = fileData });
                     }
 
-                    savedTemplates.Add(newTemplate);
-                    TemplateDropdown.Items.Add(newTemplate);
+                    newTemplate.TemplateFiles = templateFiles;
+                    await _templateRepository.AddAsync(newTemplate);
                     MessageBox.Show("Template saved successfully.");
                 }
             }
-            else  // Updating an existing template
+            else
             {
                 if (string.IsNullOrWhiteSpace(TemplateNameTextBox.Text))
                 {
@@ -113,22 +170,42 @@ namespace Monopost.Web.Views
                     return;
                 }
 
-                var templateToUpdate = savedTemplates[currentTemplateIndex];
-                templateToUpdate.Name = TemplateNameTextBox.Text;
-                templateToUpdate.Text = PostTextBox.Text;
-                templateToUpdate.Images.Clear();
+                _currentTemplate.Name = TemplateNameTextBox.Text;
+                _currentTemplate.Text = PostTextBox.Text;
 
-                foreach (BitmapImage image in ImagesControl.Items)
+                var existingFiles = await _templateFileRepository.GetTemplateFilesByTemplateIdAsync(_currentTemplate.Id);
+                foreach (var file in existingFiles)
                 {
-                    templateToUpdate.Images.Add(image);
+                    await _templateFileRepository.DeleteAsync(file.Id);
                 }
 
-                UpdateDropdownItem();
+                var updatedTemplateFiles = new List<TemplateFile>();
+                foreach (BitmapImage image in ImagesControl.Items)
+                {
+                    var fileData = ConvertImageToByteArray(image);
+                    updatedTemplateFiles.Add(new TemplateFile { FileName = "image", FileData = fileData });
+                }
+
+                _currentTemplate.TemplateFiles = updatedTemplateFiles;
+                await _templateRepository.UpdateAsync(_currentTemplate);
                 MessageBox.Show("Template updated successfully.");
             }
 
-            TemplateDropdown.Visibility = Visibility.Collapsed;  // Hide dropdown after saving
+            await LoadTemplates();
+            TemplateDropdown.Visibility = Visibility.Collapsed;
             ClearInputFields();
+        }
+
+
+        private byte[] ConvertImageToByteArray(BitmapImage image)
+        {
+            using (var memoryStream = new System.IO.MemoryStream())
+            {
+                var encoder = new JpegBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(image));
+                encoder.Save(memoryStream);
+                return memoryStream.ToArray();
+            }
         }
 
         private void UpdateTemplateButton_Click(object sender, RoutedEventArgs e)
@@ -137,22 +214,28 @@ namespace Monopost.Web.Views
             TemplateDropdown.IsDropDownOpen = true;
         }
 
-        private void TemplateDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void TemplateDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (TemplateDropdown.SelectedIndex >= 0 && TemplateDropdown.SelectedIndex < savedTemplates.Count)
+            if (TemplateDropdown.SelectedIndex >= 0 && TemplateDropdown.SelectedItem is TemplateDropdownItem selectedTemplateItem)
             {
-                currentTemplateIndex = TemplateDropdown.SelectedIndex;
+                _currentTemplate = selectedTemplateItem.Template;
 
-                var selectedTemplate = savedTemplates[currentTemplateIndex];
-                TemplateNameTextBox.Text = selectedTemplate.Name;
-                TemplateNameTextBox.Visibility = Visibility.Visible;
-                PostTextBox.Text = selectedTemplate.Text;
-                UpdateCharacterCounter();
-
-                ImagesControl.Items.Clear();
-                foreach (var img in selectedTemplate.Images)
+                if (_currentTemplate != null)
                 {
-                    ImagesControl.Items.Add(img);
+                    TemplateNameTextBox.Text = _currentTemplate.Name;
+                    TemplateNameTextBox.Visibility = Visibility.Visible;
+                    PostTextBox.Text = _currentTemplate.Text;
+                    UpdateCharacterCounter();
+
+                    ImagesControl.Items.Clear();
+                    foreach (var templateFile in _currentTemplate.TemplateFiles)
+                    {
+                        BitmapImage image = new BitmapImage();
+                        image.BeginInit();
+                        image.StreamSource = new System.IO.MemoryStream(templateFile.FileData);
+                        image.EndInit();
+                        ImagesControl.Items.Add(image);
+                    }
                 }
             }
         }
@@ -177,19 +260,6 @@ namespace Monopost.Web.Views
             }
         }
 
-        private void TemplateNameTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            UpdateDropdownItem();
-        }
-
-        private void UpdateDropdownItem()
-        {
-            if (currentTemplateIndex >= 0 && currentTemplateIndex < TemplateDropdown.Items.Count)
-            {
-                TemplateDropdown.Items[currentTemplateIndex] = savedTemplates[currentTemplateIndex];
-            }
-        }
-
         private void ClearInputFields()
         {
             TemplateNameTextBox.Clear();
@@ -198,7 +268,7 @@ namespace Monopost.Web.Views
             ImagesControl.Items.Clear();
             CharacterCountText.Text = $"0/{MaxTextLength}";
             CharacterCountText.Foreground = Brushes.Gray;
-            currentTemplateIndex = -1;
+            _currentTemplate = null;
         }
     }
 }

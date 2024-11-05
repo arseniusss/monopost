@@ -38,17 +38,15 @@
                         <Border BorderThickness="1" BorderBrush="Gray" Padding="5" Margin="5" Width="150" Height="150">
                             <Grid>
                                 <Image Source="{Binding}" Stretch="UniformToFill" Width="120" Height="120"/>
-
                                 <Button Content="X" Width="24" Height="24" 
-                                HorizontalAlignment="Right" VerticalAlignment="Top" 
-                                Click="DeleteImageButton_Click" Tag="{Binding}"/>
+                                        HorizontalAlignment="Right" VerticalAlignment="Top" 
+                                        Click="DeleteImageButton_Click" Tag="{Binding}"/>
                             </Grid>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
-
 
         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
             <Button Content="Upload File" Width="150" Margin="5" Click="UploadFileButton_Click"/>
@@ -60,19 +58,8 @@
             <ComboBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Name}" FontWeight="Bold" Margin="0,0,10,0"/>
-                        <ItemsControl ItemsSource="{Binding Images}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel Orientation="Horizontal"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Image Source="{Binding}" Width="30" Height="30" Margin="2"/>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                        <Image Width="40" Height="40" Source="{Binding PreviewImage}" Margin="5"/>
+                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontWeight="Bold" Margin="5"/>
                     </StackPanel>
                 </DataTemplate>
             </ComboBox.ItemTemplate>

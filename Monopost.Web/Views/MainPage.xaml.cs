@@ -1,7 +1,8 @@
 ﻿using Monopost.Web.Commands;
+using Monopost.DAL.Repositories.Interfaces;
 using System.Windows;
 using System.Windows.Controls;
-
+using Microsoft.Extensions.DependencyInjection;  
 namespace Monopost.Web.Views
 {
     public partial class MainPage : Page
@@ -11,10 +12,16 @@ namespace Monopost.Web.Views
         public RelayCommand NavigatePostingCommand { get; }
         public RelayCommand NavigateAdminCommand { get; }
 
-        public MainPage()
+        private readonly ITemplateRepository _templateRepository;
+        private readonly ITemplateFileRepository _templateFileRepository;
+
+        public MainPage(ITemplateRepository templateRepository, ITemplateFileRepository templateFileRepository)
         {
             InitializeComponent();
-            DataContext = this; 
+            DataContext = this;
+
+            _templateRepository = templateRepository;
+            _templateFileRepository = templateFileRepository;
 
             NavigateProfileCommand = new RelayCommand(_ => NavigateToProfilePage());
             NavigateMonobankCommand = new RelayCommand(_ => NavigateToMonobankPage());
@@ -34,7 +41,8 @@ namespace Monopost.Web.Views
 
         private void NavigateToPostingPage()
         {
-            MainFrame.Navigate(new PostingPage());
+            var postingPage = new PostingPage(_templateRepository, _templateFileRepository);
+            MainFrame.Navigate(postingPage);
         }
 
         private void NavigateToAdminPage()

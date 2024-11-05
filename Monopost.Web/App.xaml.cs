@@ -8,8 +8,8 @@ using Monopost.DAL.DataAccess;
 using Monopost.Logging;
 using Serilog;
 using Monopost.BLL.Services.Implementations;
-
-
+using Monopost.DAL.Repositories.Interfaces;
+using Monopost.DAL.Repositories.Implementations;
 using Monopost.Web.Views;
 
 namespace Monopost.Web
@@ -30,8 +30,10 @@ namespace Monopost.Web
             Env.Load(envFilePath);
 
             var serviceCollection = new ServiceCollection();
-            ConfigureDatabase(serviceCollection);
+            ConfigureDatabase(serviceCollection);  
+            ConfigureServices(serviceCollection);   
 
+     
             ServiceProvider = serviceCollection.BuildServiceProvider();
 
             string outputDirectory = Environment.GetEnvironmentVariable("OUTPUT_DIRECTORY");
@@ -43,9 +45,9 @@ namespace Monopost.Web
 
             DataScienceSavingPdfService pdf = new DataScienceSavingPdfService("Jar_statement_13.10.2024_193241.csv");
             pdf.SaveResults("FinalReport.pdf", outputDirectory);
-            var mainWindow = new MainWindow();
-            mainWindow.Show();
 
+            var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
+            mainWindow.Show();
 
             base.OnStartup(e);
         }
@@ -69,12 +71,25 @@ namespace Monopost.Web
                 options.UseNpgsql(connectionString));
         }
 
+        private void ConfigureServices(IServiceCollection services)
+        {
+            services.AddSingleton<ITemplateRepository, TemplateRepository>();
+            services.AddSingleton<ITemplateFileRepository, TemplateFileRepository>();
+
+            services.AddSingleton<MainWindow>();  
+            services.AddSingleton<LoginPage>();    
+            services.AddSingleton<MainPage>();  
+            services.AddSingleton<ProfilePage>();  
+            services.AddSingleton<MonobankPage>();
+            services.AddSingleton<PostingPage>();  
+            services.AddSingleton<AdminPage>();    
+        }
+
         protected override void OnExit(ExitEventArgs e)
         {
             Log.Debug("Exiting...");
             Log.CloseAndFlush();
             base.OnExit(e);
         }
-
     }
 }
