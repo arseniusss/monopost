@@ -24,11 +24,12 @@ namespace Monopost.Web.Views
     {
         private readonly ITemplateRepository _templateRepository;
         private readonly ITemplateFileRepository _templateFileRepository;
+        private readonly IUserRepository _userRepository;
 
         private Template _currentTemplate;
         private const int MaxTextLength = 200;
 
-        public PostingPage(ITemplateRepository templateRepository, ITemplateFileRepository templateFileRepository)
+        public PostingPage(ITemplateRepository templateRepository, ITemplateFileRepository templateFileRepository, IUserRepository userRepository)
         {
             InitializeComponent();
             _templateRepository = templateRepository;

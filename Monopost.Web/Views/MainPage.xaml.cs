@@ -14,8 +14,9 @@ namespace Monopost.Web.Views
 
         private readonly ITemplateRepository _templateRepository;
         private readonly ITemplateFileRepository _templateFileRepository;
+        private readonly IUserRepository _userRepository;
 
-        public MainPage(ITemplateRepository templateRepository, ITemplateFileRepository templateFileRepository)
+        public MainPage(ITemplateRepository templateRepository, ITemplateFileRepository templateFileRepository, IUserRepository userRepository)
         {
             InitializeComponent();
             DataContext = this;
@@ -41,7 +42,7 @@ namespace Monopost.Web.Views
 
         private void NavigateToPostingPage()
         {
-            var postingPage = new PostingPage(_templateRepository, _templateFileRepository);
+            var postingPage = new PostingPage(_templateRepository, _templateFileRepository, _userRepository);
             MainFrame.Navigate(postingPage);
         }
 

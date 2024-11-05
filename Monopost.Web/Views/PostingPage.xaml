@@ -26,7 +26,6 @@
             <TextBlock x:Name="CharacterCountText" Text="0/MaxTextLength" Foreground="Gray" HorizontalAlignment="Right"/>
         </StackPanel>
 
-        <!-- Automatically expanding image display area without ScrollViewer -->
         <ItemsControl Grid.Row="2" x:Name="ImagesControl" Margin="10">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
@@ -64,7 +63,6 @@
             </ComboBox.ItemTemplate>
         </ComboBox>
 
-        <!-- Automatically expanding template display area -->
         <StackPanel x:Name="TemplateDisplayArea" Grid.Row="5" Margin="10" HorizontalAlignment="Center">
             <TextBlock x:Name="DisplayTextBlock" FontSize="16" FontWeight="Bold" TextWrapping="Wrap" Margin="0,0,0,10"/>
             <ItemsControl x:Name="DisplayImagesControl">

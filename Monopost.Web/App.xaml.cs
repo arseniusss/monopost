@@ -75,6 +75,7 @@ namespace Monopost.Web
         {
             services.AddSingleton<ITemplateRepository, TemplateRepository>();
             services.AddSingleton<ITemplateFileRepository, TemplateFileRepository>();
+            services.AddSingleton<IUserRepository, UserRepository>();
 
             services.AddSingleton<MainWindow>();  
             services.AddSingleton<LoginPage>();    

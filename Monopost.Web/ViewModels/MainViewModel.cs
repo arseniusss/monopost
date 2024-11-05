@@ -10,7 +10,7 @@ namespace Monopost.Web.ViewModels
     {
         private readonly ITemplateRepository _templateRepository;
         private readonly ITemplateFileRepository _templateFileRepository;
-
+        private readonly IUserRepository _userRepository;
         public Frame MainFrame { get; private set; }
 
         public ICommand NavigateProfileCommand { get; }
@@ -26,7 +26,7 @@ namespace Monopost.Web.ViewModels
 
             NavigateProfileCommand = new RelayCommand(_ => MainFrame.Navigate(new ProfilePage()));
             NavigateMonobankCommand = new RelayCommand(_ => MainFrame.Navigate(new MonobankPage()));
-            NavigatePostingCommand = new RelayCommand(_ => MainFrame.Navigate(new PostingPage(_templateRepository, _templateFileRepository)));
+            NavigatePostingCommand = new RelayCommand(_ => MainFrame.Navigate(new PostingPage(_templateRepository, _templateFileRepository, _userRepository)));
             NavigateAdminCommand = new RelayCommand(_ => MainFrame.Navigate(new AdminPage()));
         }
     }
