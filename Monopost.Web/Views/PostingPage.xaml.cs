@@ -114,9 +114,9 @@ namespace Monopost.Web.Views
                 bitmap.BeginInit();
                 bitmap.UriSource = new Uri(filePath, UriKind.Absolute);
                 bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache; 
+                bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                 bitmap.EndInit();
-                bitmap.Freeze(); 
+                bitmap.Freeze();
 
                 ImagesControl.Items.Add(new ImageItem { Image = bitmap, FileName = System.IO.Path.GetFileName(filePath) });
             }
@@ -125,8 +125,6 @@ namespace Monopost.Web.Views
                 MessageBox.Show($"Error loading image: {ex.Message}");
             }
         }
-
-
 
         private void DeleteImageButton_Click(object sender, RoutedEventArgs e)
         {
@@ -187,6 +185,7 @@ namespace Monopost.Web.Views
                 _currentTemplate.Name = TemplateNameTextBox.Text;
                 _currentTemplate.Text = PostTextBox.Text;
 
+                // Delete existing files to prevent duplicates
                 var existingFiles = await _templateFileRepository.GetTemplateFilesByTemplateIdAsync(_currentTemplate.Id);
                 foreach (var file in existingFiles)
                 {
@@ -217,7 +216,7 @@ namespace Monopost.Web.Views
                 var encoder = new JpegBitmapEncoder();
                 encoder.Frames.Add(BitmapFrame.Create(image));
                 encoder.Save(memoryStream);
-                return memoryStream.ToArray();
+                return memoryStream.ToArray();  // Each image has its own unique byte array
             }
         }
 
