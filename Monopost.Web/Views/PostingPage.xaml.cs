@@ -14,6 +14,12 @@ using System.Windows.Media.Imaging;
 
 namespace Monopost.Web.Views
 {
+    public class ImageItem
+    {
+        public BitmapImage Image { get; set; }
+        public string FileName { get; set; }
+    }
+
     public partial class PostingPage : Page
     {
         private readonly ITemplateRepository _templateRepository;
@@ -44,16 +50,15 @@ namespace Monopost.Web.Views
             {
                 bitmap.BeginInit();
                 bitmap.StreamSource = memoryStream;
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
                 bitmap.EndInit();
             }
             return bitmap;
         }
 
-
         private async Task LoadTemplates()
         {
             var templates = await _templateRepository.GetAllAsync();
-
             templates = templates.Where(t => t.AuthorId == UserSession.CurrentUserId).ToList();
 
             TemplateDropdown.Items.Clear();
@@ -85,7 +90,6 @@ namespace Monopost.Web.Views
             }
         }
 
-
         private void UploadFileButton_Click(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog
@@ -105,8 +109,15 @@ namespace Monopost.Web.Views
         {
             try
             {
-                BitmapImage bitmap = new BitmapImage(new Uri(filePath));
-                ImagesControl.Items.Add(bitmap);
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.UriSource = new Uri(filePath, UriKind.Absolute);
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache; 
+                bitmap.EndInit();
+                bitmap.Freeze(); 
+
+                ImagesControl.Items.Add(new ImageItem { Image = bitmap, FileName = System.IO.Path.GetFileName(filePath) });
             }
             catch (Exception ex)
             {
@@ -114,9 +125,11 @@ namespace Monopost.Web.Views
             }
         }
 
+
+
         private void DeleteImageButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button deleteButton && deleteButton.Tag is BitmapImage imageToDelete)
+            if (sender is Button deleteButton && deleteButton.Tag is ImageItem imageToDelete)
             {
                 ImagesControl.Items.Remove(imageToDelete);
             }
@@ -147,14 +160,14 @@ namespace Monopost.Web.Views
                     {
                         Name = templateName,
                         Text = PostTextBox.Text,
-                        AuthorId = UserSession.CurrentUserId  
+                        AuthorId = UserSession.CurrentUserId
                     };
 
                     var templateFiles = new List<TemplateFile>();
-                    foreach (BitmapImage image in ImagesControl.Items)
+                    foreach (ImageItem item in ImagesControl.Items)
                     {
-                        var fileData = ConvertImageToByteArray(image);
-                        templateFiles.Add(new TemplateFile { FileName = "image", FileData = fileData });
+                        var fileData = ConvertImageToByteArray(item.Image);
+                        templateFiles.Add(new TemplateFile { FileName = item.FileName, FileData = fileData });
                     }
 
                     newTemplate.TemplateFiles = templateFiles;
@@ -180,10 +193,10 @@ namespace Monopost.Web.Views
                 }
 
                 var updatedTemplateFiles = new List<TemplateFile>();
-                foreach (BitmapImage image in ImagesControl.Items)
+                foreach (ImageItem item in ImagesControl.Items)
                 {
-                    var fileData = ConvertImageToByteArray(image);
-                    updatedTemplateFiles.Add(new TemplateFile { FileName = "image", FileData = fileData });
+                    var fileData = ConvertImageToByteArray(item.Image);
+                    updatedTemplateFiles.Add(new TemplateFile { FileName = item.FileName, FileData = fileData });
                 }
 
                 _currentTemplate.TemplateFiles = updatedTemplateFiles;
@@ -195,7 +208,6 @@ namespace Monopost.Web.Views
             TemplateDropdown.Visibility = Visibility.Collapsed;
             ClearInputFields();
         }
-
 
         private byte[] ConvertImageToByteArray(BitmapImage image)
         {
@@ -231,10 +243,14 @@ namespace Monopost.Web.Views
                     foreach (var templateFile in _currentTemplate.TemplateFiles)
                     {
                         BitmapImage image = new BitmapImage();
-                        image.BeginInit();
-                        image.StreamSource = new System.IO.MemoryStream(templateFile.FileData);
-                        image.EndInit();
-                        ImagesControl.Items.Add(image);
+                        using (var memoryStream = new System.IO.MemoryStream(templateFile.FileData))
+                        {
+                            image.BeginInit();
+                            image.StreamSource = memoryStream;
+                            image.CacheOption = BitmapCacheOption.OnLoad;
+                            image.EndInit();
+                        }
+                        ImagesControl.Items.Add(new ImageItem { Image = image, FileName = templateFile.FileName });
                     }
                 }
             }
