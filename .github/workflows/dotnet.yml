@@ -6,11 +6,13 @@ on:
       - main
       - test
       - sprint-7
+      - sprint-9
   pull_request:
     branches:
       - main
       - test
       - sprint-7
+      - sprint-9
   workflow_dispatch:
 
 jobs:
