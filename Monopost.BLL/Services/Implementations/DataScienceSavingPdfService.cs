@@ -20,7 +20,7 @@ namespace Monopost.BLL.Services.Implementations
         public DataScienceSavingPdfService(string filepath)
         {
             transactions = new List<Transaction>();
-            manager.LoadFromCsv(filepath);
+            manager.LoadFromCSVs(new List<Tuple<string, string>> {new Tuple<string,string> (filepath, "") });
         }
 
         private void GenerateStatisticsPdf(

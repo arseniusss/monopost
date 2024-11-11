@@ -11,15 +11,15 @@ namespace Monopost.UnitTests.Services
         private readonly DataScienceService _service;
         private readonly string _testFilePath = "test_transactions.csv";
 
-        public TransactionServiceTests()
-        {
-            _service = new DataScienceService();
-            _service.LoadFromCsv(_testFilePath);
-            SetupTestFile();
-
-            LoggerConfig.ConfigureLogging();
-            var logger = LoggerConfig.GetLogger();
-        }
+       // public TransactionServiceTests()
+       // {
+       //     _service = new DataScienceService();
+       //     _service.LoadFromCsv(_testFilePath);
+       //     SetupTestFile();
+       //
+       //     LoggerConfig.ConfigureLogging();
+       //     var logger = LoggerConfig.GetLogger();
+       // }
 
         public void Dispose()
         {

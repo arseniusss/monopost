@@ -70,19 +70,29 @@ namespace Monopost.Web.Views
 
             ResetChartAndStats();
 
-            foreach (var filePath in selectedFilePaths)
-            {
-                var dataScienceService = new DataScienceService();
-                dataScienceService.LoadFromCsv(filePath);
-                DisplayAllStatistics(dataScienceService, filePath);
-            }
+            
+            var dataScienceService = new DataScienceService();
+            //manager.LoadFromCSVs(new List<Tuple<string, string>> {new Tuple<string,string> (filepath, "") });
+
+            // Перетворення List<string> на List<Tuple<string, string>>
+            List<Tuple<string, string>> fileTuples = selectedFilePaths
+                .Select(filePath => new Tuple<string, string>(filePath, ""))
+                .ToList();
+
+            // Виклик методу з новим списком
+            dataScienceService.LoadFromCSVs(fileTuples);
+
+
+            
+          DisplayAllStatistics(dataScienceService);
+            
 
             FileItemsControl.Visibility = Visibility.Collapsed;
             SaveStatsButton.Visibility = Visibility.Visible;
         }
 
 
-        private void DisplayAllStatistics(DataScienceService dataScienceService, string filePath)
+        private void DisplayAllStatistics(DataScienceService dataScienceService)
         {
             DateTime? fromDate = new DateTime(2023, 1, 1);
             DateTime? toDate = DateTime.Now;

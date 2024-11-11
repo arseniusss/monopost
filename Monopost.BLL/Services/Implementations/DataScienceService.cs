@@ -57,19 +57,32 @@ namespace Monopost.BLL.Services.Implementations
             transactions = new List<Transaction>();
         }
 
-        public void LoadFromCsv(string filePath)
+        public void LoadFromCsv(Tuple<string, string> filePathWithLabel)
         {
-            var lines = File.ReadAllLines(filePath, Encoding.UTF8).Skip(1);
+            List<Transaction> tempTransactions = new List<Transaction>();
+
+            var lines = File.ReadAllLines(filePathWithLabel.Item1, Encoding.UTF8).Skip(1);
             logger.Information($"Transactions parsed from CSV: {lines.Count()} transaction(s)");
             foreach (var line in lines)
             {
-                transactions.Add(Transaction.ParseFromCsv(line));
-                logger.Information($"Transaction parsed from CSV: {line}");
+                Transaction tempTransaction = Transaction.ParseFromCsv(line);
+                tempTransaction.FromJar = filePathWithLabel.Item2;
+                tempTransactions.Add(tempTransaction);
             }
-            SetWithdrawals();
+            SetWithdrawals(tempTransactions);
+
+            transactions.AddRange(tempTransactions);
         }
 
-        private void SetWithdrawals()
+        public void LoadFromCSVs(List<Tuple<string, string>> jarsWithLabels)
+        {
+            foreach (var filePath in jarsWithLabels)
+            {
+                LoadFromCsv(filePath);
+            }
+        }
+
+        private void SetWithdrawals(List<Transaction> transactions)
         {
             if (transactions.Count < 2)
             {
@@ -88,6 +101,9 @@ namespace Monopost.BLL.Services.Implementations
                 currentTransaction.IsWithdrawal = currentTransaction.Balance < previousTransaction.Balance;
             }
         }
+
+
+
 
         public Result<List<Transaction>> GetWithdrawals()
         {
@@ -373,7 +389,12 @@ namespace Monopost.BLL.Services.Implementations
                 var plt = new Plot(width, height);
                 var keys = data.Keys.ToArray();
                 var values = data.Values.Select(v => Convert.ToDouble(v)).ToArray();
-              
+
+                if (values.Length == 0)
+                {
+                    logger.Warning("No data to plot.");
+                    return string.Empty;
+                }
 
                 switch (chartType)
                 {
@@ -410,7 +431,16 @@ namespace Monopost.BLL.Services.Implementations
                 }
 
                 string fileName = $"{title.Replace(" ", "_")}_{chartType}.png";
-                plt.SaveFig(fileName);
+
+                try
+                {
+                    plt.SaveFig(fileName);
+                }
+                catch (Exception ex)
+                {
+                    logger.Error($"Error saving plot: {ex.Message}");
+                }
+
                 return fileName;
             }
         }
