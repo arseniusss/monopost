@@ -1,8 +1,9 @@
 using Monopost.DAL.Repositories.Interfaces;
 using Monopost.Web.Commands;
-using Monopost.Web.Views;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Monopost.Web.Views;
+using RelayCommand = Monopost.Web.Commands.RelayCommand;
 
 namespace Monopost.Web.ViewModels
 {

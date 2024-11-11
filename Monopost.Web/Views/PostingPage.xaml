@@ -3,82 +3,96 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Title="Posting">
 
-    <Grid Margin="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
 
-        <StackPanel Grid.Row="0" Margin="10" HorizontalAlignment="Center">
-            <TextBlock Text="Template Name:" FontWeight="Bold" Margin="0,0,0,5"/>
-            <TextBox x:Name="TemplateNameTextBox" Width="300" HorizontalAlignment="Center"/>
-        </StackPanel>
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="1" Margin="10" HorizontalAlignment="Center">
-            <TextBlock Text="Post Text:" FontWeight="Bold" Margin="0,0,0,5"/>
-            <TextBox x:Name="PostTextBox" Width="400" Height="100" TextWrapping="Wrap" 
-                     MaxLength="{Binding MaxTextLength}" 
-                     TextChanged="PostTextBox_TextChanged" Margin="0,0,0,5"/>
-            <TextBlock x:Name="CharacterCountText" Text="0/MaxTextLength" Foreground="Gray" HorizontalAlignment="Right"/>
-        </StackPanel>
+            <StackPanel Grid.Row="0" Margin="10" HorizontalAlignment="Center">
+                <TextBlock Text="Template Name:" FontWeight="Bold" Margin="0,0,0,5"/>
+                <TextBox x:Name="TemplateNameTextBox" Width="300" HorizontalAlignment="Center"/>
+            </StackPanel>
 
-        <!-- Automatically expanding image display area without ScrollViewer -->
-        <ItemsControl Grid.Row="2" x:Name="ImagesControl" Margin="10">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <WrapPanel Orientation="Horizontal" VerticalAlignment="Top"/>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <Border BorderThickness="1" BorderBrush="Gray" Padding="5" Margin="5" Width="150" Height="150">
-                        <Grid>
-                            <Image Source="{Binding Image}" Stretch="UniformToFill" Width="120" Height="120"/>
-                            <Button Content="X" Width="24" Height="24" 
-                                    HorizontalAlignment="Right" VerticalAlignment="Top" 
-                                    Click="DeleteImageButton_Click" Tag="{Binding}"/>
-                        </Grid>
-                    </Border>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+            <StackPanel Grid.Row="1" Margin="10" HorizontalAlignment="Center">
+                <TextBlock Text="Post Text:" FontWeight="Bold" Margin="0,0,0,5"/>
+                <TextBox x:Name="PostTextBox" Width="400" Height="100" TextWrapping="Wrap" 
+                         MaxLength="{Binding MaxTextLength}" TextChanged="PostTextBox_TextChanged" Margin="0,0,0,5"/>
+                <TextBlock x:Name="CharacterCountText" Text="0/MaxTextLength" Foreground="Gray" HorizontalAlignment="Right"/>
+            </StackPanel>
 
-        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
-            <Button Content="Upload File" Width="150" Margin="5" Click="UploadFileButton_Click"/>
-            <Button Content="Save Template" Width="150" Margin="5" Click="SaveTemplateButton_Click"/>
-            <Button Content="Update Template" Width="150" Margin="5" Click="UpdateTemplateButton_Click"/>
-        </StackPanel>
-
-        <ComboBox x:Name="TemplateDropdown" Grid.Row="4" Width="400" Margin="10" HorizontalAlignment="Center" SelectionChanged="TemplateDropdown_SelectionChanged">
-            <ComboBox.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
-                        <Image Width="40" Height="40" Source="{Binding PreviewImage}" Margin="5"/>
-                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontWeight="Bold" Margin="5"/>
-                    </StackPanel>
-                </DataTemplate>
-            </ComboBox.ItemTemplate>
-        </ComboBox>
-
-        <!-- Automatically expanding template display area -->
-        <StackPanel x:Name="TemplateDisplayArea" Grid.Row="5" Margin="10" HorizontalAlignment="Center">
-            <TextBlock x:Name="DisplayTextBlock" FontSize="16" FontWeight="Bold" TextWrapping="Wrap" Margin="0,0,0,10"/>
-            <ItemsControl x:Name="DisplayImagesControl">
+            <ItemsControl Grid.Row="2" x:Name="ImagesControl" Margin="10">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal"/>
+                        <WrapPanel Orientation="Horizontal" VerticalAlignment="Top"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Image Source="{Binding Image}" Width="150" Height="150" Stretch="UniformToFill" Margin="5"/>
+                        <Border BorderThickness="1" BorderBrush="Gray" Padding="5" Margin="5" Width="150" Height="150">
+                            <Grid>
+                                <Image Source="{Binding Image}" Stretch="UniformToFill" Width="120" Height="120"/>
+                                <Button Content="X" Width="24" Height="24" 
+                                        HorizontalAlignment="Right" VerticalAlignment="Top" 
+                                        Click="DeleteImageButton_Click" Tag="{Binding}"/>
+                            </Grid>
+                        </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-        </StackPanel>
-    </Grid>
+
+            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
+                <Button Content="Upload File" Width="150" Margin="5" Click="UploadFileButton_Click"/>
+                <Button Content="Save Template" Width="150" Margin="5" Click="SaveTemplateButton_Click"/>
+                <Button Content="Update Template" Width="150" Margin="5" Click="UpdateTemplateButton_Click"/>
+            </StackPanel>
+
+            <ComboBox x:Name="TemplateDropdown" Grid.Row="4" Width="400" Margin="10" HorizontalAlignment="Center" SelectionChanged="TemplateDropdown_SelectionChanged">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <Image Width="40" Height="40" Source="{Binding PreviewImage}" Margin="5"/>
+                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontWeight="Bold" Margin="5"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <ScrollViewer Grid.Row="5" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                <StackPanel x:Name="TemplateDisplayArea" Margin="10" HorizontalAlignment="Center">
+                    <TextBlock x:Name="DisplayTextBlock" FontSize="16" FontWeight="Bold" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                    <ItemsControl x:Name="DisplayImagesControl">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Image Source="{Binding Image}" Width="150" Height="150" Stretch="UniformToFill" Margin="5"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+
+            <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
+                <CheckBox x:Name="InstagramCheckBox" Content="Instagram" Margin="5" Checked="InstagramCheckBox_Checked"/>
+                <CheckBox x:Name="TelegramCheckBox" Content="Telegram" Margin="5"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="7" Margin="10" HorizontalAlignment="Center">
+                <Button x:Name ="PostButton" Content="Post" Width="200" Height="50" FontSize="16" FontWeight="Bold" Background="Black" Foreground="White" Click="PostButton_Click"/>
+            </StackPanel>
+
+        </Grid>
+    </ScrollViewer>
 </Page>

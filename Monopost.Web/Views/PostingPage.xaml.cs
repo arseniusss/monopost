@@ -1,5 +1,7 @@
 using Microsoft.Win32;
+using Monopost.BLL.Services;
 using Monopost.DAL.Entities;
+using Monopost.DAL.Repositories.Implementations;
 using Monopost.DAL.Repositories.Interfaces;
 using Monopost.PresentationLayer.Helpers;
 using Monopost.Web.Helpers;
@@ -24,6 +26,10 @@ namespace Monopost.Web.Views
     {
         private readonly ITemplateRepository _templateRepository;
         private readonly ITemplateFileRepository _templateFileRepository;
+        private readonly ICredentialRepository _credentialRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly IPostRepository _postRepository;
+        private readonly IPostMediaRepository _postMediaRepository;
 
         private Template _currentTemplate;
         private const int MaxTextLength = 200;
@@ -36,6 +42,9 @@ namespace Monopost.Web.Views
             CharacterCountText.Text = $"0/{MaxTextLength}";
             TemplateNameTextBox.Visibility = Visibility.Collapsed;
             TemplateDropdown.Visibility = Visibility.Collapsed;
+            PostButton.Visibility = Visibility.Visible;
+            InstagramCheckBox.Visibility = Visibility.Visible;
+            TelegramCheckBox.Visibility = Visibility.Visible;
 
             LoadTemplates();
         }
@@ -87,51 +96,6 @@ namespace Monopost.Web.Views
                 {
                     TemplateDropdown.SelectedItem = selectedTemplateItem;
                 }
-            }
-        }
-
-        private void UploadFileButton_Click(object sender, RoutedEventArgs e)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog
-            {
-                Title = "Select an image to upload",
-                Filter = "Image files (*.png;*.jpg;*.jpeg;*.bmp)|*.png;*.jpg;*.jpeg;*.bmp|All files (*.*)|*.*"
-            };
-
-            if (openFileDialog.ShowDialog() == true)
-            {
-                string filePath = openFileDialog.FileName;
-                AddImageToDisplay(filePath);
-            }
-        }
-
-        private void AddImageToDisplay(string filePath)
-        {
-            try
-            {
-                var bitmap = new BitmapImage();
-                bitmap.BeginInit();
-                bitmap.UriSource = new Uri(filePath, UriKind.Absolute);
-                bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache; 
-                bitmap.EndInit();
-                bitmap.Freeze(); 
-
-                ImagesControl.Items.Add(new ImageItem { Image = bitmap, FileName = System.IO.Path.GetFileName(filePath) });
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading image: {ex.Message}");
-            }
-        }
-
-
-
-        private void DeleteImageButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button deleteButton && deleteButton.Tag is ImageItem imageToDelete)
-            {
-                ImagesControl.Items.Remove(imageToDelete);
             }
         }
 
@@ -204,11 +168,63 @@ namespace Monopost.Web.Views
                 MessageBox.Show("Template updated successfully.");
             }
 
+
             await LoadTemplates();
             TemplateDropdown.Visibility = Visibility.Collapsed;
             ClearInputFields();
         }
 
+        private void UploadFileButton_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Title = "Select an image to upload",
+                Filter = "Image files (*.png;*.jpg;*.jpeg;*.bmp)|*.png;*.jpg;*.jpeg;*.bmp|All files (*.*)|*.*"
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                string filePath = openFileDialog.FileName;
+                AddImageToDisplay(filePath);
+
+                PostButton.Visibility = Visibility.Visible;
+                InstagramCheckBox.Visibility = Visibility.Visible;
+                TelegramCheckBox.Visibility = Visibility.Visible;
+            }
+        }
+
+
+        private void AddImageToDisplay(string filePath)
+        {
+            try
+            {
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.UriSource = new Uri(filePath, UriKind.Absolute);
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache; 
+                bitmap.EndInit();
+                bitmap.Freeze(); 
+
+                ImagesControl.Items.Add(new ImageItem { Image = bitmap, FileName = System.IO.Path.GetFileName(filePath) });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading image: {ex.Message}");
+            }
+        }
+
+
+
+        private void DeleteImageButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button deleteButton && deleteButton.Tag is ImageItem imageToDelete)
+            {
+                ImagesControl.Items.Remove(imageToDelete);
+            }
+        }
+
+        
         private byte[] ConvertImageToByteArray(BitmapImage image)
         {
             using (var memoryStream = new System.IO.MemoryStream())
@@ -253,6 +269,10 @@ namespace Monopost.Web.Views
                         ImagesControl.Items.Add(new ImageItem { Image = image, FileName = templateFile.FileName });
                     }
                 }
+
+                PostButton.Visibility = Visibility.Visible;
+                InstagramCheckBox.Visibility = Visibility.Visible;
+                TelegramCheckBox.Visibility = Visibility.Visible;
             }
         }
 
@@ -285,6 +305,60 @@ namespace Monopost.Web.Views
             CharacterCountText.Text = $"0/{MaxTextLength}";
             CharacterCountText.Foreground = Brushes.Gray;
             _currentTemplate = null;
+        }
+
+        private async void PostButton_Click(object sender, RoutedEventArgs e)
+        {
+            string postText = PostTextBox.Text;
+
+            List<string> filesToUpload = new List<string>();
+            foreach (ImageItem item in ImagesControl.Items)
+            {
+                filesToUpload.Add(item.FileName);
+            }
+
+            if (string.IsNullOrWhiteSpace(postText) && filesToUpload.Count == 0)
+            {
+                MessageBox.Show("Please add text or an image before posting.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            List<int> selectedSocialMedia = GetSelectedSocialMedia(); 
+
+            var postingService = new SocialMediaPostingService(
+                _credentialRepository, _userRepository, _postRepository, _postMediaRepository, UserSession.CurrentUserId);
+
+            var result = await postingService.CreatePostAsync(postText, filesToUpload, selectedSocialMedia);
+
+            if (result.Success)
+            {
+                MessageBox.Show(result.Message, "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                MessageBox.Show(result.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private List<int> GetSelectedSocialMedia()
+        {
+            List<int> selectedSocialMedia = new List<int>();
+
+            if (InstagramCheckBox.IsChecked == true)
+            {
+                selectedSocialMedia.Add(0);
+            }
+            if (TelegramCheckBox.IsChecked == true)
+            {
+                selectedSocialMedia.Add(1); 
+            }
+
+            return selectedSocialMedia;
+        }
+
+        private void InstagramCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

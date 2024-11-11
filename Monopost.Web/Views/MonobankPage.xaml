@@ -2,9 +2,58 @@
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Title="Monobank">
-    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-        <TextBlock Text="Monobank" FontSize="24" FontWeight="Bold" />
-        <TextBox Width="200" Margin="10" Text="Enter Monobank API-key " />
-        <Button Content="Get statistics" Width="150" Margin="10"/>
-    </StackPanel>
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10">
+                <TextBlock Text="Monobank" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
+
+                <TextBox Width="200" Margin="10" Text="Enter Monobank API-key"/>
+
+                <TextBlock Text="or" FontSize="16" FontStyle="Italic" HorizontalAlignment="Center" Margin="5"/>
+
+                <Button Content="Choose CSV File(s)" Width="150" Margin="10" Click="ChooseFileButton_Click"/>
+
+                <ItemsControl x:Name="FileItemsControl" Margin="10">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Margin="5">
+                                <TextBlock Text="{Binding}" Width="200" TextWrapping="Wrap" ToolTip="{Binding}"/>
+                                <Button Content="X" Width="20" Height="20" Margin="5,0,0,0"
+                                        Command="{Binding DataContext.RemoveFileCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                        CommandParameter="{Binding}" ToolTip="Remove file"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Button Content="Get Statistics" Click="OnGetStatisticsClicked" Width="150" Margin="10"/>
+
+                <TextBlock x:Name="StatsTextBlock" Margin="10" HorizontalAlignment="Center" TextWrapping="Wrap"/>
+
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="10">
+                    <StackPanel x:Name="ChartsStackPanel" Orientation="Vertical" HorizontalAlignment="Center" Width="800">
+                        <ItemsControl x:Name="ChartItemsControl">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Width="200" Height="150" BorderBrush="Gray" BorderThickness="1" Margin="5">
+                                        <Image Source="{Binding}" Width="200" Height="150" Stretch="Uniform" MouseLeftButtonUp="OnImageClick"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <Button Content="Save Stats to PDF" Width="150" Margin="10" Click="SaveStatsToPdf_Click" Visibility="Collapsed" x:Name="SaveStatsButton"/>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Popup x:Name="ImagePopup" IsOpen="False" HorizontalAlignment="Center" VerticalAlignment="Center" MouseLeftButtonDown="OnPopupClose">
+            <Border Background="Black" Opacity="0.8" Padding="20">
+                <Canvas Width="Auto" Height="Auto">
+                    <Image x:Name="ZoomedImage" Stretch="Uniform" MouseWheel="ZoomedImage_MouseWheel"/>
+                </Canvas>
+            </Border>
+        </Popup>
+    </Grid>
 </Page>

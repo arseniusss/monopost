@@ -4,7 +4,7 @@
       Title="Profile">
     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
         <TextBlock Text="Profile" FontSize="24" FontWeight="Bold" />
-        <Button Content="Connect Facebook" Width="200" Margin="10"/>
-        <Button Content="Connect Twitter" Width="200" Margin="10"/>
+        <Button Content="Connect Telegram" Width="200" Margin="10"/>
+        <Button Content="Connect Instagram" Width="200" Margin="10"/>
     </StackPanel>
 </Page>
