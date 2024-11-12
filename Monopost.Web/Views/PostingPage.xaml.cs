@@ -337,9 +337,6 @@ namespace Monopost.Web.Views
                 return;
             }
 
-            var loadingWindow = new LoadingWindow(); 
-            loadingWindow.Show();
-
             try
             {
                 var postingService = new SocialMediaPostingService(
@@ -360,10 +357,7 @@ namespace Monopost.Web.Views
             {
                 MessageBox.Show($"An error occurred while posting: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            finally
-            {
-                loadingWindow.Close(); 
-            }
+
         }
 
 
