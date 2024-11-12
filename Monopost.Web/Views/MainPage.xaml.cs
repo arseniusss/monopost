@@ -2,7 +2,8 @@
 using Monopost.DAL.Repositories.Interfaces;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.Extensions.DependencyInjection;  
+using Microsoft.Extensions.DependencyInjection;
+
 namespace Monopost.Web.Views
 {
     public partial class MainPage : Page
@@ -14,14 +15,27 @@ namespace Monopost.Web.Views
 
         private readonly ITemplateRepository _templateRepository;
         private readonly ITemplateFileRepository _templateFileRepository;
+        private readonly ICredentialRepository _credentialRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly IPostRepository _postRepository;
+        private readonly IPostMediaRepository _postMediaRepository;
 
-        public MainPage(ITemplateRepository templateRepository, ITemplateFileRepository templateFileRepository)
+        public MainPage(ITemplateRepository templateRepository,
+                        ITemplateFileRepository templateFileRepository,
+                        ICredentialRepository credentialRepository,
+                        IUserRepository userRepository,
+                        IPostRepository postRepository,
+                        IPostMediaRepository postMediaRepository)
         {
             InitializeComponent();
             DataContext = this;
 
             _templateRepository = templateRepository;
             _templateFileRepository = templateFileRepository;
+            _credentialRepository = credentialRepository;
+            _userRepository = userRepository;
+            _postRepository = postRepository;
+            _postMediaRepository = postMediaRepository;
 
             NavigateProfileCommand = new RelayCommand(_ => NavigateToProfilePage());
             NavigateMonobankCommand = new RelayCommand(_ => NavigateToMonobankPage());
@@ -41,7 +55,7 @@ namespace Monopost.Web.Views
 
         private void NavigateToPostingPage()
         {
-            var postingPage = new PostingPage(_templateRepository, _templateFileRepository);
+            var postingPage = new PostingPage(_templateRepository, _templateFileRepository, _credentialRepository, _userRepository, _postRepository, _postMediaRepository);
             MainFrame.Navigate(postingPage);
         }
 

@@ -34,11 +34,18 @@ namespace Monopost.Web.Views
         private Template _currentTemplate;
         private const int MaxTextLength = 200;
 
-        public PostingPage(ITemplateRepository templateRepository, ITemplateFileRepository templateFileRepository)
+        public PostingPage(ITemplateRepository templateRepository, ITemplateFileRepository templateFileRepository,
+                           ICredentialRepository credentialRepository, IUserRepository userRepository,
+                           IPostRepository postRepository, IPostMediaRepository postMediaRepository)
         {
             InitializeComponent();
             _templateRepository = templateRepository;
             _templateFileRepository = templateFileRepository;
+            _credentialRepository = credentialRepository;
+            _userRepository = userRepository;
+            _postRepository = postRepository;
+            _postMediaRepository = postMediaRepository;
+
             CharacterCountText.Text = $"0/{MaxTextLength}";
             TemplateNameTextBox.Visibility = Visibility.Collapsed;
             TemplateDropdown.Visibility = Visibility.Collapsed;
@@ -323,22 +330,42 @@ namespace Monopost.Web.Views
                 return;
             }
 
-            List<int> selectedSocialMedia = GetSelectedSocialMedia(); 
-
-            var postingService = new SocialMediaPostingService(
-                _credentialRepository, _userRepository, _postRepository, _postMediaRepository, UserSession.CurrentUserId);
-
-            var result = await postingService.CreatePostAsync(postText, filesToUpload, selectedSocialMedia);
-
-            if (result.Success)
+            List<int> selectedSocialMedia = GetSelectedSocialMedia();
+            if (selectedSocialMedia.Count == 0)
             {
-                MessageBox.Show(result.Message, "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Please select at least one social media platform to post to.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
             }
-            else
+
+            var loadingWindow = new LoadingWindow(); 
+            loadingWindow.Show();
+
+            try
             {
-                MessageBox.Show(result.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                var postingService = new SocialMediaPostingService(
+                    _credentialRepository, _userRepository, _postRepository, _postMediaRepository, 0);
+
+                var result = await postingService.CreatePostAsync(postText, filesToUpload, selectedSocialMedia);
+
+                if (result.Success)
+                {
+                    MessageBox.Show(result.Message, "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show(result.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred while posting: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                loadingWindow.Close(); 
             }
         }
+
 
         private List<int> GetSelectedSocialMedia()
         {

@@ -11,6 +11,7 @@
 **/.sonarqube/
 **/tempdelete/
 
-for try
+# Ignore specific files
+appsettings.json
 dotnet.yml
 constants.txt

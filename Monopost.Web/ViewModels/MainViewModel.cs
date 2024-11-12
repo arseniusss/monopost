@@ -11,6 +11,10 @@ namespace Monopost.Web.ViewModels
     {
         private readonly ITemplateRepository _templateRepository;
         private readonly ITemplateFileRepository _templateFileRepository;
+        private readonly ICredentialRepository _credentialRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly IPostRepository _postRepository;
+        private readonly IPostMediaRepository _postMediaRepository;
 
         public Frame MainFrame { get; private set; }
 
@@ -19,15 +23,26 @@ namespace Monopost.Web.ViewModels
         public ICommand NavigatePostingCommand { get; }
         public ICommand NavigateAdminCommand { get; }
 
-        public MainViewModel(Frame mainFrame, ITemplateRepository templateRepository, ITemplateFileRepository templateFileRepository)
+        public MainViewModel(Frame mainFrame,
+                             ITemplateRepository templateRepository,
+                             ITemplateFileRepository templateFileRepository,
+                             ICredentialRepository credentialRepository,
+                             IUserRepository userRepository,
+                             IPostRepository postRepository,
+                             IPostMediaRepository postMediaRepository)
         {
             MainFrame = mainFrame;
             _templateRepository = templateRepository;
             _templateFileRepository = templateFileRepository;
+            _credentialRepository = credentialRepository;
+            _userRepository = userRepository;
+            _postRepository = postRepository;
+            _postMediaRepository = postMediaRepository;
 
             NavigateProfileCommand = new RelayCommand(_ => MainFrame.Navigate(new ProfilePage()));
             NavigateMonobankCommand = new RelayCommand(_ => MainFrame.Navigate(new MonobankPage()));
-            NavigatePostingCommand = new RelayCommand(_ => MainFrame.Navigate(new PostingPage(_templateRepository, _templateFileRepository)));
+            NavigatePostingCommand = new RelayCommand(_ => MainFrame.Navigate(new PostingPage(
+                _templateRepository, _templateFileRepository, _credentialRepository, _userRepository, _postRepository, _postMediaRepository)));
             NavigateAdminCommand = new RelayCommand(_ => MainFrame.Navigate(new AdminPage()));
         }
     }

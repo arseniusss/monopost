@@ -9,6 +9,10 @@ namespace Monopost.Web.Views
     {
         private readonly ITemplateRepository _templateRepository;
         private readonly ITemplateFileRepository _templateFileRepository;
+        private readonly ICredentialRepository _credentialRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly IPostRepository _postRepository;
+        private readonly IPostMediaRepository _postMediaRepository;
 
         public MainWindow()
         {
@@ -16,6 +20,10 @@ namespace Monopost.Web.Views
 
             _templateRepository = App.ServiceProvider.GetRequiredService<ITemplateRepository>();
             _templateFileRepository = App.ServiceProvider.GetRequiredService<ITemplateFileRepository>();
+            _credentialRepository = App.ServiceProvider.GetRequiredService<ICredentialRepository>();
+            _userRepository = App.ServiceProvider.GetRequiredService<IUserRepository>();
+            _postRepository = App.ServiceProvider.GetRequiredService<IPostRepository>();
+            _postMediaRepository = App.ServiceProvider.GetRequiredService<IPostMediaRepository>();
 
             this.Content = new LoginPage(this);
         }
@@ -26,12 +34,11 @@ namespace Monopost.Web.Views
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-
         }
 
         public void NavigateToMainContent()
         {
-            var mainPage = new MainPage(_templateRepository, _templateFileRepository);
+            var mainPage = new MainPage(_templateRepository, _templateFileRepository, _credentialRepository, _userRepository, _postRepository, _postMediaRepository);
             this.Content = mainPage;
         }
     }

@@ -75,15 +75,21 @@ namespace Monopost.Web
         {
             services.AddSingleton<ITemplateRepository, TemplateRepository>();
             services.AddSingleton<ITemplateFileRepository, TemplateFileRepository>();
-
-            services.AddSingleton<MainWindow>();  
-            services.AddSingleton<LoginPage>();    
-            services.AddSingleton<MainPage>();  
-            services.AddSingleton<ProfilePage>();  
+            services.AddSingleton<ICredentialRepository, CredentialRepository>();
+            services.AddSingleton<IUserRepository, UserRepository>();
+            services.AddSingleton<IPostRepository, PostRepository>();
+            services.AddSingleton<IPostMediaRepository, PostMediaRepository>();
+    
+            services.AddSingleton<MainWindow>();
+            services.AddSingleton<LoginPage>();
+            services.AddSingleton<MainPage>();
+            services.AddSingleton<ProfilePage>();
             services.AddSingleton<MonobankPage>();
-            services.AddSingleton<PostingPage>();  
-            services.AddSingleton<AdminPage>();    
+            services.AddSingleton<PostingPage>();
+            services.AddSingleton<AdminPage>();
+
         }
+
 
         protected override void OnExit(ExitEventArgs e)
         {
