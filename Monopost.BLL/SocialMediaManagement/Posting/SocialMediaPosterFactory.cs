@@ -11,11 +11,11 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
         {
         }
 
-        public static ISocialMediaPoster? CreatePoster(CredentialType credentialType, List<DecodedCredential> credentials)
+        public static ISocialMediaPoster? CreatePoster(SocialMediaType credentialType, List<DecodedCredential> credentials)
         {
             switch (credentialType)
             {
-                case CredentialType.InstagramAccessToken:
+                case SocialMediaType.Instagram:
                     var instagramAccessToken = credentials.FirstOrDefault(c => c.CredentialType == CredentialType.InstagramAccessToken)?.CredentialValue;
                     var instagramUserId = credentials.FirstOrDefault(c => c.CredentialType == CredentialType.InstagramUserId)?.CredentialValue;
                     var imgbbApiKey = credentials.FirstOrDefault(c => c.CredentialType == CredentialType.ImgbbApiKey)?.CredentialValue;
@@ -28,7 +28,7 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
                     }
                     break;
 
-                case CredentialType.TelegramAppID:
+                case SocialMediaType.Telegram:
                     var telegramAppId = credentials.FirstOrDefault(c => c.CredentialType == CredentialType.TelegramAppID)?.CredentialValue;
                     var telegramAppHash = credentials.FirstOrDefault(c => c.CredentialType == CredentialType.TelegramAppHash)?.CredentialValue;
                     var telegramChannelId = credentials.FirstOrDefault(c => c.CredentialType == CredentialType.TelegramChannelId)?.CredentialValue;

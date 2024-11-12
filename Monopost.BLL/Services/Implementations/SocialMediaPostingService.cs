@@ -55,13 +55,13 @@ namespace Monopost.BLL.Services
             logger.Information($"{credentialsResult.Data.Count()} credentials found for user with id = {_userId}");
             var credentials = credentialsResult.Data.ToList();
 
-            var instagramPoster = SocialMediaPosterFactory.CreatePoster(CredentialType.InstagramAccessToken, credentials);
+            var instagramPoster = SocialMediaPosterFactory.CreatePoster(SocialMediaType.Instagram, credentials);
             if (instagramPoster != null)
             {
                 _socialMediaPosters.Add(instagramPoster);
             }
 
-            var telegramPoster = SocialMediaPosterFactory.CreatePoster(CredentialType.TelegramAppID, credentials);
+            var telegramPoster = SocialMediaPosterFactory.CreatePoster(SocialMediaType.Telegram, credentials);
             if (telegramPoster != null)
             {
                 _socialMediaPosters.Add(telegramPoster);
