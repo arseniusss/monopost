@@ -15,13 +15,15 @@ namespace Monopost.BLL.Services.Implementations
     {
         public static ILogger logger = LoggerConfig.GetLogger();
         private List<Transaction> transactions;
-        private DataScienceService? manager = new DataScienceService();
+        public DataScienceService? manager = new DataScienceService(); //було private
 
         public DataScienceSavingPdfService(string filepath)
         {
             transactions = new List<Transaction>();
             manager.LoadFromCSVs(new List<Tuple<string, string>> {new Tuple<string,string> (filepath, "") });
         }
+
+
 
         private void GenerateStatisticsPdf(
             Dictionary<string, decimal> donationTotalAmountsByTimeOfDay,
@@ -154,6 +156,7 @@ namespace Monopost.BLL.Services.Implementations
         }
 
         [Obsolete]
+
         public Result<string> SaveResults(string fileName, string outputDirectory)
         {
             try
