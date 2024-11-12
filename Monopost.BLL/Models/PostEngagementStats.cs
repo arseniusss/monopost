@@ -1,6 +1,4 @@
-﻿using Monopost.DAL.Enums;
-
-namespace Monopost.BLL.Models
+﻿namespace Monopost.BLL.Models
 {
     public class PostEngagementStats
     {
@@ -9,7 +7,7 @@ namespace Monopost.BLL.Models
         public int Comments { get; set; }
         public int Forwards { get; set; }
         public int PostMediaId { get; set; }
-        
+
         public PostEngagementStats(int id, int views, int reactions, int comments, int forwards)
         {
             Views = views;

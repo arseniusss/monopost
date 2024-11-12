@@ -4,11 +4,11 @@ using Monopost.DAL.Entities;
 using Monopost.DAL.Repositories.Interfaces;
 using Monopost.Logging;
 using Monopost.PresentationLayer.Helpers;
+using Serilog;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Serilog;
 
 
 namespace Monopost.Web.Views
@@ -208,9 +208,9 @@ namespace Monopost.Web.Views
                 bitmap.BeginInit();
                 bitmap.UriSource = new Uri(filePath, UriKind.Absolute);
                 bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache; 
+                bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                 bitmap.EndInit();
-                bitmap.Freeze(); 
+                bitmap.Freeze();
 
                 ImagesControl.Items.Add(new ImageItem { Image = bitmap, FileName = System.IO.Path.GetFileName(filePath) });
             }
@@ -230,7 +230,7 @@ namespace Monopost.Web.Views
             }
         }
 
-        
+
         private byte[] ConvertImageToByteArray(BitmapImage image)
         {
             using (var memoryStream = new System.IO.MemoryStream())
@@ -318,14 +318,13 @@ namespace Monopost.Web.Views
             string postText = PostTextBox.Text;
 
             List<string> filesToUpload = new List<string>();
-            string imagesFolderPath = AppDomain.CurrentDomain.BaseDirectory; // Use the application's directory
+            string imagesFolderPath = AppDomain.CurrentDomain.BaseDirectory;
 
             foreach (ImageItem item in ImagesControl.Items)
             {
                 string filePath = System.IO.Path.Combine(imagesFolderPath, item.FileName);
                 filesToUpload.Add(filePath);
 
-                // Save the image to the specified folder
                 using (var fileStream = new System.IO.FileStream(filePath, System.IO.FileMode.Create))
                 {
                     BitmapEncoder encoder = new JpegBitmapEncoder();

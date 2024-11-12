@@ -2,8 +2,8 @@
 using Monopost.BLL.Models;
 using Monopost.BLL.Services.Implementations;
 using Monopost.DAL.DataAccess;
-using Monopost.DAL.Repositories.Implementations;
 using Monopost.DAL.Entities;
+using Monopost.DAL.Repositories.Implementations;
 
 
 namespace Monopost.UnitTests.Services

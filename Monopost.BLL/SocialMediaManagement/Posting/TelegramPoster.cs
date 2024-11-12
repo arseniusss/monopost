@@ -1,10 +1,10 @@
-﻿using TL;
-using WTelegram;
-using Monopost.BLL.Models;
+﻿using Monopost.BLL.Models;
 using Monopost.BLL.SocialMediaManagement.Models;
 using Monopost.DAL.Enums;
 using Monopost.Logging;
 using Serilog;
+using TL;
+using WTelegram;
 
 namespace Monopost.BLL.SocialMediaManagement.Posting
 {
@@ -75,7 +75,7 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
                 try
                 {
                     var result = await _client.SendAlbumAsync(chat, inputMedias, text);
-                    return new Result<PostPageAndId>(true, "Message successfully posted", new PostPageAndId (_channelId, result.FirstOrDefault()?.id.ToString(), SocialMediaType.Telegram));
+                    return new Result<PostPageAndId>(true, "Message successfully posted", new PostPageAndId(_channelId, result.FirstOrDefault()?.id.ToString(), SocialMediaType.Telegram));
                 }
                 catch (Exception ex)
                 {
@@ -118,7 +118,7 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
             {
                 views = msg.views;
                 forwards = msg.forwards;
-                if(msg.replies != null && msg.replies?.replies != null)
+                if (msg.replies != null && msg.replies?.replies != null)
                     comments = msg.replies.replies;
 
                 if (msg.reactions != null && msg.reactions.results != null)

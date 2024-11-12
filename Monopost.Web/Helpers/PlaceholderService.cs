@@ -1,5 +1,4 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
@@ -44,7 +43,7 @@ namespace Monopost.Web.Helpers
             if (string.IsNullOrEmpty(textBox.Text))
             {
                 textBox.Text = GetPlaceholderText(textBox);
-                textBox.Foreground = Brushes.Gray; 
+                textBox.Foreground = Brushes.Gray;
             }
         }
 

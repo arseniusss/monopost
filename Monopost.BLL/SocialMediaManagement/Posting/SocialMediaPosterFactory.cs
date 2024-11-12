@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Monopost.BLL.Models;
+﻿using Monopost.BLL.Models;
 using Monopost.DAL.Enums;
 
 namespace Monopost.BLL.SocialMediaManagement.Posting

@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Monopost.DAL.Repositories.Interfaces;
-using Monopost.Web.Views;
 using System.Windows;
 
 namespace Monopost.Web.Views

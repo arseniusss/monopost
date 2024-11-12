@@ -315,7 +315,7 @@ namespace Monopost.UnitTests.Services
 
             Assert.True(result.Success);
             Assert.Equal("Credential deleted successfully.", result.Message);
-            
+
             Assert.Null(await _credentialRepository.GetByIdAsync(1));
         }
 
@@ -471,7 +471,7 @@ namespace Monopost.UnitTests.Services
 
             Assert.True(result.Success);
             Assert.NotNull(result.Data);
-            Assert.Empty(result.Data); 
+            Assert.Empty(result.Data);
         }
     }
 }

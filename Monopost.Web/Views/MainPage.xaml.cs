@@ -1,8 +1,6 @@
-﻿using Monopost.Web.Commands;
-using Monopost.DAL.Repositories.Interfaces;
-using System.Windows;
+﻿using Monopost.DAL.Repositories.Interfaces;
+using Monopost.Web.Commands;
 using System.Windows.Controls;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Monopost.Web.Views
 {

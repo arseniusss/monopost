@@ -1,8 +1,8 @@
 ﻿using Monopost.BLL.Models;
 using Monopost.BLL.SocialMediaManagement.Models;
-using Newtonsoft.Json;
 using Monopost.DAL.Enums;
 using Monopost.Logging;
+using Newtonsoft.Json;
 using Serilog;
 
 namespace Monopost.BLL.SocialMediaManagement.Posting
@@ -35,7 +35,7 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
                     var imageUrl = await UploadImageAsync(imagePath);
                     uploadedUrls.Add(imageUrl);
                 }
-                catch {}
+                catch { }
             }
 
             return uploadedUrls;

@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Monopost.BLL.Models;
 using Monopost.BLL.Services;
+using Monopost.DAL.DataAccess;
 using Monopost.DAL.Entities;
 using Monopost.DAL.Repositories.Implementations;
-using Monopost.DAL.DataAccess;
 using Monopost.Logging;
 using Serilog;
 

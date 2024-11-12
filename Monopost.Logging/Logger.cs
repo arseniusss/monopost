@@ -1,5 +1,5 @@
-﻿using Serilog;
-using DotNetEnv;
+﻿using DotNetEnv;
+using Serilog;
 
 namespace Monopost.Logging
 {

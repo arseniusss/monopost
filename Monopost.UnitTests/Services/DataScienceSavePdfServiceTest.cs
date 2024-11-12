@@ -1,13 +1,4 @@
-﻿using System;
-using System.IO;
-using Xunit;
-using Monopost.BLL.Services.Implementations;
-using Monopost.BLL.Models;
-using Monopost.Logging;
-using Serilog;
-using Monopost.BLL.Services.Interfaces;
-using Moq;
-using PdfSharp.Pdf;
+﻿using Monopost.BLL.Services.Implementations;
 
 namespace Monopost.UnitTests.Services
 {
@@ -69,17 +60,17 @@ namespace Monopost.UnitTests.Services
             Assert.Contains("Final report generated", result.Message);
         }
 
-       [Fact]
-       public void SaveResults_ReturnsFailure_WhenOutputDirectoryDoesNotExist()
-       {
-           var service = new DataScienceSavingPdfService(TestFilePath);
-           string fileName = "FinalReport.pdf";
-           string nonExistentDirectory = "NonExistentDirectory";
-      
-           var result = service.SaveResults(fileName, nonExistentDirectory);
-      
-           Assert.False(result.Success);
-           Assert.Contains("Output directory does not exist", result.Message);
-       }      
+        [Fact]
+        public void SaveResults_ReturnsFailure_WhenOutputDirectoryDoesNotExist()
+        {
+            var service = new DataScienceSavingPdfService(TestFilePath);
+            string fileName = "FinalReport.pdf";
+            string nonExistentDirectory = "NonExistentDirectory";
+
+            var result = service.SaveResults(fileName, nonExistentDirectory);
+
+            Assert.False(result.Success);
+            Assert.Contains("Output directory does not exist", result.Message);
+        }
     }
 }

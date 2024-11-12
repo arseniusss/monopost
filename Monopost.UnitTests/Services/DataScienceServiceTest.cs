@@ -1,7 +1,6 @@
 ﻿using Monopost.BLL.Enums;
-using Monopost.BLL.Services.Implementations;
 using Monopost.BLL.Models;
-using Monopost.Logging;
+using Monopost.BLL.Services.Implementations;
 using Serilog;
 
 namespace Monopost.UnitTests.Services
@@ -11,15 +10,15 @@ namespace Monopost.UnitTests.Services
         private readonly DataScienceService _service;
         private readonly string _testFilePath = "test_transactions.csv";
 
-       // public TransactionServiceTests()
-       // {
-       //     _service = new DataScienceService();
-       //     _service.LoadFromCsv(_testFilePath);
-       //     SetupTestFile();
-       //
-       //     LoggerConfig.ConfigureLogging();
-       //     var logger = LoggerConfig.GetLogger();
-       // }
+        // public TransactionServiceTests()
+        // {
+        //     _service = new DataScienceService();
+        //     _service.LoadFromCsv(_testFilePath);
+        //     SetupTestFile();
+        //
+        //     LoggerConfig.ConfigureLogging();
+        //     var logger = LoggerConfig.GetLogger();
+        // }
 
         public void Dispose()
         {

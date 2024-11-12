@@ -1,12 +1,12 @@
 ﻿using Monopost.BLL.Models;
-using Monopost.DAL.Entities;
-using Monopost.DAL.Repositories.Interfaces;
-using Monopost.DAL.Enums;
-using Sprache;
 using Monopost.BLL.Services.Interfaces;
-using Result = Monopost.BLL.Models.Result;
+using Monopost.DAL.Entities;
+using Monopost.DAL.Enums;
+using Monopost.DAL.Repositories.Interfaces;
 using Monopost.Logging;
 using Serilog;
+using Sprache;
+using Result = Monopost.BLL.Models.Result;
 
 namespace Monopost.BLL.Services
 {
@@ -31,7 +31,7 @@ namespace Monopost.BLL.Services
                 return new Result<CredentialModel>(false, "Non-Empty CredentialValue is required for non locally stored credentials.");
             }
 
-            if(model.StoredLocally && string.IsNullOrWhiteSpace(model.LocalPath))
+            if (model.StoredLocally && string.IsNullOrWhiteSpace(model.LocalPath))
             {
                 logger.Warning($"Result: Failure\nReason: LocalPath is required for locally stored credentials.");
                 return new Result<CredentialModel>(false, "LocalPath is required for locally stored credentials.");
@@ -43,10 +43,11 @@ namespace Monopost.BLL.Services
                 logger.Warning($"Result: Failure\nReason: Invalid AuthorId: User does not exist.");
                 return new Result<CredentialModel>(false, "Invalid AuthorId: User does not exist.");
             }
-            
+
             var credentialExists = await _credentialRepository.GetByIdAsync(model.Id);
-            
-            if (credentialExists != null) {
+
+            if (credentialExists != null)
+            {
                 logger.Warning($"Result: Failure\nReason: Id is already taken.");
                 return new Result<CredentialModel>(false, "Id is already taken.");
             }
@@ -142,7 +143,7 @@ namespace Monopost.BLL.Services
                 logger.Warning($"Result: Failure\nReason: Invalid AuthorId: User does not exist.");
                 return new Result<CredentialModel>(false, "Invalid AuthorId: User does not exist.");
             }
-          
+
             if (model == null)
             {
                 logger.Warning($"Result: Failure\nReason: Credential data is required.");
@@ -157,7 +158,7 @@ namespace Monopost.BLL.Services
             }
 
             var existingUserCredentials = await _credentialRepository.GetByUserIdAsync(model.AuthorId);
-            var credentialOfSameType = existingUserCredentials.Any(c => c.CredentialType == model.CredentialType && c.Id!=model.Id);
+            var credentialOfSameType = existingUserCredentials.Any(c => c.CredentialType == model.CredentialType && c.Id != model.Id);
 
             if (credentialOfSameType)
             {
@@ -188,7 +189,7 @@ namespace Monopost.BLL.Services
             {
                 logger.Warning($"Result: Failure\nReason: Credential with id {id} not found.");
                 return new Result(false, $"Credential with id {id} not found.");
-            }   
+            }
 
             await _credentialRepository.DeleteAsync(id);
             logger.Information($"Result: Success\nMessage: Credential with id = {id} deleted successfully");

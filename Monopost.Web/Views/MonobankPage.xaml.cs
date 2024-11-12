@@ -1,19 +1,16 @@
 using Microsoft.Win32;
-using System;
+using Monopost.BLL.Enums;
+using Monopost.BLL.Services.Implementations;
+using Monopost.Web.Commands;
+using PdfSharp.Drawing;
+using PdfSharp.Pdf;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media.Imaging;
-using Monopost.BLL.Services.Implementations;
-using Monopost.BLL.Enums;
-using Monopost.Web.Commands;
 using System.Windows.Media;
-using PdfSharp.Drawing;
-using PdfSharp.Pdf;
-using System.Collections.Generic;
+using System.Windows.Media.Imaging;
 
 namespace Monopost.Web.Views
 {
