@@ -243,7 +243,6 @@ namespace Monopost.UnitTests.Services
             { "D:\\Monopost\\Monopost.UnitTests\\Resources\\Images\\1.jpg",
               "D:\\Monopost\\Monopost.UnitTests\\Resources\\Images\\2.jpg" });
 
-            Assert.Equal(result.Success, true);
             Assert.True(result.Success);
             Assert.Equal("Messages posted successfully", result.Message);
 
@@ -552,6 +551,8 @@ namespace Monopost.UnitTests.Services
             Assert.False(postResult.Success);
             Assert.Equal("Text is too long, must be less than 2200 characters", postResult.Message);
         }
+
+        [Fact]
         public async Task GetPostEngagementStatsAsync_ShouldFail_WhenPostNotFound()
         {
             var engagementStatsResult = await _socialMediaPostingService.GetPostEngagementStatsAsync(999); // Non-existent postId
