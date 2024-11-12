@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Monopost.DAL.Entities;
 
 namespace Monopost.DAL.DataAccess
@@ -9,7 +10,7 @@ namespace Monopost.DAL.DataAccess
         {
             Users = Set<User>();
             Posts = Set<Post>();
-            PostMedia = Set<PostMedia>();
+            PostsSocialMedia = Set<PostMedia>();
             Templates = Set<Template>();
             TemplateFiles = Set<TemplateFile>();
             Jars = Set<Jar>();
@@ -19,7 +20,7 @@ namespace Monopost.DAL.DataAccess
 
         public DbSet<User> Users { get; set; }
         public DbSet<Post> Posts { get; set; }
-        public DbSet<PostMedia> PostMedia { get; set; }
+        public DbSet<PostMedia> PostsSocialMedia { get; set; }
         public DbSet<Template> Templates { get; set; }
         public DbSet<TemplateFile> TemplateFiles { get; set; }
         public DbSet<Jar> Jars { get; set; }
@@ -56,6 +57,19 @@ namespace Monopost.DAL.DataAccess
                 .WithMany(u => u.Restrictions)
                 .HasForeignKey(r => r.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                foreach (var property in entityType.GetProperties())
+                {
+                    if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?))
+                    {
+                        property.SetValueConverter(new ValueConverter<DateTime, DateTime>(
+                            v => v.ToUniversalTime(),
+                            v => DateTime.SpecifyKind(v, DateTimeKind.Utc)));
+                    }
+                }
+            }
         }
     }
 }

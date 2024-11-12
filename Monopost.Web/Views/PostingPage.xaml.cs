@@ -1,18 +1,15 @@
 using Microsoft.Win32;
 using Monopost.BLL.Services;
 using Monopost.DAL.Entities;
-using Monopost.DAL.Repositories.Implementations;
 using Monopost.DAL.Repositories.Interfaces;
+using Monopost.Logging;
 using Monopost.PresentationLayer.Helpers;
-using Monopost.Web.Helpers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Serilog;
+
 
 namespace Monopost.Web.Views
 {
@@ -30,6 +27,8 @@ namespace Monopost.Web.Views
         private readonly IUserRepository _userRepository;
         private readonly IPostRepository _postRepository;
         private readonly IPostMediaRepository _postMediaRepository;
+
+        public static ILogger logger = LoggerConfig.GetLogger();
 
         private Template _currentTemplate;
         private const int MaxTextLength = 200;
@@ -319,9 +318,20 @@ namespace Monopost.Web.Views
             string postText = PostTextBox.Text;
 
             List<string> filesToUpload = new List<string>();
+            string imagesFolderPath = AppDomain.CurrentDomain.BaseDirectory; // Use the application's directory
+
             foreach (ImageItem item in ImagesControl.Items)
             {
-                filesToUpload.Add(item.FileName);
+                string filePath = System.IO.Path.Combine(imagesFolderPath, item.FileName);
+                filesToUpload.Add(filePath);
+
+                // Save the image to the specified folder
+                using (var fileStream = new System.IO.FileStream(filePath, System.IO.FileMode.Create))
+                {
+                    BitmapEncoder encoder = new JpegBitmapEncoder();
+                    encoder.Frames.Add(BitmapFrame.Create(item.Image));
+                    encoder.Save(fileStream);
+                }
             }
 
             if (string.IsNullOrWhiteSpace(postText) && filesToUpload.Count == 0)
@@ -355,7 +365,8 @@ namespace Monopost.Web.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"An error occurred while posting: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                logger.Error($"An error occured while posting : {ex.Message} {ex.InnerException}");
+                MessageBox.Show($"An error occurred while posting: {ex.Message} {ex.InnerException}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
         }
@@ -365,13 +376,14 @@ namespace Monopost.Web.Views
         {
             List<int> selectedSocialMedia = new List<int>();
 
-            if (InstagramCheckBox.IsChecked == true)
+            if (InstagramCheckBox.IsChecked == true && TelegramCheckBox.IsChecked == true)
             {
                 selectedSocialMedia.Add(0);
+                selectedSocialMedia.Add(1);
             }
-            if (TelegramCheckBox.IsChecked == true)
+            else if (InstagramCheckBox.IsChecked == true || TelegramCheckBox.IsChecked == true)
             {
-                selectedSocialMedia.Add(1); 
+                selectedSocialMedia.Add(0);
             }
 
             return selectedSocialMedia;

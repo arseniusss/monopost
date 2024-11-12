@@ -35,7 +35,7 @@ namespace Monopost.DAL.Repositories.Implementations
             await _context.Posts.AddAsync(post);
             if (post.PostMedia != null && post.PostMedia.Any())
             {
-                await _context.PostMedia.AddRangeAsync(post.PostMedia);
+                await _context.PostsSocialMedia.AddRangeAsync(post.PostMedia);
             }
             await _context.SaveChangesAsync();
         }

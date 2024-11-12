@@ -220,32 +220,51 @@ namespace Monopost.BLL.Services
         public async Task<Result<IEnumerable<CredentialModel>>> GetCredentialsByUserIdAsync(int userId)
         {
             logger.Information($"Trying to get all credentials of user with id = {userId}");
-            var userExists = await _userRepository.UserExistsAsync(userId);
-            if (!userExists)
+
+            try
             {
-                logger.Warning($"Result:Failure\nReason: Invalid AuthorId: User does not exist.");
-                return new Result<IEnumerable<CredentialModel>>(false, "Invalid AuthorId: User does not exist.");
+                logger.Information("Fetching all users...");
+                var res = await _userRepository.GetAllAsync();
+                logger.Information($"All users fetched: {res.Count()}");
+
+                logger.Information("Checking if user exists...");
+                var userExists = await _userRepository.UserExistsAsync(userId);
+                logger.Information($"User exists: {userExists}");
+
+                if (!userExists)
+                {
+                    logger.Warning($"Result: Failure\nReason: Invalid AuthorId: User does not exist.");
+                    return new Result<IEnumerable<CredentialModel>>(false, "Invalid AuthorId: User does not exist.");
+                }
+
+                logger.Information("Fetching credentials for user...");
+                var credentials = await _credentialRepository.GetByUserIdAsync(userId);
+                logger.Information($"Credentials fetched: {credentials.Count()}");
+
+                if (credentials == null || !credentials.Any())
+                {
+                    logger.Warning($"Result: Failure\nReason: No credentials found for the specified user.");
+                    return new Result<IEnumerable<CredentialModel>>(false, "No credentials found for the specified user.");
+                }
+
+                var credentialDtos = credentials.Select(credential => new CredentialModel
+                {
+                    Id = credential.Id,
+                    AuthorId = credential.AuthorId,
+                    CredentialType = credential.CredentialType,
+                    CredentialValue = credential.CredentialValue,
+                    StoredLocally = credential.StoredLocally,
+                    LocalPath = credential.LocalPath
+                }).ToList();
+
+                logger.Information($"Result: Success\nMessage: User credentials retrieved successfully.");
+                return new Result<IEnumerable<CredentialModel>>(true, "User credentials retrieved successfully.", credentialDtos);
             }
-
-            var credentials = await _credentialRepository.GetByUserIdAsync(userId);
-
-            if (credentials == null || !credentials.Any())
+            catch (Exception ex)
             {
-                logger.Warning($"Result:Failure\nReason: No credentials found for the specified user.");
-                return new Result<IEnumerable<CredentialModel>>(false, "No credentials found for the specified user.");
+                logger.Error($"An error occurred: {ex.Message}");
+                return new Result<IEnumerable<CredentialModel>>(false, "An error occurred while retrieving credentials.");
             }
-
-            var credentialDtos = credentials.Select(credential => new CredentialModel
-            {
-                Id = credential.Id,
-                AuthorId = credential.AuthorId,
-                CredentialType = credential.CredentialType,
-                CredentialValue = credential.CredentialValue,
-                StoredLocally = credential.StoredLocally,
-                LocalPath = credential.LocalPath
-            }).ToList();
-            logger.Information($"Result:Success\nMessage: User credentials retrieved successfully.");
-            return new Result<IEnumerable<CredentialModel>>(true, "User credentials retrieved successfully.", credentialDtos);
         }
 
         public async Task<Result<IEnumerable<DecodedCredential>>> GetDecodedCredentialsByUserIdAsync(int userId)

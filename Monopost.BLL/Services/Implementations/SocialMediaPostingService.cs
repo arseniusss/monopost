@@ -33,7 +33,7 @@ namespace Monopost.BLL.Services
             _userId = userId;
         }
 
-        private bool AddPosters()
+        private async Task<bool> AddPosters()
         {
             if (_socialMediaPosters.Count != 0)
             {
@@ -41,7 +41,7 @@ namespace Monopost.BLL.Services
             }
 
             _socialMediaPosters = new List<ISocialMediaPoster>();
-            var credentialsResult = _credentialManagementService.GetDecodedCredentialsByUserIdAsync(_userId).Result;
+            var credentialsResult = await _credentialManagementService.GetDecodedCredentialsByUserIdAsync(_userId);
             if (!credentialsResult.Success)
             {
                 logger.Information("Failed to fetch decoded creds");
@@ -77,9 +77,10 @@ namespace Monopost.BLL.Services
             const int MAX_ALLOWED_FILES_TO_POST = 10;
             const int MAX_ALLOWED_TEXT_LENGTH = 2200;
 
+            var postersAdded = await AddPosters();
             logger.Information($"Trying to create a post with text='{text}' and {filesToUpload.Count} files");
 
-            if (!AddPosters())
+            if (!postersAdded)
             {
                 logger.Warning("No social media posters found");
                 return new Result<bool>(false, "No social media posters found");
@@ -136,7 +137,7 @@ namespace Monopost.BLL.Services
             await _postRepository.AddAsync(new Post
             {
                 AuthorId = _userId,
-                DatePosted = DateTime.Now,
+                DatePosted = DateTime.UtcNow,
             });
 
             var latestPosts = await _postRepository.GetPostsByAuthorIdAsync(_userId);

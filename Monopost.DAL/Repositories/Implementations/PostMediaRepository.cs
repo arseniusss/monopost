@@ -16,23 +16,23 @@ namespace Monopost.DAL.Repositories.Implementations
 
         public async Task<PostMedia> GetByIdAsync(int id)
         {
-            return await _context.PostMedia.FirstOrDefaultAsync(p => p.Id == id);
+            return await _context.PostsSocialMedia.FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task<IEnumerable<PostMedia>> GetAllAsync()
         {
-            return await _context.PostMedia.ToListAsync();
+            return await _context.PostsSocialMedia.ToListAsync();
         }
 
         public async Task AddAsync(PostMedia postSocialMedia)
         {
-            await _context.PostMedia.AddAsync(postSocialMedia);
+            await _context.PostsSocialMedia.AddAsync(postSocialMedia);
             await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(PostMedia postSocialMedia)
         {
-            _context.PostMedia.Update(postSocialMedia);
+            _context.PostsSocialMedia.Update(postSocialMedia);
             await _context.SaveChangesAsync();
         }
 
@@ -41,14 +41,14 @@ namespace Monopost.DAL.Repositories.Implementations
             var postSocialMedia = await GetByIdAsync(id);
             if (postSocialMedia != null)
             {
-                _context.PostMedia.Remove(postSocialMedia);
+                _context.PostsSocialMedia.Remove(postSocialMedia);
                 await _context.SaveChangesAsync();
             }
         }
 
         public async Task<IEnumerable<PostMedia>> GetPostMediaByPostIdAsync(int postId)
         {
-            return await _context.PostMedia
+            return await _context.PostsSocialMedia
                 .Where(psm => psm.PostId == postId)
                 .ToListAsync();
         }
