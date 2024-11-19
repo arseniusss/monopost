@@ -119,10 +119,7 @@ namespace Monopost.Web.Views
                 return;
             }
 
-            if (_currentTemplate == null)
-            {
-            }
-            else
+            if(true)
             {
                 if (string.IsNullOrWhiteSpace(TemplateNameTextBox.Text))
                 {

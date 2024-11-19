@@ -43,6 +43,8 @@ namespace Monopost.Web.Views
                 return;
             }
 
+            await UserSession.SetUserId(_userRepository, email);
+
             _mainWindow.NavigateToMainContent();
         }
 
@@ -51,9 +53,9 @@ namespace Monopost.Web.Views
             _mainWindow.NavigateToRegisterPage();
         }
 
-        private void GuestLoginButton_Click(object sender, RoutedEventArgs e)
+        private async void GuestLoginButton_Click(object sender, RoutedEventArgs e)
         {
-            UserSession.SetUserId(_userRepository, null);
+            await UserSession.SetUserId(_userRepository, null);
             _mainWindow.NavigateToMainContent();
         }
 

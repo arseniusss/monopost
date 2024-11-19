@@ -5,16 +5,18 @@ using Serilog;
 using System.Windows;
 using Monopost.DAL.Entities;
 using Monopost.PresentationLayer.Helpers;
+using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace Monopost.Web.Views
 {
     public partial class RegisterPage : Page
     {
-
         private MainWindow _mainWindow;
         private RegisterPage _registerPage;
         private readonly IUserRepository _userRepository;
         public static ILogger logger = LoggerConfig.GetLogger();
+
         public RegisterPage(MainWindow mainWindow, IUserRepository userRepository)
         {
             InitializeComponent();
@@ -26,20 +28,27 @@ namespace Monopost.Web.Views
         {
             string email = EmailTextBox.Text.Trim();
             string password = PasswordTextBox.Password.Trim();
+            string confirmPassword = PasswordConfirmTextBox.Password.Trim();
             string firstName = NameTextBox.Text.Trim();
             string lastName = LastNameTextBox.Text.Trim();
             string ageText = AgeTextBox.Text.Trim();
-           
 
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password) ||
-                string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName) ||
-                string.IsNullOrWhiteSpace(ageText) || !int.TryParse(ageText, out int age))
+                string.IsNullOrWhiteSpace(confirmPassword) || string.IsNullOrWhiteSpace(firstName) ||
+                string.IsNullOrWhiteSpace(lastName) || string.IsNullOrWhiteSpace(ageText) ||
+                !int.TryParse(ageText, out int age))
             {
-                MessageBox.Show("Please provide valid input.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Incorrect input format. All fields should be non-empty, age should be an integer.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            await UserSession.SetUserId(_userRepository, email);
+            if (password != confirmPassword)
+            {
+                PasswordTextBox.BorderBrush = System.Windows.Media.Brushes.Red;
+                PasswordConfirmTextBox.BorderBrush = System.Windows.Media.Brushes.Red;
+                MessageBox.Show("Passwords do not match.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
             int userId = UserSession.GetUserId();
             var newUser = new User
@@ -61,7 +70,6 @@ namespace Monopost.Web.Views
 
             var existingUser = await _userRepository.GetAllAsync();
             var user = existingUser.FirstOrDefault(u => u.Email == newUser.Email);
-
             if (user != null)
             {
                 MessageBox.Show("User with this email already exists.", "Registration Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -71,14 +79,11 @@ namespace Monopost.Web.Views
             newUser.Password = BCrypt.Net.BCrypt.HashPassword(newUser.Password);
 
             await _userRepository.AddAsync(newUser);
-            //await SendRegistrationConfirmationEmailAsync(newUser.Email);
-            //MessageBox.Show("Registration Successful! A confirmation email has been sent.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-            
+
             logger.Information($"User {newUser.Email} registered successfully.");
 
             MessageBox.Show("Registration Successful!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             _mainWindow.NavigateToLogInPage();
-
         }
 
         private (bool IsValid, string ErrorMessage) ValidateUser(User user)
@@ -87,15 +92,35 @@ namespace Monopost.Web.Views
             {
                 return (false, "Email is required.");
             }
-
-            if (!user.Email.Contains("@"))
+            if (!Regex.IsMatch(user.Email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
             {
                 return (false, "Invalid email format.");
             }
 
-            if (string.IsNullOrWhiteSpace(user.Password) || user.Password.Length < 6)
+            if (string.IsNullOrWhiteSpace(user.Password) || user.Password.Length < 8)
             {
-                return (false, "Password must be at least 6 characters long.");
+                return (false, "Password must be at least 8 characters long.");
+            }
+            if (!Regex.IsMatch(user.Password, @"[A-Z]"))
+            {
+                return (false, "Password must contain at least one uppercase letter.");
+            }
+            if (!Regex.IsMatch(user.Password, @"[a-z]"))
+            {
+                return (false, "Password must contain at least one lowercase letter.");
+            }
+            if (!Regex.IsMatch(user.Password, @"[0-9]"))
+            {
+                return (false, "Password must contain at least one digit.");
+            }
+            if (!Regex.IsMatch(user.Password, @"[\W_]"))
+            {
+                return (false, "Password must contain at least one special character (e.g., @, #, $, etc.).");
+            }
+
+            if (user.Age < 18 || user.Age > 120)
+            {
+                return (false, "Age must be between 18 and 120.");
             }
 
             if (string.IsNullOrWhiteSpace(user.FirstName) || user.FirstName.Length > 50)
@@ -110,42 +135,5 @@ namespace Monopost.Web.Views
 
             return (true, string.Empty);
         }
-
-
-
-
-        //private async Task SendRegistrationConfirmationEmailAsync(string email)
-        //{
-        //    var emailSubject = "Registration Successful!";
-        //    var emailBody = "Thank you for registering. Your account has been successfully created.";
-
-        //    using (var client = new System.Net.Mail.SmtpClient("smtp.gmail.com"))
-        //    {
-        //        client.Port = 587;
-        //        client.Credentials = new System.Net.NetworkCredential("your-email@gmail.com", "your-password");
-
-        //        client.EnableSsl = true;
-
-        //        var mailMessage = new System.Net.Mail.MailMessage
-        //        {
-        //            From = new System.Net.Mail.MailAddress("your-email@gmail.com"),
-        //            Subject = emailSubject,
-        //            Body = emailBody,
-        //            IsBodyHtml = false 
-        //        };
-
-        //        mailMessage.To.Add(email);
-
-        //        try
-        //        {
-        //            await client.SendMailAsync(mailMessage);
-        //            Console.WriteLine("Confirmation email sent successfully!");
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            Console.WriteLine($"An error occurred while sending the email: {ex.Message}");
-        //        }
-        //    }
-        //}
     }
 }
