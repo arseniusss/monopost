@@ -38,7 +38,6 @@ namespace Monopost.PresentationLayer.Helpers
             }
             catch
             {
-                ClearUserId();
             }
 
             return -1;

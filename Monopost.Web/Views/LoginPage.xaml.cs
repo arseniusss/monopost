@@ -58,6 +58,5 @@ namespace Monopost.Web.Views
             await UserSession.SetUserId(_userRepository, null);
             _mainWindow.NavigateToMainContent();
         }
-
     }
 }

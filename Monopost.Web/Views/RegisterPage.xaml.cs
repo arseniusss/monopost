@@ -50,10 +50,8 @@ namespace Monopost.Web.Views
                 return;
             }
 
-            int userId = UserSession.GetUserId();
             var newUser = new User
             {
-                Id = userId,
                 Email = email,
                 Password = password,
                 FirstName = firstName,
