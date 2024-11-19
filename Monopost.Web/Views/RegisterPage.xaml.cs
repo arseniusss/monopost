@@ -29,7 +29,7 @@ namespace Monopost.Web.Views
             string firstName = NameTextBox.Text.Trim();
             string lastName = LastNameTextBox.Text.Trim();
             string ageText = AgeTextBox.Text.Trim();
-            int userId = UserSession.GetCurrentUserId(_userRepository);
+           
 
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password) ||
                 string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName) ||
@@ -39,6 +39,8 @@ namespace Monopost.Web.Views
                 return;
             }
 
+            await UserSession.SetCurrentUserId(_userRepository, email);
+            int userId = UserSession.CurrentUserId;
             var newUser = new User
             {
                 Id = userId,
@@ -48,6 +50,13 @@ namespace Monopost.Web.Views
                 LastName = lastName,
                 Age = age
             };
+
+            var (isValid, errorMessage) = ValidateUser(newUser);
+            if (!isValid)
+            {
+                MessageBox.Show(errorMessage, "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
             var existingUser = await _userRepository.GetAllAsync();
             var user = existingUser.FirstOrDefault(u => u.Email == newUser.Email);
@@ -70,6 +79,38 @@ namespace Monopost.Web.Views
             _mainWindow.NavigateToLogInPage();
 
         }
+
+        private (bool IsValid, string ErrorMessage) ValidateUser(User user)
+        {
+            if (string.IsNullOrWhiteSpace(user.Email))
+            {
+                return (false, "Email is required.");
+            }
+
+            if (!user.Email.Contains("@"))
+            {
+                return (false, "Invalid email format.");
+            }
+
+            if (string.IsNullOrWhiteSpace(user.Password) || user.Password.Length < 6)
+            {
+                return (false, "Password must be at least 6 characters long.");
+            }
+
+            if (string.IsNullOrWhiteSpace(user.FirstName) || user.FirstName.Length > 50)
+            {
+                return (false, "First name can't be empty or longer than 50 characters.");
+            }
+
+            if (string.IsNullOrWhiteSpace(user.LastName) || user.LastName.Length > 50)
+            {
+                return (false, "Last name can't be empty or longer than 50 characters.");
+            }
+
+            return (true, string.Empty);
+        }
+
+
 
 
         //private async Task SendRegistrationConfirmationEmailAsync(string email)

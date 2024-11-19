@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Monopost.DAL.Repositories.Interfaces;
+using Monopost.PresentationLayer.Views;
 using System.Windows;
 using TL;
 
@@ -54,6 +55,11 @@ namespace Monopost.Web.Views
             var logInPage = new LoginPage(this, _userRepository);
             this.Content = logInPage;
         }
+
+        //public void NavigateToReset()
+        //{
+        //    var resetPage = new ResetPasswordPage()
+        //}
         
     }
 }
