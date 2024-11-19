@@ -18,17 +18,20 @@
                     Width="164" 
                     Height="35" />
 
-            <TextBox Text="Email" 
+            <TextBox x:Name="EmailTextBox" 
                      Margin="0,10,0,0" 
-                     Width="210" />
+                     Width="210" 
+                     Text="Email" />
 
-            <TextBox Text="Password" 
-                     Margin="0,5,0,0" 
-                     Width="210" />
+            <PasswordBox x:Name="PasswordTextBox" 
+                         Margin="0,5,0,0" 
+                         Width="210"
+                          Password ="Password" />
 
             <Button Content="Log in" 
                     Width="118" 
-                    Margin="0,10,0,0" />
+                    Margin="0,10,0,0" 
+                    Click="LogInButton_Click" />
 
             <Grid Margin="0,10,0,0" Width="288">
                 <Grid.ColumnDefinitions>
@@ -37,10 +40,11 @@
                 </Grid.ColumnDefinitions>
 
                 <Button Content="Forgot password?" Grid.Column="0" Margin="5,5,144,5" />
-                <Button Content="Sign up" Margin="157,5,0,5" Grid.ColumnSpan="2" />
+                <Button Content="Sign up" Margin="157,5,0,5" Grid.ColumnSpan="2" Click="RegisterButton_Click"/>
+                <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden" />
+
             </Grid>
         </StackPanel>
 
-        <Frame Name="MainFrame" Width="800" Height="600" NavigationUIVisibility="Hidden" Grid.ColumnSpan="2" />
     </Grid>
 </Page>

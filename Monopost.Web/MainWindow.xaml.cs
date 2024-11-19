@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Monopost.DAL.Repositories.Interfaces;
+using Monopost.PresentationLayer.Views;
 using System.Windows;
+using TL;
 
 namespace Monopost.Web.Views
 {
@@ -24,7 +26,8 @@ namespace Monopost.Web.Views
             _postRepository = App.ServiceProvider.GetRequiredService<IPostRepository>();
             _postMediaRepository = App.ServiceProvider.GetRequiredService<IPostMediaRepository>();
 
-            this.Content = new LoginPage(this);
+
+            this.Content = new LoginPage(this, _userRepository);
         }
 
         private void MainFrame_Navigated(object sender, System.Windows.Navigation.NavigationEventArgs e)
@@ -40,5 +43,23 @@ namespace Monopost.Web.Views
             var mainPage = new MainPage(_templateRepository, _templateFileRepository, _credentialRepository, _userRepository, _postRepository, _postMediaRepository);
             this.Content = mainPage;
         }
+
+        public void NavigateToRegisterPage()
+        {
+            var registerPage = new RegisterPage(this,_userRepository);
+            this.Content = registerPage;
+        }
+
+        public void NavigateToLogInPage()
+        {
+            var logInPage = new LoginPage(this, _userRepository);
+            this.Content = logInPage;
+        }
+
+        //public void NavigateToReset()
+        //{
+        //    var resetPage = new ResetPasswordPage()
+        //}
+        
     }
 }
