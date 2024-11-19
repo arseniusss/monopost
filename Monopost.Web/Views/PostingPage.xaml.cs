@@ -119,55 +119,82 @@ namespace Monopost.Web.Views
                 return;
             }
 
-            if(true)
+            if (_currentTemplate == null)
             {
-                if (string.IsNullOrWhiteSpace(TemplateNameTextBox.Text))
+                var inputDialog = new InputDialog
                 {
-                    MessageBox.Show("Please enter a name for the template.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    ResponseText = TemplateNameTextBox.Text
+                };
+
+                var result = inputDialog.ShowDialog();
+                if (result == true)
+                {
+                    _currentTemplate = new Template
+                    {
+                        Name = inputDialog.ResponseText,
+                        Text = PostTextBox.Text,
+                        TemplateFiles = new List<TemplateFile>(),
+                        AuthorId = UserSession.GetUserId()
+                    };
+                }
+                else
+                {
                     return;
                 }
-
+            }
+            else
+            {
                 _currentTemplate.Name = TemplateNameTextBox.Text;
                 _currentTemplate.Text = PostTextBox.Text;
-
-                var existingFiles = await _templateFileRepository.GetTemplateFilesByTemplateIdAsync(_currentTemplate.Id);
-                var updatedTemplateFiles = new List<TemplateFile>();
-
-                foreach (ImageItem item in ImagesControl.Items)
-                {
-                    var fileData = ConvertImageToByteArray(item.Image);
-
-                    var existingFile = existingFiles.FirstOrDefault(f => f.FileName == item.FileName);
-
-                    if (existingFile == null)
-                    {
-                        updatedTemplateFiles.Add(new TemplateFile { FileName = item.FileName, FileData = fileData });
-                    }
-                    else
-                    {
-                        if (!existingFile.FileData.SequenceEqual(fileData))
-                        {
-                            existingFile.FileData = fileData;
-                        }
-                        updatedTemplateFiles.Add(existingFile);
-                    }
-                }
-
-                var filesToDelete = existingFiles.Where(f => !updatedTemplateFiles.Any(u => u.FileName == f.FileName)).ToList();
-                foreach (var file in filesToDelete)
-                {
-                    await _templateFileRepository.DeleteAsync(file.Id);
-                }
-
-                _currentTemplate.TemplateFiles = updatedTemplateFiles;
-                await _templateRepository.UpdateAsync(_currentTemplate);
-                MessageBox.Show("Template updated successfully.");
             }
+
+            var existingFiles = await _templateFileRepository.GetTemplateFilesByTemplateIdAsync(_currentTemplate.Id);
+            var updatedTemplateFiles = new List<TemplateFile>();
+
+            foreach (ImageItem item in ImagesControl.Items)
+            {
+                var fileData = ConvertImageToByteArray(item.Image);
+
+                var existingFile = existingFiles.FirstOrDefault(f => f.FileName == item.FileName);
+
+                if (existingFile == null)
+                {
+                    updatedTemplateFiles.Add(new TemplateFile { FileName = item.FileName, FileData = fileData });
+                }
+                else
+                {
+                    if (!existingFile.FileData.SequenceEqual(fileData))
+                    {
+                        existingFile.FileData = fileData;
+                    }
+                    updatedTemplateFiles.Add(existingFile);
+                }
+            }
+
+            var filesToDelete = existingFiles.Where(f => !updatedTemplateFiles.Any(u => u.FileName == f.FileName)).ToList();
+            foreach (var file in filesToDelete)
+            {
+                await _templateFileRepository.DeleteAsync(file.Id);
+            }
+
+            _currentTemplate.TemplateFiles = updatedTemplateFiles;
+
+            if (_currentTemplate.Id == 0)
+            {
+                await _templateRepository.AddAsync(_currentTemplate);
+            }
+            else
+            {
+                await _templateRepository.UpdateAsync(_currentTemplate);
+            }
+
+            MessageBox.Show("Template saved successfully.");
 
             await LoadTemplates();
             TemplateDropdown.Visibility = Visibility.Collapsed;
             ClearInputFields();
         }
+
 
         private void UploadFileButton_Click(object sender, RoutedEventArgs e)
         {
@@ -346,7 +373,7 @@ namespace Monopost.Web.Views
             try
             {
                 var postingService = new SocialMediaPostingService(
-                    _credentialRepository, _userRepository, _postRepository, _postMediaRepository, 0);
+                    _credentialRepository, _userRepository, _postRepository, _postMediaRepository, UserSession.GetUserId());
 
                 var result = await postingService.CreatePostAsync(postText, filesToUpload, selectedSocialMedia);
 
