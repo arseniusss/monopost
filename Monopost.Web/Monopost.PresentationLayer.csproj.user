@@ -6,9 +6,5 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
   </ItemGroup>
-  <ItemGroup>
-    <Compile Update="Views\ResetPasswordPage.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-  </ItemGroup>
+  <ItemGroup />
 </Project>

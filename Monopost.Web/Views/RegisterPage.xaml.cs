@@ -39,8 +39,9 @@ namespace Monopost.Web.Views
                 return;
             }
 
-            await UserSession.SetCurrentUserId(_userRepository, email);
-            int userId = UserSession.CurrentUserId;
+            await UserSession.SetUserId(_userRepository, email);
+
+            int userId = UserSession.GetUserId();
             var newUser = new User
             {
                 Id = userId,

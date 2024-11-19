@@ -74,7 +74,7 @@ namespace Monopost.Web.Views
         private async Task LoadTemplates()
         {
             var templates = await _templateRepository.GetAllAsync();
-            templates = templates.Where(t => t.AuthorId == UserSession.CurrentUserId).ToList();
+            templates = templates.Where(t => t.AuthorId == UserSession.GetUserId()).ToList();
 
             TemplateDropdown.Items.Clear();
 
@@ -121,29 +121,6 @@ namespace Monopost.Web.Views
 
             if (_currentTemplate == null)
             {
-                InputDialog inputDialog = new InputDialog();
-                if (inputDialog.ShowDialog() == true)
-                {
-                    string templateName = inputDialog.ResponseText;
-
-                    Template newTemplate = new Template
-                    {
-                        Name = templateName,
-                        Text = PostTextBox.Text,
-                        AuthorId = UserSession.CurrentUserId
-                    };
-
-                    var templateFiles = new List<TemplateFile>();
-                    foreach (ImageItem item in ImagesControl.Items)
-                    {
-                        var fileData = ConvertImageToByteArray(item.Image);
-                        templateFiles.Add(new TemplateFile { FileName = item.FileName, FileData = fileData });
-                    }
-
-                    newTemplate.TemplateFiles = templateFiles;
-                    await _templateRepository.AddAsync(newTemplate);
-                    MessageBox.Show("Template saved successfully.");
-                }
             }
             else
             {
@@ -157,23 +134,38 @@ namespace Monopost.Web.Views
                 _currentTemplate.Text = PostTextBox.Text;
 
                 var existingFiles = await _templateFileRepository.GetTemplateFilesByTemplateIdAsync(_currentTemplate.Id);
-                foreach (var file in existingFiles)
-                {
-                    await _templateFileRepository.DeleteAsync(file.Id);
-                }
-
                 var updatedTemplateFiles = new List<TemplateFile>();
+
                 foreach (ImageItem item in ImagesControl.Items)
                 {
                     var fileData = ConvertImageToByteArray(item.Image);
-                    updatedTemplateFiles.Add(new TemplateFile { FileName = item.FileName, FileData = fileData });
+
+                    var existingFile = existingFiles.FirstOrDefault(f => f.FileName == item.FileName);
+
+                    if (existingFile == null)
+                    {
+                        updatedTemplateFiles.Add(new TemplateFile { FileName = item.FileName, FileData = fileData });
+                    }
+                    else
+                    {
+                        if (!existingFile.FileData.SequenceEqual(fileData))
+                        {
+                            existingFile.FileData = fileData;
+                        }
+                        updatedTemplateFiles.Add(existingFile);
+                    }
+                }
+
+                var filesToDelete = existingFiles.Where(f => !updatedTemplateFiles.Any(u => u.FileName == f.FileName)).ToList();
+                foreach (var file in filesToDelete)
+                {
+                    await _templateFileRepository.DeleteAsync(file.Id);
                 }
 
                 _currentTemplate.TemplateFiles = updatedTemplateFiles;
                 await _templateRepository.UpdateAsync(_currentTemplate);
                 MessageBox.Show("Template updated successfully.");
             }
-
 
             await LoadTemplates();
             TemplateDropdown.Visibility = Visibility.Collapsed;
@@ -199,7 +191,6 @@ namespace Monopost.Web.Views
             }
         }
 
-
         private void AddImageToDisplay(string filePath)
         {
             try
@@ -210,17 +201,26 @@ namespace Monopost.Web.Views
                 bitmap.CacheOption = BitmapCacheOption.OnLoad;
                 bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                 bitmap.EndInit();
+
                 bitmap.Freeze();
 
-                ImagesControl.Items.Add(new ImageItem { Image = bitmap, FileName = System.IO.Path.GetFileName(filePath) });
+                var clonedBitmap = new BitmapImage();
+                using (var memoryStream = new System.IO.MemoryStream(ConvertImageToByteArray(bitmap)))
+                {
+                    clonedBitmap.BeginInit();
+                    clonedBitmap.StreamSource = memoryStream;
+                    clonedBitmap.CacheOption = BitmapCacheOption.OnLoad;
+                    clonedBitmap.EndInit();
+                    clonedBitmap.Freeze();
+                }
+
+                ImagesControl.Items.Add(new ImageItem { Image = clonedBitmap, FileName = System.IO.Path.GetFileName(filePath) });
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error loading image: {ex.Message}");
             }
         }
-
-
 
         private void DeleteImageButton_Click(object sender, RoutedEventArgs e)
         {

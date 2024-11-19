@@ -3,8 +3,7 @@ using Monopost.Logging;
 using System.Windows;
 using System.Windows.Controls;
 using Serilog;
-using Monopost.BLL.Services.Implementations;
-using Monopost.DAL.Entities;
+using Monopost.PresentationLayer.Helpers;
 
 namespace Monopost.Web.Views
 {
@@ -33,14 +32,14 @@ namespace Monopost.Web.Views
 
             if (user == null)
             {
-                MessageBox.Show("No user found with this email.", "Login Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("No user found with this email.", "Login Failed", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
             bool passwordMatch = BCrypt.Net.BCrypt.Verify(password, user.Password);
             if (!passwordMatch)
             {
-                MessageBox.Show("Incorrect password.", "Login Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Incorrect password.", "Login Failed", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -54,9 +53,9 @@ namespace Monopost.Web.Views
 
         private void GuestLoginButton_Click(object sender, RoutedEventArgs e)
         {
+            UserSession.SetUserId(_userRepository, null);
             _mainWindow.NavigateToMainContent();
         }
-
 
     }
 }
