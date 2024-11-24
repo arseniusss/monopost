@@ -135,6 +135,8 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
 
         public async Task<Result<string>> GeneratePostLinkByChannelIdAsync(string postId)
         {
+            await LoginAsync();
+
             if (string.IsNullOrWhiteSpace(postId))
             {
                 return new Result<string>(false, "Post ID cannot be null or empty.", string.Empty);

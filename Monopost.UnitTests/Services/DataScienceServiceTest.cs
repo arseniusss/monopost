@@ -15,7 +15,6 @@ namespace Monopost.UnitTests.Services
             _service = new DataScienceService();
             SetupTestFile();
             _service.LoadFromCSVs(new List<Tuple<string, string>> { new Tuple<string, string> (_testFilePath, string.Empty) });
-        
         }
 
         public void Dispose()
