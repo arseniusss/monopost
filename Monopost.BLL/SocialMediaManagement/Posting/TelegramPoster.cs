@@ -14,13 +14,20 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
 
         private readonly Client _client;
         private readonly string _channelId;
+        private readonly string _sessionFilePath;
+
         public TelegramPoster(string apiId, string apiHash, string phoneNumber, string channelId, string? password = null)
         {
-            string sessionFilePath = "telegram_session_.dat";
+            // Generate session file name with a random number
+            var random = new Random();
+            _sessionFilePath = $"telegram_session_{random.Next(100000, 999999)}.dat";
+
+            CopyExistingSessionFile("telegram_session_.dat", _sessionFilePath);
+
+            _channelId = channelId;
 
             _client = new Client(Config);
 
-            _channelId = channelId;
             string Config(string what)
             {
                 return what switch
@@ -30,7 +37,7 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
                     "phone_number" => phoneNumber,
                     "password" => password ?? string.Empty,
                     "verification_code" => GetVerificationCode(),
-                    "session_pathname" => sessionFilePath,
+                    "session_pathname" => _sessionFilePath,
                     _ => null // не чіпати бо все впаде
                 };
             }
@@ -39,6 +46,19 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
             {
                 Console.Write("Code: ");
                 return Console.ReadLine() ?? string.Empty;
+            }
+        }
+
+        private void CopyExistingSessionFile(string sourceFilePath, string targetFilePath)
+        {
+            if (File.Exists(sourceFilePath))
+            {
+                File.Copy(sourceFilePath, targetFilePath, overwrite: true);
+                Console.WriteLine($"Session file copied to {targetFilePath}");
+            }
+            else
+            {
+                Console.WriteLine($"Source file '{sourceFilePath}' does not exist.");
             }
         }
 

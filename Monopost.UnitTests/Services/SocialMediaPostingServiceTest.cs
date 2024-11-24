@@ -37,7 +37,6 @@ namespace Monopost.UnitTests.Services
             _postRepository = new PostRepository(_dbContext);
             _postMediaRepository = new PostMediaRepository(_dbContext);
             _socialMediaPostingService = new SocialMediaPostingService(_credentialRepository, _userRepository, _postRepository, _postMediaRepository, UserId);
-            Env.Load();
         }
 
         private static string GetSolutionBaseDirectory()
@@ -57,10 +56,8 @@ namespace Monopost.UnitTests.Services
         private static string solutionBaseDirectory = GetSolutionBaseDirectory();
         private string localCredentialsPath = Path.Combine(solutionBaseDirectory, ".env");
 
-        private static string instagramAccessToken = Env.GetString("InstagramAccessToken");
-        private static string instagramUserId = Env.GetString("InstagramUserId");
-        private static string imgbbApiKey = Env.GetString("ImgbbApiKey");
-
+        private static string exampleImagePath1 = Path.Combine(solutionBaseDirectory, "Monopost.UnitTests\\Resources\\Images\\1.jpg");
+        private static string exampleImagePath2 = Path.Combine(solutionBaseDirectory, "Monopost.UnitTests\\Resources\\Images\\2.jpg");
 
 
         public void Dispose()
@@ -69,19 +66,9 @@ namespace Monopost.UnitTests.Services
             _dbContext.Dispose();
             Log.CloseAndFlush();
         }
-        [Fact]
-        public async Task CreatePostAsync_ShouldPostToSocialMediaSuccessfullyWithLocalCreds()
-        {
-            await _userRepository.AddAsync(new User
-            {
-                Id = UserId,
-                Email = "testuser",
-                Password = "testpassword",
-                Age = 18,
-                FirstName = "hi",
-                LastName = "bye"
-            });
 
+        private async Task AddTelegramCreds()
+        {
             await _credentialRepository.AddAsync(new Credential
             {
                 AuthorId = UserId,
@@ -117,10 +104,57 @@ namespace Monopost.UnitTests.Services
                 StoredLocally = true,
                 LocalPath = localCredentialsPath
             });
+        }
+
+        private async Task AddInstagramCreds()
+        {
+            Env.Load(localCredentialsPath);
+            string instagramAccessToken = Env.GetString("InstagramAccessToken");
+            string instagramUserId = Env.GetString("InstagramUserId");
+            string imgbbApiKey = Env.GetString("ImgbbApiKey");
+
+            await _credentialRepository.AddAsync(new Credential
+            {
+                AuthorId = UserId,
+                CredentialType = CredentialType.InstagramAccessToken,
+                CredentialValue = instagramAccessToken,
+                StoredLocally = false
+            });
+            await _credentialRepository.AddAsync(new Credential
+            {
+                AuthorId = UserId,
+                CredentialType = CredentialType.InstagramUserId,
+                CredentialValue = instagramUserId,
+                StoredLocally = false
+            });
+            await _credentialRepository.AddAsync(new Credential
+            {
+                AuthorId = UserId,
+                CredentialType = CredentialType.ImgbbApiKey,
+                CredentialValue = imgbbApiKey,
+                StoredLocally = false
+            });
+        }
+
+        [Fact]
+        public async Task CreatePostAsync_ShouldPostToSocialMediaSuccessfullyWithLocalCreds()
+        {
+            _socialMediaPostingService = new SocialMediaPostingService(_credentialRepository, _userRepository, _postRepository, _postMediaRepository, UserId);
+
+            await _userRepository.AddAsync(new User
+            {
+                Id = UserId,
+                Email = "testuser",
+                Password = "testpassword",
+                Age = 18,
+                FirstName = "hi",
+                LastName = "bye"
+            });
+
+            await AddTelegramCreds();
 
             var result = await _socialMediaPostingService.CreatePostAsync("This should post only to telegram", new List<string>
-            {Path.Combine(solutionBaseDirectory, "Monopost.UnitTests\\Resources\\Images\\1.jpg"),
-              Path.Combine(solutionBaseDirectory, "Monopost.UnitTests\\Resources\\Images\\2.jpg") });
+            { exampleImagePath1 , exampleImagePath2 });
 
             Assert.True(result.Success);
             Assert.Equal("Messages posted successfully", result.Message);
@@ -147,32 +181,11 @@ namespace Monopost.UnitTests.Services
                 FirstName = "hi",
                 LastName = "bye"
             });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.InstagramAccessToken,
-                CredentialValue = instagramAccessToken, 
-                StoredLocally = false
-            });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.InstagramUserId,
-                CredentialValue = instagramUserId,
-                StoredLocally = false
-            });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.ImgbbApiKey,
-                CredentialValue = imgbbApiKey,
-                StoredLocally = false
 
-            });
+            await AddInstagramCreds();
 
-            var result = await _socialMediaPostingService.CreatePostAsync("This should post only to instagram.", new List<string>
-            {Path.Combine(solutionBaseDirectory, "Monopost.UnitTests\\Resources\\Images\\1.jpg"),
-              Path.Combine(solutionBaseDirectory, "Monopost.UnitTests\\Resources\\Images\\2.jpg") });
+            var result = await _socialMediaPostingService.CreatePostAsync("This should post only to instagram.",
+                new List<string>{ exampleImagePath1,exampleImagePath2 });
 
             Assert.True(result.Success);
             Assert.Equal("Messages posted successfully", result.Message);
@@ -189,6 +202,8 @@ namespace Monopost.UnitTests.Services
         [Fact]
         public async Task CreatePostAsync_ShouldPostSuccessfullyForMultipleSocialMedias()
         {
+            _socialMediaPostingService = new SocialMediaPostingService(_credentialRepository, _userRepository, _postRepository, _postMediaRepository, UserId);
+
             await _userRepository.AddAsync(new User
             {
                 Id = UserId,
@@ -199,67 +214,11 @@ namespace Monopost.UnitTests.Services
                 LastName = "bye"
             });
 
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.TelegramPhoneNumber,
-                StoredLocally = true,
-                LocalPath = localCredentialsPath
-            });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.TelegramAppID,
-                StoredLocally = true,
-                LocalPath = localCredentialsPath
-            });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.TelegramAppHash,
-                StoredLocally = true,
-                LocalPath = localCredentialsPath
-            });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.TelegramChannelId,
-                StoredLocally = true,
-                LocalPath = localCredentialsPath
-            });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.TelegramPassword,
-                StoredLocally = true,
-                LocalPath = localCredentialsPath
-            });
+            await AddInstagramCreds();
+            await AddTelegramCreds();
 
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.InstagramAccessToken,
-                CredentialValue = instagramAccessToken,
-                StoredLocally = false
-            });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.InstagramUserId,
-                CredentialValue = instagramUserId,
-                StoredLocally = false
-            });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.ImgbbApiKey,
-                CredentialValue = imgbbApiKey,
-                StoredLocally = false
-            });
+            var result = await _socialMediaPostingService.CreatePostAsync("This should post to both social media apps", new List<string> { exampleImagePath1, exampleImagePath2 });
 
-            var result = await _socialMediaPostingService.CreatePostAsync("This should post to both social media apps", new List<string>
-            { Path.Combine(solutionBaseDirectory, "Monopost.UnitTests\\Resources\\Images\\1.jpg"),
-              Path.Combine(solutionBaseDirectory, "Monopost.UnitTests\\Resources\\Images\\2.jpg") });
 
             Assert.True(result.Success);
             Assert.Equal("Messages posted successfully", result.Message);
@@ -287,41 +246,8 @@ namespace Monopost.UnitTests.Services
         [Fact]
         public async Task CreatePostAsync_WithNoCredentials_ShouldReturnError()
         {
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.TelegramPhoneNumber,
-                StoredLocally = true,
-                LocalPath = localCredentialsPath
-            });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.TelegramAppID,
-                StoredLocally = true,
-                LocalPath = localCredentialsPath
-            });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.TelegramAppHash,
-                StoredLocally = true,
-                LocalPath = localCredentialsPath
-            });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.TelegramChannelId,
-                StoredLocally = true,
-                LocalPath = localCredentialsPath
-            });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.TelegramPassword,
-                StoredLocally = true,
-                LocalPath = localCredentialsPath
-            });
+            await AddTelegramCreds();
+
             await _credentialRepository.DeleteAsync(1);
             await _credentialRepository.DeleteAsync(5);
 
@@ -343,44 +269,11 @@ namespace Monopost.UnitTests.Services
                 LastName = "User"
             });
 
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.TelegramPhoneNumber,
-                StoredLocally = true,
-                LocalPath = localCredentialsPath
-            });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.TelegramAppID,
-                StoredLocally = true,
-                LocalPath = localCredentialsPath
-            });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.TelegramAppHash,
-                StoredLocally = true,
-                LocalPath = localCredentialsPath
-            });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.TelegramChannelId,
-                StoredLocally = true,
-                LocalPath = localCredentialsPath
-            });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.TelegramPassword,
-                StoredLocally = true,
-                LocalPath = localCredentialsPath
-            });
+            await AddTelegramCreds();
+
             var postResult = await _socialMediaPostingService.CreatePostAsync("Test post for engagement stats.", new List<string>
             {
-               Path.Combine(solutionBaseDirectory, "Monopost.UnitTests\\Resources\\Images\\1.jpg"),
+               exampleImagePath1
             });
 
             Assert.True(postResult.Success, postResult.Message);
@@ -422,32 +315,11 @@ namespace Monopost.UnitTests.Services
                 FirstName = "hi",
                 LastName = "bye"
             });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.InstagramAccessToken,
-                CredentialValue = instagramAccessToken,
-                StoredLocally = false
-            });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.InstagramUserId,
-                CredentialValue = instagramUserId,
-                StoredLocally = false
-            });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.ImgbbApiKey,
-                CredentialValue = imgbbApiKey,
-                StoredLocally = false
 
-            });
+            await AddInstagramCreds();
 
-            var postResult = await _socialMediaPostingService.CreatePostAsync("This should post only to instagram.", new List<string>
-            {Path.Combine(solutionBaseDirectory, "Monopost.UnitTests\\Resources\\Images\\1.jpg"),
-              Path.Combine(solutionBaseDirectory, "Monopost.UnitTests\\Resources\\Images\\2.jpg") });
+            var postResult = await _socialMediaPostingService.CreatePostAsync("This should post only to instagram.", new List<string> { exampleImagePath1, exampleImagePath2 });
+
 
             Assert.True(postResult.Success, postResult.Message);
 
@@ -480,7 +352,7 @@ namespace Monopost.UnitTests.Services
         {
             var postResult = await _socialMediaPostingService.CreatePostAsync("Test post with no credentials.", new List<string>
             {
-               Path.Combine(solutionBaseDirectory, "Monopost.UnitTests\\Resources\\Images\\1.jpg"),
+               exampleImagePath1
             });
 
             Assert.False(postResult.Success);
@@ -498,28 +370,8 @@ namespace Monopost.UnitTests.Services
                 FirstName = "hi",
                 LastName = "bye"
             });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.InstagramAccessToken,
-                CredentialValue = instagramAccessToken,
-                StoredLocally = false
-            });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.InstagramUserId,
-                CredentialValue = instagramUserId,
-                StoredLocally = false
-            });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.ImgbbApiKey,
-                CredentialValue = imgbbApiKey,
-                StoredLocally = false
 
-            });
+            await AddInstagramCreds();
 
             var filesToUpload = Enumerable.Range(1, 11).Select(i => $"file_{i}.jpg").ToList();
 
@@ -540,31 +392,11 @@ namespace Monopost.UnitTests.Services
                 FirstName = "hi",
                 LastName = "bye"
             });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.InstagramAccessToken,
-                CredentialValue = instagramAccessToken,
-                StoredLocally = false
-            });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.InstagramUserId,
-                CredentialValue = instagramUserId,
-                StoredLocally = false
-            });
-            await _credentialRepository.AddAsync(new Credential
-            {
-                AuthorId = UserId,
-                CredentialType = CredentialType.ImgbbApiKey,
-                CredentialValue = imgbbApiKey,
-                StoredLocally = false
 
-            });
-            string longText = new string('a', 301);
+            await AddInstagramCreds();
+            string longText = new string('a', 3001);
 
-            var postResult = await _socialMediaPostingService.CreatePostAsync(longText, new List<string> { "file_1.jpg" });
+            var postResult = await _socialMediaPostingService.CreatePostAsync(longText, new List<string> { exampleImagePath1 });
 
             Assert.False(postResult.Success);
             Assert.Equal("Text is too long, must be less than 2200 characters", postResult.Message);
@@ -573,7 +405,7 @@ namespace Monopost.UnitTests.Services
         [Fact]
         public async Task GetPostEngagementStatsAsync_ShouldFail_WhenPostNotFound()
         {
-            var engagementStatsResult = await _socialMediaPostingService.GetPostEngagementStatsAsync(999); // Non-existent postId
+            var engagementStatsResult = await _socialMediaPostingService.GetPostEngagementStatsAsync(999);
 
             Assert.False(engagementStatsResult.Success);
             Assert.Equal("Post not found", engagementStatsResult.Message);
