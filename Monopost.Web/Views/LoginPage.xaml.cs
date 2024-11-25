@@ -1,24 +1,21 @@
+using Monopost.BLL.Services.Interfaces;
 using Monopost.DAL.Repositories.Interfaces;
-using Monopost.Logging;
+using Monopost.BLL.Services.Implementations;
 using System.Windows;
 using System.Windows.Controls;
-using Serilog;
-using Monopost.PresentationLayer.Helpers;
 
 namespace Monopost.Web.Views
 {
     public partial class LoginPage : Page
     {
-        private MainWindow _mainWindow;
-        private RegisterPage _registerPage;
-        private readonly IUserRepository _userRepository;
-        public static ILogger logger = LoggerConfig.GetLogger();
+        private readonly MainWindow _mainWindow;
+        private readonly IAuthenticationService _authService;
 
         public LoginPage(MainWindow mainWindow, IUserRepository userRepository)
         {
             InitializeComponent();
             _mainWindow = mainWindow;
-            _userRepository = userRepository;
+            _authService = new AuthorizationService(userRepository);
         }
 
         private async void LogInButton_Click(object sender, RoutedEventArgs e)
@@ -26,36 +23,25 @@ namespace Monopost.Web.Views
             string email = EmailTextBox.Text;
             string password = PasswordTextBox.Password;
 
-            var existingUser = await _userRepository.GetAllAsync();
+            var (success, message) = await _authService.Login(email, password);
 
-            var user = existingUser.FirstOrDefault(u => u.Email == email);
-
-            if (user == null)
+            if (!success)
             {
-                MessageBox.Show("No user found with this email.", "Login Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(message, "Login Failed", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-
-            bool passwordMatch = BCrypt.Net.BCrypt.Verify(password, user.Password);
-            if (!passwordMatch)
-            {
-                MessageBox.Show("Incorrect password.", "Login Failed", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
-            await UserSession.SetUserId(_userRepository, email);
 
             _mainWindow.NavigateToMainContent();
         }
 
-        private async void RegisterButton_Click(object sender, RoutedEventArgs e)
+        private void RegisterButton_Click(object sender, RoutedEventArgs e)
         {
             _mainWindow.NavigateToRegisterPage();
         }
 
         private async void GuestLoginButton_Click(object sender, RoutedEventArgs e)
         {
-            await UserSession.SetUserId(_userRepository, null);
+            await _authService.LoginAsGuestAsync();
             _mainWindow.NavigateToMainContent();
         }
     }

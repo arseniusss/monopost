@@ -21,6 +21,14 @@
             </UniformGrid>
         </Grid>
 
+        <Button Content="Log in" 
+                Width="200" 
+                Height="40"
+                Grid.Row="2"
+                HorizontalAlignment="Center"
+                Margin="300,400,0,10" 
+                 />        
+
         <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden" />
     </DockPanel>
 </Window>

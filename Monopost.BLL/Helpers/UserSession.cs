@@ -1,10 +1,9 @@
 ﻿using DotNetEnv;
 using Monopost.DAL.Repositories.Interfaces;
-using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Monopost.PresentationLayer.Helpers
+namespace Monopost.BLL.Helpers
 {
     public static class UserSession
     {
@@ -64,7 +63,7 @@ namespace Monopost.PresentationLayer.Helpers
 
             if (userId == -1)
             {
-                userId = email != null? new Random().Next(1, MIN_GUEST_ID) : new Random().Next(MIN_GUEST_ID, MAX_GUEST_ID);
+                userId = email != null ? new Random().Next(1, MIN_GUEST_ID) : new Random().Next(MIN_GUEST_ID, MAX_GUEST_ID);
             }
 
             var encryptedContent = Encrypt(userId.ToString(), EncryptionKey);

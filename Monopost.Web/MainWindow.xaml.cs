@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Monopost.BLL.Services.Interfaces;
 using Monopost.DAL.Repositories.Interfaces;
 using System.Windows;
 
@@ -23,7 +24,6 @@ namespace Monopost.Web.Views
             _userRepository = App.ServiceProvider.GetRequiredService<IUserRepository>();
             _postRepository = App.ServiceProvider.GetRequiredService<IPostRepository>();
             _postMediaRepository = App.ServiceProvider.GetRequiredService<IPostMediaRepository>();
-
 
             this.Content = new LoginPage(this, _userRepository);
         }
