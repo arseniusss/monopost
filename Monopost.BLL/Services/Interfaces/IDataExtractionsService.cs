@@ -6,5 +6,6 @@ namespace Monopost.BLL.Services.Interfaces
     {
         Task<Result<ExtractedUserData>> ExtractData(int userID, bool includeCredentials = false, bool includeTemplates = false,
             bool includePosts = false, bool totalAccountDeletion = false);
+        Result SaveResultToJson(Result<ExtractedUserData> result, string filePath);
     }
 }

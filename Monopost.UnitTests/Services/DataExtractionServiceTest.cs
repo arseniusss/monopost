@@ -183,7 +183,9 @@ namespace Monopost.UnitTests.Services
             await _postRepository.AddAsync(post);
             await _dbContext.SaveChangesAsync();
 
-            var result = await _dataExtractionService.ExtractData(user.Id, includeCredentials: true, includeTemplates: true, includePosts: true, totalAccountDeletion: false);
+            var result = await _dataExtractionService.ExtractData(user.Id, includeCredentials: true, includeTemplates: true, includePosts: true, totalDataExtraction: false);
+
+            _dataExtractionService.ConvertResultToJson(result);
 
             Assert.True(result.Success);
             Assert.NotNull(result.Data);

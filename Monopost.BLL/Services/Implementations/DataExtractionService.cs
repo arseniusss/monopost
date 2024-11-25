@@ -4,6 +4,7 @@ using Monopost.DAL.Entities;
 using Monopost.DAL.Repositories.Interfaces;
 using Monopost.Logging;
 using Serilog;
+using System.Text.Json;
 
 namespace Monopost.BLL.Services.Implementations
 {
@@ -28,7 +29,7 @@ namespace Monopost.BLL.Services.Implementations
             _postMediaRepository = postMediaRepository;
         }
 
-        public async Task<Result<ExtractedUserData>> ExtractData(int userID, bool includeCredentials = false, bool includeTemplates = false, bool includePosts = false, bool totalAccountDeletion = false)
+        public async Task<Result<ExtractedUserData>> ExtractData(int userID, bool includeCredentials = false, bool includeTemplates = false, bool includePosts = false, bool totalDataExtraction = false)
         {
             var user = await _userRepository.GetByIdAsync(userID);
             if (user == null)
@@ -44,14 +45,14 @@ namespace Monopost.BLL.Services.Implementations
                     LastName = user.LastName,
                     Age = user.Age,
                     Email = user.Email,
-                    Credentials = includeCredentials ? (await _credentialRepository.GetByUserIdAsync(userID)).Select(c => new DecodedCredential
+                    Credentials = includeCredentials || totalDataExtraction ? (await _credentialRepository.GetByUserIdAsync(userID)).Select(c => new DecodedCredential
                     {
                         Id = c.Id,
                         AuthorId = c.AuthorId,
                         CredentialType = c.CredentialType,
                         CredentialValue = c.CredentialValue
                     }).ToList() : new List<DecodedCredential>(),
-                    Templates = includeTemplates ? (await _templateRepository.GetTemplatesByAuthorIdAsync(userID)).Select(async t => new ExtractedTemplateModel
+                    Templates = includeTemplates || totalDataExtraction ? (await _templateRepository.GetTemplatesByAuthorIdAsync(userID)).Select(async t => new ExtractedTemplateModel
                     {
                         Name = t.Name,
                         Text = t.Text,
@@ -61,7 +62,7 @@ namespace Monopost.BLL.Services.Implementations
                             FileData = f.FileData,
                         }))).ToList()
                     }).Select(t => t.Result).ToList() : new List<ExtractedTemplateModel>(),
-                    Posts = includePosts ? (await _postRepository.GetPostsByAuthorIdAsync(userID)).Select(async p => new ExtractedPostModel
+                    Posts = includePosts || totalDataExtraction ? (await _postRepository.GetPostsByAuthorIdAsync(userID)).Select(async p => new ExtractedPostModel
                     {
                         DatePosted = p.DatePosted,
                         PostMedia = (await Task.WhenAll((await _postMediaRepository.GetPostMediaByPostIdAsync(p.PostId)).Select(async m => new ExtractedPostMediaModel
@@ -81,6 +82,49 @@ namespace Monopost.BLL.Services.Implementations
                 return new Result<ExtractedUserData>(false, "Error while extracting data", null);
             }
 
+        }
+
+        public Result SaveResultToJson(Result<ExtractedUserData> result, string filePath)
+        {
+            var userEmail = result?.Data?.Email ?? "unknown";
+
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                return new Result(false, "File path not provided");
+            }
+
+            logger.Information($"User {userEmail} requested to save the result.");
+
+            if (result == null)
+            {
+                logger.Information($"No result available for user {userEmail}");
+                return new Result(false, $"No result available");
+            }
+
+            if (!result.Success)
+            {
+                logger.Information($"Unsuccessful result for user {userEmail}: {result.Message}");
+                return new Result(false, $"Unsuccessfull result");
+            }
+
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true
+            };
+
+            var res = JsonSerializer.Serialize(result, options);
+            try
+            {
+                File.WriteAllText(filePath, res);
+                logger.Information($"File saved to: {filePath} for user {userEmail}");
+            }
+            catch (Exception ex)
+            {
+                logger.Error($"Failed to write file: {ex.Message} for user {userEmail}");
+                return new Result(false, $"Failed to write file: {ex.Message}");
+            }
+
+            return new Result(true, "File saved successfully");
         }
     }
 }
