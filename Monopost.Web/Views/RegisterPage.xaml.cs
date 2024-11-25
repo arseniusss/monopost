@@ -1,27 +1,23 @@
-using Monopost.DAL.Repositories.Interfaces;
-using Monopost.Logging;
-using System.Windows.Controls;
-using Serilog;
-using System.Windows;
+using Monopost.BLL.Services.Interfaces;
 using Monopost.DAL.Entities;
-using Monopost.PresentationLayer.Helpers;
-using System.Text.RegularExpressions;
-using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using Monopost.BLL.Services.Implementations;
+using Monopost.DAL.Repositories.Interfaces;
 
 namespace Monopost.Web.Views
 {
     public partial class RegisterPage : Page
     {
-        private MainWindow _mainWindow;
-        private RegisterPage _registerPage;
-        private readonly IUserRepository _userRepository;
-        public static ILogger logger = LoggerConfig.GetLogger();
+        private readonly MainWindow _mainWindow;
+        private readonly IAuthenticationService _authService;
+
 
         public RegisterPage(MainWindow mainWindow, IUserRepository userRepository)
         {
             InitializeComponent();
             _mainWindow = mainWindow;
-            _userRepository = userRepository;
+            _authService = new AuthorizationService(userRepository);
         }
 
         private async void SignUp_Click(object sender, RoutedEventArgs e)
@@ -38,15 +34,8 @@ namespace Monopost.Web.Views
                 string.IsNullOrWhiteSpace(lastName) || string.IsNullOrWhiteSpace(ageText) ||
                 !int.TryParse(ageText, out int age))
             {
-                MessageBox.Show("Incorrect input format. All fields should be non-empty, age should be an integer.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            if (password != confirmPassword)
-            {
-                PasswordTextBox.BorderBrush = System.Windows.Media.Brushes.Red;
-                PasswordConfirmTextBox.BorderBrush = System.Windows.Media.Brushes.Red;
-                MessageBox.Show("Passwords do not match.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Incorrect input format. All fields should be non-empty, age should be an integer.",
+                              "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -59,79 +48,22 @@ namespace Monopost.Web.Views
                 Age = age
             };
 
-            var (isValid, errorMessage) = ValidateUser(newUser);
-            if (!isValid)
-            {
-                MessageBox.Show(errorMessage, "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+            var (success, message) = await _authService.Register(newUser, confirmPassword);
 
-            var existingUser = await _userRepository.GetAllAsync();
-            var user = existingUser.FirstOrDefault(u => u.Email == newUser.Email);
-            if (user != null)
+            if (success)
             {
-                MessageBox.Show("User with this email already exists.", "Registration Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                MessageBox.Show(message, "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                _mainWindow.NavigateToLogInPage();
             }
-
-            newUser.Password = BCrypt.Net.BCrypt.HashPassword(newUser.Password);
-
-            await _userRepository.AddAsync(newUser);
-
-            logger.Information($"User {newUser.Email} registered successfully.");
-
-            MessageBox.Show("Registration Successful!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-            _mainWindow.NavigateToLogInPage();
-        }
-
-        private (bool IsValid, string ErrorMessage) ValidateUser(User user)
-        {
-            if (string.IsNullOrWhiteSpace(user.Email))
+            else
             {
-                return (false, "Email is required.");
+                if (message.Contains("Passwords do not match"))
+                {
+                    PasswordTextBox.BorderBrush = System.Windows.Media.Brushes.Red;
+                    PasswordConfirmTextBox.BorderBrush = System.Windows.Media.Brushes.Red;
+                }
+                MessageBox.Show(message, "Registration Failed", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
-            if (!Regex.IsMatch(user.Email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
-            {
-                return (false, "Invalid email format.");
-            }
-
-            if (string.IsNullOrWhiteSpace(user.Password) || user.Password.Length < 8)
-            {
-                return (false, "Password must be at least 8 characters long.");
-            }
-            if (!Regex.IsMatch(user.Password, @"[A-Z]"))
-            {
-                return (false, "Password must contain at least one uppercase letter.");
-            }
-            if (!Regex.IsMatch(user.Password, @"[a-z]"))
-            {
-                return (false, "Password must contain at least one lowercase letter.");
-            }
-            if (!Regex.IsMatch(user.Password, @"[0-9]"))
-            {
-                return (false, "Password must contain at least one digit.");
-            }
-            if (!Regex.IsMatch(user.Password, @"[\W_]"))
-            {
-                return (false, "Password must contain at least one special character (e.g., @, #, $, etc.).");
-            }
-
-            if (user.Age < 18 || user.Age > 120)
-            {
-                return (false, "Age must be between 18 and 120.");
-            }
-
-            if (string.IsNullOrWhiteSpace(user.FirstName) || user.FirstName.Length > 50)
-            {
-                return (false, "First name can't be empty or longer than 50 characters.");
-            }
-
-            if (string.IsNullOrWhiteSpace(user.LastName) || user.LastName.Length > 50)
-            {
-                return (false, "Last name can't be empty or longer than 50 characters.");
-            }
-
-            return (true, string.Empty);
         }
     }
 }

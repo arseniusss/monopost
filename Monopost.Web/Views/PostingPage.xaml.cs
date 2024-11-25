@@ -3,7 +3,7 @@ using Monopost.BLL.Services;
 using Monopost.DAL.Entities;
 using Monopost.DAL.Repositories.Interfaces;
 using Monopost.Logging;
-using Monopost.PresentationLayer.Helpers;
+using Monopost.BLL.Helpers;
 using Serilog;
 using System.Windows;
 using System.Windows.Controls;
