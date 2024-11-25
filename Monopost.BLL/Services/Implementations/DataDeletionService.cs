@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Monopost.BLL.Models;
+﻿using Monopost.BLL.Models;
 using Monopost.BLL.Services.Interfaces;
 using Monopost.DAL.Repositories.Interfaces;
 using Monopost.Logging;
@@ -7,7 +6,7 @@ using Serilog;
 
 namespace Monopost.BLL.Services.Implementations
 {
-    public class DataDeletionService
+    public class DataDeletionService: IDataDeletionService
     {
         public readonly IUserRepository? _userRepository;
         public readonly ICredentialRepository _credentialRepository;
@@ -78,7 +77,7 @@ namespace Monopost.BLL.Services.Implementations
                 {
                     await _userRepository.DeleteAsync(userID);
                 }
-            } 
+            }
             catch (Exception e)
             {
                 logger.Error($"Result: Failure\nReason: {e.Message}");
