@@ -1,5 +1,6 @@
 using Monopost.DAL.Repositories.Interfaces;
 using Monopost.Web.Views;
+using System.ComponentModel;
 using System.Windows.Controls;
 using System.Windows.Input;
 using RelayCommand = Monopost.Web.Commands.RelayCommand;
@@ -17,10 +18,33 @@ namespace Monopost.Web.ViewModels
 
         public Frame MainFrame { get; private set; }
 
+        // Selected tab index (0, 1, 2, 3)
+        private int _selectedTab;
+
+        public int SelectedTab
+        {
+            get => _selectedTab;
+            set
+            {
+                if (_selectedTab != value)
+                {
+                    _selectedTab = value;
+                    OnPropertyChanged(nameof(SelectedTab));
+                }
+            }
+        }
+
         public ICommand NavigateProfileCommand { get; }
         public ICommand NavigateMonobankCommand { get; }
         public ICommand NavigatePostingCommand { get; }
         public ICommand NavigateAdminCommand { get; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
         public MainViewModel(Frame mainFrame,
                              ITemplateRepository templateRepository,

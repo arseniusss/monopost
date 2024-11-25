@@ -46,11 +46,13 @@ namespace Monopost.Web.Views
             _postMediaRepository = postMediaRepository;
 
             CharacterCountText.Text = $"0/{MaxTextLength}";
-            TemplateNameTextBox.Visibility = Visibility.Collapsed;
+            TemplateNameTextBox.Visibility = Visibility.Visible;
             TemplateDropdown.Visibility = Visibility.Collapsed;
             PostButton.Visibility = Visibility.Visible;
             InstagramCheckBox.Visibility = Visibility.Visible;
             TelegramCheckBox.Visibility = Visibility.Visible;
+            ClearButton.Visibility = Visibility.Collapsed;
+
 
             LoadTemplates();
         }
@@ -121,29 +123,24 @@ namespace Monopost.Web.Views
 
             if (_currentTemplate == null)
             {
-                var inputDialog = new InputDialog
+                // Directly use TemplateNameTextBox here instead of opening a separate dialog
+                if (string.IsNullOrWhiteSpace(TemplateNameTextBox.Text))
                 {
-                    ResponseText = TemplateNameTextBox.Text
-                };
-
-                var result = inputDialog.ShowDialog();
-                if (result == true)
-                {
-                    _currentTemplate = new Template
-                    {
-                        Name = inputDialog.ResponseText,
-                        Text = PostTextBox.Text,
-                        TemplateFiles = new List<TemplateFile>(),
-                        AuthorId = UserSession.GetUserId()
-                    };
-                }
-                else
-                {
+                    MessageBox.Show("Please enter a template name.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
+
+                _currentTemplate = new Template
+                {
+                    Name = TemplateNameTextBox.Text,  // Directly use the textbox value
+                    Text = PostTextBox.Text,
+                    TemplateFiles = new List<TemplateFile>(),
+                    AuthorId = UserSession.GetUserId()
+                };
             }
             else
             {
+                // Update existing template
                 _currentTemplate.Name = TemplateNameTextBox.Text;
                 _currentTemplate.Text = PostTextBox.Text;
             }
@@ -154,7 +151,6 @@ namespace Monopost.Web.Views
             foreach (ImageItem item in ImagesControl.Items)
             {
                 var fileData = ConvertImageToByteArray(item.Image);
-
                 var existingFile = existingFiles.FirstOrDefault(f => f.FileName == item.FileName);
 
                 if (existingFile == null)
@@ -239,6 +235,8 @@ namespace Monopost.Web.Views
                 }
 
                 ImagesControl.Items.Add(new ImageItem { Image = clonedBitmap, FileName = System.IO.Path.GetFileName(filePath) });
+
+                UpdateClearButtonVisibility();  
             }
             catch (Exception ex)
             {
@@ -309,6 +307,7 @@ namespace Monopost.Web.Views
         private void PostTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             UpdateCharacterCounter();
+            UpdateClearButtonVisibility(); 
         }
 
         private void UpdateCharacterCounter()
@@ -325,11 +324,18 @@ namespace Monopost.Web.Views
                 CharacterCountText.Foreground = Brushes.Gray;
             }
         }
+        private void UpdateClearButtonVisibility()
+        {
+            bool isFormNotEmpty = !string.IsNullOrWhiteSpace(PostTextBox.Text) && PostTextBox.Text != "Enter text here" || ImagesControl.Items.Count > 1;
+
+            ClearButton.Visibility = isFormNotEmpty ? Visibility.Visible : Visibility.Collapsed;
+        }
+
 
         private void ClearInputFields()
         {
             TemplateNameTextBox.Clear();
-            TemplateNameTextBox.Visibility = Visibility.Collapsed;
+            TemplateNameTextBox.Visibility = Visibility.Visible;
             PostTextBox.Clear();
             ImagesControl.Items.Clear();
             CharacterCountText.Text = $"0/{MaxTextLength}";
@@ -411,7 +417,28 @@ namespace Monopost.Web.Views
 
             return selectedSocialMedia;
         }
+        private void ClearButton_Click(object sender, RoutedEventArgs e)
+        {
+            PostTextBox.Text = "Enter text here";
+            PostTextBox.Foreground = Brushes.Gray;
 
+            TemplateNameTextBox.Clear(); 
+
+            ImagesControl.Items.Clear(); 
+
+            CharacterCountText.Text = $"0/{MaxTextLength}";
+            CharacterCountText.Foreground = Brushes.Gray;
+
+            TemplateNameTextBox.Visibility = Visibility.Visible;
+
+            _currentTemplate = null;
+
+            ClearButton.Visibility = Visibility.Collapsed;
+
+            PostButton.Visibility = Visibility.Collapsed;
+            InstagramCheckBox.Visibility = Visibility.Collapsed;
+            TelegramCheckBox.Visibility = Visibility.Collapsed;
+        }
         private void InstagramCheckBox_Checked(object sender, RoutedEventArgs e)
         {
 

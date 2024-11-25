@@ -3,21 +3,27 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Title="Monobank">
     <Grid>
-        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Stretch" Margin="10">
                 <TextBlock Text="Monobank" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
 
-                <TextBox Width="200" Margin="10" Text="Enter Monobank API-key"/>
+                <TextBox x:Name="EnterAPI" Width="200" HorizontalAlignment="Center" Margin="10" Text="Enter Monobank API-key"/>
 
-                <TextBlock Text="or" FontSize="16" FontStyle="Italic" HorizontalAlignment="Center" Margin="5"/>
+                <TextBlock x:Name ="OrTextBlock" Text="or" FontSize="16" FontStyle="Italic" HorizontalAlignment="Center" Margin="5"/>
 
-                <Button Content="Choose CSV File(s)" Width="150" Margin="10" Click="ChooseFileButton_Click"/>
+                <Button x:Name="ClearFormButton"
+                        Content="Clear Form"
+                        Click="ClearFormButton_Click"
+                        Visibility="Collapsed" 
+                        Width="150" HorizontalAlignment="Center" Margin="10"/>
+
+                <Button x:Name ="ChooseCSVButton" Content="Choose CSV File(s)" Width="150" HorizontalAlignment="Center" Margin="10" Click="ChooseFileButton_Click"/>
 
                 <ItemsControl x:Name="FileItemsControl" Margin="10">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel Orientation="Horizontal" Margin="5">
-                                <TextBlock Text="{Binding}" Width="200" TextWrapping="Wrap" ToolTip="{Binding}"/>
+                            <StackPanel Orientation="Horizontal" Margin="5" HorizontalAlignment="Stretch">
+                                <TextBlock Text="{Binding}" Width="Auto" TextWrapping="Wrap" ToolTip="{Binding}"/>
                                 <Button Content="X" Width="20" Height="20" Margin="5,0,0,0"
                                         Command="{Binding DataContext.RemoveFileCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                         CommandParameter="{Binding}" ToolTip="Remove file"/>
@@ -26,17 +32,17 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
-                <Button Content="Get Statistics" Click="OnGetStatisticsClicked" Width="150" Margin="10"/>
+                <Button x:Name ="GetStatisticsButton" Content="Get Statistics" Click="OnGetStatisticsClicked" Width="150" HorizontalAlignment="Center" Margin="10"/>
 
                 <TextBlock x:Name="StatsTextBlock" Margin="10" HorizontalAlignment="Center" TextWrapping="Wrap"/>
 
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="10">
-                    <StackPanel x:Name="ChartsStackPanel" Orientation="Vertical" HorizontalAlignment="Center" Width="800">
+                    <StackPanel x:Name="ChartsStackPanel" Orientation="Vertical" HorizontalAlignment="Stretch">
                         <ItemsControl x:Name="ChartItemsControl">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Width="200" Height="150" BorderBrush="Gray" BorderThickness="1" Margin="5">
-                                        <Image Source="{Binding}" Width="200" Height="150" Stretch="Uniform" MouseLeftButtonUp="OnImageClick"/>
+                                    <Border Width="Auto" Height="150" BorderBrush="Gray" BorderThickness="1" Margin="5">
+                                        <Image Source="{Binding}" Width="Auto" Height="150" Stretch="Uniform" MouseLeftButtonUp="OnImageClick"/>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
@@ -44,7 +50,7 @@
                     </StackPanel>
                 </ScrollViewer>
 
-                <Button Content="Save Stats to PDF" Width="150" Margin="10" Click="SaveStatsToPdf_Click" Visibility="Collapsed" x:Name="SaveStatsButton"/>
+                <Button Content="Save Stats to PDF" Width="150" HorizontalAlignment="Center" Margin="10" Click="SaveStatsToPdf_Click" Visibility="Collapsed" x:Name="SaveStatsButton"/>
             </StackPanel>
         </ScrollViewer>
 

@@ -4,7 +4,6 @@
       Title="Posting">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-
         <Grid Margin="20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -27,8 +26,17 @@
                 <TextBox x:Name="PostTextBox" Width="400" Height="100" TextWrapping="Wrap" 
                          MaxLength="{Binding MaxTextLength}" TextChanged="PostTextBox_TextChanged" Margin="0,0,0,5"/>
                 <TextBlock x:Name="CharacterCountText" Text="0/MaxTextLength" Foreground="Gray" HorizontalAlignment="Right"/>
+
+                <Button x:Name="ClearButton"
+        Content="Clear Form"
+        Visibility="Collapsed"
+        Click="ClearButton_Click"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Top"
+        Width="200"   />
             </StackPanel>
 
+            <!-- Images Control -->
             <ItemsControl Grid.Row="2" x:Name="ImagesControl" Margin="10">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -49,12 +57,14 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
+            <!-- Action Buttons: Upload, Save, Update -->
             <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
                 <Button Content="Upload File" Width="150" Margin="5" Click="UploadFileButton_Click"/>
                 <Button Content="Save Template" Width="150" Margin="5" Click="SaveTemplateButton_Click"/>
                 <Button Content="Update Template" Width="150" Margin="5" Click="UpdateTemplateButton_Click"/>
             </StackPanel>
 
+            <!-- Template Dropdown -->
             <ComboBox x:Name="TemplateDropdown" Grid.Row="4" Width="400" Margin="10" HorizontalAlignment="Center" SelectionChanged="TemplateDropdown_SelectionChanged">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
@@ -66,6 +76,7 @@
                 </ComboBox.ItemTemplate>
             </ComboBox>
 
+            <!-- Template Display Area -->
             <ScrollViewer Grid.Row="5" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                 <StackPanel x:Name="TemplateDisplayArea" Margin="10" HorizontalAlignment="Center">
                     <TextBlock x:Name="DisplayTextBlock" FontSize="16" FontWeight="Bold" TextWrapping="Wrap" Margin="0,0,0,10"/>
@@ -84,11 +95,13 @@
                 </StackPanel>
             </ScrollViewer>
 
+            <!-- Social Media Checkboxes -->
             <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
                 <CheckBox x:Name="InstagramCheckBox" Content="Instagram" Margin="5" Checked="InstagramCheckBox_Checked"/>
                 <CheckBox x:Name="TelegramCheckBox" Content="Telegram" Margin="5"/>
             </StackPanel>
 
+            <!-- Post Button -->
             <StackPanel Grid.Row="7" Margin="10" HorizontalAlignment="Center">
                 <Button x:Name ="PostButton" Content="Post" Width="200" Height="50" FontSize="16" FontWeight="Bold" Background="Black" Foreground="White" Click="PostButton_Click"/>
             </StackPanel>
