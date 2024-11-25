@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Monopost.BLL.SocialMediaManagement.Posting;
 
 
 namespace Monopost.Web.Views
@@ -363,17 +364,19 @@ namespace Monopost.Web.Views
                 return;
             }
 
-            List<int> selectedSocialMedia = GetSelectedSocialMedia();
-            if (selectedSocialMedia.Count == 0)
-            {
-                MessageBox.Show("Please select at least one social media platform to post to.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
             try
             {
                 var postingService = new SocialMediaPostingService(
                     _credentialRepository, _userRepository, _postRepository, _postMediaRepository, UserSession.GetUserId());
+
+                await postingService.AddPosters();
+
+                List<int> selectedSocialMedia = GetSelectedSocialMedia(_socialMediaPostersService: postingService);
+                if (selectedSocialMedia.Count == 0)
+                {
+                    MessageBox.Show("Please select at least one social media platform to post to. You may not have the valid data for your selected poster", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
 
                 var result = await postingService.CreatePostAsync(postText, filesToUpload, selectedSocialMedia);
 
@@ -395,18 +398,21 @@ namespace Monopost.Web.Views
         }
 
 
-        private List<int> GetSelectedSocialMedia()
+        private List<int> GetSelectedSocialMedia(SocialMediaPostingService _socialMediaPostersService)
         {
             List<int> selectedSocialMedia = new List<int>();
 
-            if (InstagramCheckBox.IsChecked == true && TelegramCheckBox.IsChecked == true)
+            int instagramIndex = _socialMediaPostersService._socialMediaPosters.FindIndex(poster => poster is InstagramPoster);
+            int telegramIndex = _socialMediaPostersService._socialMediaPosters.FindIndex(poster => poster is TelegramPoster);
+
+            if (InstagramCheckBox.IsChecked == true && instagramIndex >= 0)
             {
-                selectedSocialMedia.Add(0);
-                selectedSocialMedia.Add(1);
+                selectedSocialMedia.Add(instagramIndex);
             }
-            else if (InstagramCheckBox.IsChecked == true || TelegramCheckBox.IsChecked == true)
+
+            if (TelegramCheckBox.IsChecked == true && telegramIndex >= 0)
             {
-                selectedSocialMedia.Add(0);
+                selectedSocialMedia.Add(telegramIndex);
             }
 
             return selectedSocialMedia;

@@ -16,7 +16,7 @@ namespace Monopost.BLL.Services
         private readonly IPostRepository _postRepository;
         private readonly IPostMediaRepository _postMediaRepository;
         private readonly CredentialManagementService _credentialManagementService;
-        private List<ISocialMediaPoster> _socialMediaPosters;
+        public List<ISocialMediaPoster> _socialMediaPosters;
         private readonly int _userId;
 
         public static ILogger logger = LoggerConfig.GetLogger();
@@ -33,7 +33,7 @@ namespace Monopost.BLL.Services
             _userId = userId;
         }
 
-        private async Task<bool> AddPosters()
+        public async Task<bool> AddPosters()
         {
             if (_socialMediaPosters.Count != 0)
             {
