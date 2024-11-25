@@ -18,9 +18,8 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
 
         public TelegramPoster(string apiId, string apiHash, string phoneNumber, string channelId, string? password = null)
         {
-            // Generate session file name with a random number
             var random = new Random();
-            _sessionFilePath = $"telegram_session_{random.Next(100000, 999999)}.dat";
+            _sessionFilePath = $"telegram_session_{random.Next(1000000, 99999999)}.dat";
 
             CopyExistingSessionFile("telegram_session_.dat", _sessionFilePath);
 
@@ -38,7 +37,7 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
                     "password" => password ?? string.Empty,
                     "verification_code" => GetVerificationCode(),
                     "session_pathname" => _sessionFilePath,
-                    _ => null // не чіпати бо все впаде
+                    _ => null
                 };
             }
 
@@ -54,11 +53,10 @@ namespace Monopost.BLL.SocialMediaManagement.Posting
             if (File.Exists(sourceFilePath))
             {
                 File.Copy(sourceFilePath, targetFilePath, overwrite: true);
-                Console.WriteLine($"Session file copied to {targetFilePath}");
             }
             else
             {
-                Console.WriteLine($"Source file '{sourceFilePath}' does not exist.");
+                logger.Error($"Source file '{sourceFilePath}' does not exist. Telegram poster couldn't be created");
             }
         }
 
