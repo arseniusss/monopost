@@ -91,7 +91,6 @@
                 </StackPanel>
             </ScrollViewer>
 
-            <!-- Social Media Checkboxes -->
             <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Left" Margin="867,35,0,206">
                 <CheckBox x:Name="InstagramCheckBox" Content="Instagram" Margin="5" Checked="InstagramCheckBox_Checked"/>
                 <CheckBox x:Name="TelegramCheckBox" Content="Telegram" Margin="5"/>

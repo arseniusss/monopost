@@ -419,7 +419,8 @@ namespace Monopost.Web.Views
             PostTextBox.Text = "Enter text here";
             PostTextBox.Foreground = Brushes.Gray;
 
-            TemplateNameTextBox.Clear(); 
+            TemplateNameTextBox.Text = "Enter text here";
+            TemplateNameTextBox.Foreground = Brushes.Gray;
 
             ImagesControl.Items.Clear(); 
 

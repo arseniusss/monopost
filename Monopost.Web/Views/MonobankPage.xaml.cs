@@ -362,7 +362,26 @@ namespace Monopost.Web.Views
                 ImagePopup.IsOpen = true;
             }
         }
-        private void ClearFormButton_Click(object sender, RoutedEventArgs e)
+        private void EnterAPI_GotFocus(object sender, RoutedEventArgs e)
+        {
+            TextBox textBox = sender as TextBox;
+            if (textBox != null && textBox.Text == "Enter Monobank API-key")
+            {
+                textBox.Text = ""; 
+                textBox.Foreground = System.Windows.Media.Brushes.Black;
+            }
+        }
+
+        private void EnterAPI_LostFocus(object sender, RoutedEventArgs e)
+        {
+            TextBox textBox = sender as TextBox;
+            if (textBox != null && string.IsNullOrWhiteSpace(textBox.Text))
+            {
+                textBox.Text = "Enter Monobank API-key"; 
+                textBox.Foreground = System.Windows.Media.Brushes.Gray; 
+            }
+        }
+            private void ClearFormButton_Click(object sender, RoutedEventArgs e)
         {
             selectedFilePaths.Clear();
 

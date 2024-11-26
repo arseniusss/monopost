@@ -3,11 +3,18 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Title="Monobank">
     <Grid>
-        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,61,0,0">
-            <StackPanel>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,61,0,0"  Padding="0,0,0,10">
+            <StackPanel Margin="0,0,0,10">
                 <TextBlock Text="Monobank" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Margin="10"/>
 
-                <TextBox x:Name="EnterAPI" Width="200" HorizontalAlignment="Center" Margin="10" Text="Enter Monobank API-key"/>
+                <TextBox x:Name="EnterAPI" 
+                 Width="200" 
+                 HorizontalAlignment="Center" 
+                 Margin="10" 
+                 Text="Enter Monobank API-key" 
+                 GotFocus="EnterAPI_GotFocus" 
+                 LostFocus="EnterAPI_LostFocus" Foreground="Gray"/>   
+
 
                 <TextBlock x:Name="OrTextBlock" Text="or" FontSize="16" FontStyle="Italic" HorizontalAlignment="Center" Margin="5"/>
 
@@ -19,7 +26,7 @@
 
                 <Button x:Name="ChooseCSVButton" Content="Choose CSV File(s)" Width="150" HorizontalAlignment="Center" Margin="10" Click="ChooseFileButton_Click"/>
 
-                <ItemsControl x:Name="FileItemsControl" Margin="10">
+                <ItemsControl x:Name="FileItemsControl" Margin="10"  VerticalAlignment="Top">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" Margin="5" HorizontalAlignment="Stretch">

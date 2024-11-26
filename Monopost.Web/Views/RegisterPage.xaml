@@ -3,73 +3,42 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Title="Register">
     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-        <TextBlock Text="Register" 
-                  FontSize="24" 
-                  FontWeight="Bold"
-                  HorizontalAlignment="Center"
-                  Margin="0,0,0,20"/>
+        <TextBlock Text="Register" FontSize="24" FontWeight="Bold" />
 
         <TextBox x:Name="NameTextBox" 
-                Width="210" 
-                Height="30"
-                Margin="0,0,0,10"
-                Text="Name"
-                HorizontalAlignment="Center"/>
+                 Width="200" Margin="10"
+                 Text="Name"
+                 GotFocus="TextBox_GotFocus"
+                 LostFocus="TextBox_LostFocus" Foreground="Gray"/>
 
         <TextBox x:Name="LastNameTextBox" 
-                Width="210"
-                Height="30"
-                Margin="0,0,0,10"
-                Text="Last name"
-                HorizontalAlignment="Center"/>
+                 Width="200" Margin="10"
+                 Text="Last name"
+                 GotFocus="TextBox_GotFocus"
+                 LostFocus="TextBox_LostFocus" Foreground="Gray" />
 
         <TextBox x:Name="EmailTextBox"  
-                Width="210"
-                Height="30"
-                Margin="0,0,0,10"
-                Text="Email"
-                HorizontalAlignment="Center"/>
+                 Width="200" Margin="10"
+                 Text="Email"
+                 GotFocus="TextBox_GotFocus"
+                 LostFocus="TextBox_LostFocus" Foreground="Gray"/>
 
         <TextBox x:Name="AgeTextBox"  
-                Width="210"
-                Height="30"
-                Margin="0,0,0,10"
-                Text="Age"
-                HorizontalAlignment="Center"/>
-
-        <TextBlock Text="Enter Password"
-                  Width="210"
-                  Margin="0,0,0,5"
-                  FontSize="14"
-                  FontWeight="SemiBold"
-                  Foreground="Black"
-                  HorizontalAlignment="Center"/>
+                 Width="200" Margin="10"
+                 Text="Age"
+                 GotFocus="TextBox_GotFocus"
+                 LostFocus="TextBox_LostFocus" Foreground="Gray"/>
 
         <PasswordBox x:Name="PasswordTextBox" 
-                    Width="210"
-                    Height="30"
-                    Margin="0,0,0,10"
-                    HorizontalAlignment="Center"/>
-
-        <TextBlock Text="Confirm Password"
-                  Width="210"
-                  Margin="0,0,0,5"
-                  FontSize="14"
-                  FontWeight="SemiBold"
-                  Foreground="Black"
-                  HorizontalAlignment="Center"/>
+                     Width="200" Margin="10"
+                     GotFocus="PasswordBox_GotFocus"
+                     LostFocus="PasswordBox_LostFocus" />
 
         <PasswordBox x:Name="PasswordConfirmTextBox"
-                    Width="210"
-                    Height="30"
-                    Margin="0,0,0,20"
-                    HorizontalAlignment="Center"/>
+                     Width="200" Margin="10"
+                     GotFocus="PasswordBox_GotFocus"
+                     LostFocus="PasswordBox_LostFocus" />
 
-        <Button Content="Sign up" 
-                Width="210"
-                Height="35"
-                Margin="0,0,0,10"
-                Click="SignUp_Click"
-                HorizontalAlignment="Center"/>
+        <Button Content="Sign up" Width="150" Margin="10" Click="SignUp_Click"/>
     </StackPanel>
 </Page>
