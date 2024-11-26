@@ -22,6 +22,69 @@ namespace Monopost.Web.Views
             InitializeComponent();
             _mainWindow = mainWindow;
             _userRepository = userRepository;
+
+            SetInitialFieldTexts();
+        }
+
+        private void SetInitialFieldTexts()
+        {
+            NameTextBox.Text = "Name";
+            LastNameTextBox.Text = "Last name";
+            EmailTextBox.Text = "Email";
+            AgeTextBox.Text = "Age";
+        }
+
+        private void TextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            TextBox textBox = sender as TextBox;
+            if (textBox != null && (textBox.Text == "Name" || textBox.Text == "Last name" || textBox.Text == "Email" || textBox.Text == "Age"))
+            {
+                textBox.Text = string.Empty;
+                textBox.Foreground = System.Windows.Media.Brushes.Black; 
+            }
+        }
+
+        private void TextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            TextBox textBox = sender as TextBox;
+            if (textBox != null && string.IsNullOrWhiteSpace(textBox.Text))
+            {
+                switch (textBox.Name)
+                {
+                    case "NameTextBox":
+                        textBox.Text = "Name";
+                        break;
+                    case "LastNameTextBox":
+                        textBox.Text = "Last name";
+                        break;
+                    case "EmailTextBox":
+                        textBox.Text = "Email";
+                        break;
+                    case "AgeTextBox":
+                        textBox.Text = "Age";
+                        break;
+                }
+                textBox.Foreground = System.Windows.Media.Brushes.Gray; 
+            }
+        }
+
+        private void PasswordBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            PasswordBox passwordBox = sender as PasswordBox;
+            if (passwordBox != null)
+            {
+                passwordBox.Clear(); 
+                passwordBox.Foreground = System.Windows.Media.Brushes.Black;
+            }
+        }
+
+        private void PasswordBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            PasswordBox passwordBox = sender as PasswordBox;
+            if (passwordBox != null && string.IsNullOrWhiteSpace(passwordBox.Password))
+            {
+                passwordBox.Foreground = System.Windows.Media.Brushes.Gray; // Повернення до сірого тексту
+            }
         }
 
         private async void SignUp_Click(object sender, RoutedEventArgs e)
