@@ -13,7 +13,6 @@ namespace Monopost.BLL.Services.Implementations
     {
         public static Result ValidateDateRange(DateTime? from, DateTime? to)
         {
-            var MINIMUM_VIABLE_DATE = new DateTime(2000, 1, 1);
             if (from == null && to == null)
             {
                 return new Result(true, "Date range is valid.");
@@ -26,7 +25,7 @@ namespace Monopost.BLL.Services.Implementations
 
             if (from != null && to == null)
             {
-                if (from < MINIMUM_VIABLE_DATE)
+                if (from < new DateTime(2000, 1, 1))
                 {
                     return new Result(false, "'From' date must be after January 1, 2000.");
                 }
@@ -39,7 +38,7 @@ namespace Monopost.BLL.Services.Implementations
                 return new Result(false, "'From' date must be earlier than or equal to the 'To' date.");
             }
 
-            if (from < MINIMUM_VIABLE_DATE)
+            if (from < new DateTime(2000, 1, 1))
             {
                 return new Result(false, "'From' date must be after January 1, 2000.");
             }
@@ -60,23 +59,42 @@ namespace Monopost.BLL.Services.Implementations
 
         public void LoadFromCsv(Tuple<string, string> filePathWithLabel)
         {
-            List<Transaction> tempTransactions = new List<Transaction>();
-
-            var lines = File.ReadAllLines(filePathWithLabel.Item1, Encoding.UTF8).Skip(1);
-            logger.Information($"Transactions parsed from CSV: {lines.Count()} transaction(s)");
-            foreach (var line in lines)
+            if (!File.Exists(filePathWithLabel.Item1))
             {
-                Transaction tempTransaction = Transaction.ParseFromCsv(line);
-                tempTransaction.FromJar = filePathWithLabel.Item2;
-                tempTransactions.Add(tempTransaction);
+                logger.Warning($"File not found: {filePathWithLabel.Item1}");
+                return;
             }
-            SetWithdrawals(tempTransactions);
 
-            transactions.AddRange(tempTransactions);
+            try
+            {
+                List<Transaction> tempTransactions = new List<Transaction>();
+                var lines = File.ReadAllLines(filePathWithLabel.Item1, Encoding.UTF8).Skip(1);
+                logger.Information($"Transactions parsed from CSV: {lines.Count()} transaction(s)");
+
+                foreach (var line in lines)
+                {
+                    Transaction tempTransaction = Transaction.ParseFromCsv(line);
+                    tempTransaction.FromJar = filePathWithLabel.Item2;
+                    tempTransactions.Add(tempTransaction);
+                }
+
+                SetWithdrawals(tempTransactions);
+                transactions.AddRange(tempTransactions);
+            }
+            catch (Exception ex)
+            {
+                logger.Error($"Error loading CSV file: {ex.Message}");
+            }
         }
 
         public void LoadFromCSVs(List<Tuple<string, string>> jarsWithLabels)
         {
+            if (jarsWithLabels == null || !jarsWithLabels.Any())
+            {
+                logger.Warning("No files to load");
+                return;
+            }
+
             foreach (var filePath in jarsWithLabels)
             {
                 LoadFromCsv(filePath);
@@ -152,7 +170,7 @@ namespace Monopost.BLL.Services.Implementations
                     TransactionType.Any => true,
                     _ => false,
                 }).ToList();
-                    
+
             logger.Information($"Filtered transactions: {filteredTransactions.Count} transactions found.");
             return filteredTransactions;
         }
@@ -375,9 +393,11 @@ namespace Monopost.BLL.Services.Implementations
         [Obsolete]
         public string PlotData<T>(Dictionary<string, T> data, string title, ChartType chartType, int width = 800, int height = 800) where T : struct
         {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
             logger.Information($"Plotting data with title: '{title}' and chart type: '{chartType}'");
-            ChartManager.PlotData<T>(data, title, chartType,width,height);
-            string fileName = $"{title.Replace(" ", "_")}_{chartType}.png";
+            string fileName = ChartManager.PlotData<T>(data, title, chartType, width, height);
+            // string fileName = $"{title.Replace(" ", "_")}_{chartType}.png";
             return fileName;
         }
 
@@ -432,6 +452,17 @@ namespace Monopost.BLL.Services.Implementations
                 }
 
                 string fileName = $"{title.Replace(" ", "_")}_{chartType}.png";
+
+                if (chartType != ChartType.Pie)
+                {
+                    plt.SetAxisLimits(yMin: 0);
+                }
+
+                // Generate a shortened GUID (first 8 characters) to avoid overly long filenames
+                string guidPart = Guid.NewGuid().ToString("N").Substring(0, 8);
+
+                // Create the file name with the shortened GUID and the chart type
+                fileName = $"{title.Replace(" ", "_")}_{chartType}_{guidPart}.png";
 
                 try
                 {

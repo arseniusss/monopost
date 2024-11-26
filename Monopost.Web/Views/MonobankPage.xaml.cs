@@ -4,6 +4,7 @@ using Monopost.BLL.Services.Implementations;
 using Monopost.Web.Commands;
 using PdfSharp.Drawing;
 using PdfSharp.Pdf;
+using Serilog.Core;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
@@ -161,6 +162,7 @@ namespace Monopost.Web.Views
 
             foreach (var chartPath in analysis.ChartPaths.Where(path => !string.IsNullOrEmpty(path) && File.Exists(path)))
             {
+                Logging.LoggerConfig.GetLogger().Information(chartPath);
                 AddChartToPanel(mainPanel, chartPath);
             }
 

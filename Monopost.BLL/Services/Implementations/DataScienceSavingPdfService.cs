@@ -20,7 +20,7 @@ namespace Monopost.BLL.Services.Implementations
         public DataScienceSavingPdfService(string filepath)
         {
             transactions = new List<Transaction>();
-            manager.LoadFromCSVs(new List<Tuple<string, string>> {new Tuple<string,string> (filepath, "") });
+            manager.LoadFromCSVs(new List<Tuple<string, string>> { new Tuple<string, string>(filepath, "") });
         }
 
         private void GenerateStatisticsPdf(
@@ -157,12 +157,13 @@ namespace Monopost.BLL.Services.Implementations
 
         public Result<string> SaveResults(string fileName, string outputDirectory)
         {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
             try
             {
                 if (!Directory.Exists(outputDirectory))
                 {
                     return new Result<string>(false, $"Output directory does not exist: {outputDirectory}");
-                   
                 }
 
                 string fullPath = Path.Combine(outputDirectory, fileName);
@@ -236,9 +237,9 @@ namespace Monopost.BLL.Services.Implementations
 
                 return new Result<string>(true, $"Final report generated: {fullPath}");
             }
-            catch( Exception ex )
+            catch (Exception ex)
             {
-                logger.Warning(ex,"An error occurred while generating the report.");
+                logger.Warning(ex, "An error occurred while generating the report.");
                 return new Result<string>(false, $"An error occurred while generating the report: {ex.Message}");
             }
         }
