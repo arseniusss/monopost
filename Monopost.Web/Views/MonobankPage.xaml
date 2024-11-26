@@ -34,18 +34,19 @@
 
                 <Button x:Name="GetStatisticsButton" Content="Get Statistics" Click="OnGetStatisticsClicked" Width="150" HorizontalAlignment="Center" Margin="10"/>
 
+                <Button x:Name="SaveStatsButton" 
+                    Content="Save Stats to PDF" 
+                    Width="150" 
+                    HorizontalAlignment="Center" 
+                    Margin="10" 
+                    Click="SaveStatsToPdf_Click" 
+                    Visibility="Collapsed"/>
+                
                 <TextBlock x:Name="StatsTextBlock" Margin="10" HorizontalAlignment="Center" TextWrapping="Wrap"/>
 
                 <StackPanel x:Name="ChartsStackPanel" Margin="10">
                 </StackPanel>
 
-                <Button x:Name="SaveStatsButton" 
-                        Content="Save Stats to PDF" 
-                        Width="150" 
-                        HorizontalAlignment="Center" 
-                        Margin="10" 
-                        Click="SaveStatsToPdf_Click" 
-                        Visibility="Collapsed"/>
             </StackPanel>
         </ScrollViewer>
 
