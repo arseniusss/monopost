@@ -48,16 +48,6 @@
             <!-- Remaining space for content -->
         </Grid.RowDefinitions>
 
-        <Button Content="Log in" 
-                Width="200" 
-                Height="40"
-                Grid.Row="2"
-                HorizontalAlignment="Center"
-                Margin="300,400,0,10" 
-                 />        
-
-        <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden" />
-    </DockPanel>
         <!-- Header -->
         <TextBlock Text="Monopost" FontSize="24" FontWeight="Bold" 
                    HorizontalAlignment="Center" VerticalAlignment="Center" 

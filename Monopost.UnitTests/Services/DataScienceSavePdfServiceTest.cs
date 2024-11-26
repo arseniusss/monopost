@@ -1,60 +1,53 @@
 ﻿using Monopost.BLL.Services.Implementations;
+using Moq;
 
 namespace Monopost.UnitTests.Services
 {
-    public class DataScienceSavingPdfServiceTests : IDisposable
+    public interface IDirectoryWrapper
     {
-        private const string TestFilePath = "Jar_statement_13.10.2024_193241.csv";
-        private const string OutputDirectory = "D:\\temp3";
-        private bool _disposedValue;
+        bool Exists { get; }
+        string FullName { get; }
+    }
+
+    public class DirectoryWrapper : IDirectoryWrapper
+    {
+        private readonly DirectoryInfo _directoryInfo;
+
+        public DirectoryWrapper(string path)
+        {
+            _directoryInfo = new DirectoryInfo(path);
+        }
+
+        public bool Exists => _directoryInfo.Exists;
+        public string FullName => _directoryInfo.FullName;
+    }
+
+    public class DataScienceSavingPdfServiceTests
+    {
+        private readonly DataScienceSavingPdfService _service;
+        private readonly Mock<IDirectoryWrapper> _directoryMock;
+        private readonly string _testFilePath;
 
         public DataScienceSavingPdfServiceTests()
         {
-            SetupTestEnvironment();
-        }
 
-        private void SetupTestEnvironment()
-        {
+            var testCsvContent = @"Дата та час операції,Категорія операції,Сума,Валюта,Додаткова інформація,Коментар до платежу,Залишок,Валюта залишку
+13.10.2024 08:39,Часткове зняття,1700.00,UAH,На чорну картку,,7000.52,UAH";
 
-            if (!Directory.Exists(OutputDirectory))
-            {
-                Directory.CreateDirectory(OutputDirectory);
-            }
-        }
+            _testFilePath = Path.GetTempFileName();
+            File.WriteAllText(_testFilePath, testCsvContent);
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposedValue)
-            {
-                if (disposing)
-                {
-                    CleanupTestEnvironment();
-                }
-                _disposedValue = true;
-            }
-        }
-
-        private void CleanupTestEnvironment()
-        {
-            if (File.Exists(TestFilePath))
-            {
-                // File.Delete(TestFilePath);
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+            _directoryMock = new Mock<IDirectoryWrapper>();
+            _service = new DataScienceSavingPdfService(_testFilePath);
         }
 
         [Fact]
         public void SaveResults_ReturnsSuccess_WhenOutputDirectoryExists()
         {
-            var service = new DataScienceSavingPdfService(TestFilePath);
-            string fileName = "FinalReport.pdf";
 
-            var result = service.SaveResults(fileName, OutputDirectory);
+            string validPath = Path.GetTempPath();
+
+            var result = _service.SaveResults("test.pdf", validPath);
 
             Assert.True(result.Success);
             Assert.Contains("Final report generated", result.Message);
@@ -63,14 +56,21 @@ namespace Monopost.UnitTests.Services
         [Fact]
         public void SaveResults_ReturnsFailure_WhenOutputDirectoryDoesNotExist()
         {
-            var service = new DataScienceSavingPdfService(TestFilePath);
-            string fileName = "FinalReport.pdf";
-            string nonExistentDirectory = "NonExistentDirectory";
+            _directoryMock.Setup(d => d.Exists).Returns(false);
+            _directoryMock.Setup(d => d.FullName).Returns("test/nonexistent/path");
 
-            var result = service.SaveResults(fileName, nonExistentDirectory);
+            var result = _service.SaveResults("test.pdf", _directoryMock.Object.FullName);
 
             Assert.False(result.Success);
             Assert.Contains("Output directory does not exist", result.Message);
+        }
+
+        public void Dispose()
+        {
+            if (File.Exists(_testFilePath))
+            {
+                File.Delete(_testFilePath);
+            }
         }
     }
 }

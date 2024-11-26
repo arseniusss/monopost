@@ -3,25 +3,73 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Title="Register">
     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-        <TextBlock Text="Register" FontSize="24" FontWeight="Bold" />
+        <TextBlock Text="Register" 
+                  FontSize="24" 
+                  FontWeight="Bold"
+                  HorizontalAlignment="Center"
+                  Margin="0,0,0,20"/>
 
         <TextBox x:Name="NameTextBox" 
-                 Width="200" Margin="10"
-                 Text="Name" />
+                Width="210" 
+                Height="30"
+                Margin="0,0,0,10"
+                Text="Name"
+                HorizontalAlignment="Center"/>
+
         <TextBox x:Name="LastNameTextBox" 
-                 Width="200" Margin="10"
-                 Text="Last name" />
+                Width="210"
+                Height="30"
+                Margin="0,0,0,10"
+                Text="Last name"
+                HorizontalAlignment="Center"/>
+
         <TextBox x:Name="EmailTextBox"  
-                 Width="200" Margin="10"
-                 Text="Email" />
+                Width="210"
+                Height="30"
+                Margin="0,0,0,10"
+                Text="Email"
+                HorizontalAlignment="Center"/>
+
         <TextBox x:Name="AgeTextBox"  
-                  Width="200" Margin="10"
-                  Text="Age" />       
+                Width="210"
+                Height="30"
+                Margin="0,0,0,10"
+                Text="Age"
+                HorizontalAlignment="Center"/>
+
+        <TextBlock Text="Enter Password"
+                  Width="210"
+                  Margin="0,0,0,5"
+                  FontSize="14"
+                  FontWeight="SemiBold"
+                  Foreground="Black"
+                  HorizontalAlignment="Center"/>
 
         <PasswordBox x:Name="PasswordTextBox" 
-                     Width="200" Margin="10" />
+                    Width="210"
+                    Height="30"
+                    Margin="0,0,0,10"
+                    HorizontalAlignment="Center"/>
+
+        <TextBlock Text="Confirm Password"
+                  Width="210"
+                  Margin="0,0,0,5"
+                  FontSize="14"
+                  FontWeight="SemiBold"
+                  Foreground="Black"
+                  HorizontalAlignment="Center"/>
+
         <PasswordBox x:Name="PasswordConfirmTextBox"
-                     Width="200" Margin="10" />
-        <Button Content="Sign up" Width="150" Margin="10" Click="SignUp_Click"/>
+                    Width="210"
+                    Height="30"
+                    Margin="0,0,0,20"
+                    HorizontalAlignment="Center"/>
+
+        <Button Content="Sign up" 
+                Width="210"
+                Height="35"
+                Margin="0,0,0,10"
+                Click="SignUp_Click"
+                HorizontalAlignment="Center"/>
     </StackPanel>
 </Page>

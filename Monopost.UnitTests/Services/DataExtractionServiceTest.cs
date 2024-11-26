@@ -185,8 +185,6 @@ namespace Monopost.UnitTests.Services
 
             var result = await _dataExtractionService.ExtractData(user.Id, includeCredentials: true, includeTemplates: true, includePosts: true, totalDataExtraction: false);
 
-            _dataExtractionService.ConvertResultToJson(result);
-
             Assert.True(result.Success);
             Assert.NotNull(result.Data);
             Assert.Single(result.Data.Credentials);
