@@ -124,6 +124,8 @@ namespace Monopost.Web.Views
         #region UI Display
         private void OnGetStatisticsClicked(object sender, RoutedEventArgs e)
         {
+            SaveStatsButton.Visibility = Visibility.Visible;
+
             if (selectedFilePaths.Count == 0)
             {
                 MessageBox.Show("Please select at least one CSV file.");
@@ -136,6 +138,9 @@ namespace Monopost.Web.Views
 
             FileItemsControl.Visibility = Visibility.Collapsed;
             SaveStatsButton.Visibility = Visibility.Visible;
+            ClearFormButton.Visibility = Visibility.Visible;
+
+
         }
 
         private void DisplayAnalysisResults(TransactionAnalysis analysis)
@@ -357,6 +362,22 @@ namespace Monopost.Web.Views
                 ImagePopup.IsOpen = true;
             }
         }
+        private void ClearFormButton_Click(object sender, RoutedEventArgs e)
+        {
+            selectedFilePaths.Clear();
+
+            ResetChartAndStats();
+
+            FileItemsControl.Visibility = Visibility.Visible;
+
+            SaveStatsButton.Visibility = Visibility.Collapsed;
+            ClearFormButton.Visibility = Visibility.Collapsed;
+            ChooseCSVButton.Visibility = Visibility.Visible;
+            GetStatisticsButton.Visibility = Visibility.Visible;
+            EnterAPI.Visibility = Visibility.Visible;
+            OrTextBlock.Visibility = Visibility.Visible;
+        }
+
 
         private void OnPopupClose(object sender, MouseButtonEventArgs e)
         {

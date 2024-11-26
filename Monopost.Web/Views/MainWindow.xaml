@@ -1,25 +1,52 @@
 ﻿<Window x:Class="Monopost.Web.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Monopost" Width="800" Height="600">
-    <DockPanel>
-        <Grid DockPanel.Dock="Top">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
+        Title="Monopost" Width="1920" Height="1080"
+        ResizeMode="CanResize" MinWidth="800" MinHeight="500" 
+        WindowState="Maximized">
 
-            <TextBlock Text="Monopost" FontSize="24" FontWeight="Bold" 
-                       HorizontalAlignment="Center" Margin="0,10,0,10" Foreground="Black"
-                       Grid.Row="0" />
+    <Window.Resources>
+        <!-- Style for buttons -->
+        <Style x:Key="TabButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Black" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontSize" Value="18" />
+            <!-- Font size adjusted for full screen -->
+            <Setter Property="Padding" Value="12,8" />
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="BorderBrush" Value="Black" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SelectedTab, RelativeSource={RelativeSource AncestorType=Window}}" Value="0">
+                    <Setter Property="Background" Value="White"/>
+                    <Setter Property="Foreground" Value="Black"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding SelectedTab, RelativeSource={RelativeSource AncestorType=Window}}" Value="1">
+                    <Setter Property="Background" Value="White"/>
+                    <Setter Property="Foreground" Value="Black"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding SelectedTab, RelativeSource={RelativeSource AncestorType=Window}}" Value="2">
+                    <Setter Property="Background" Value="White"/>
+                    <Setter Property="Foreground" Value="Black"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding SelectedTab, RelativeSource={RelativeSource AncestorType=Window}}" Value="3">
+                    <Setter Property="Background" Value="White"/>
+                    <Setter Property="Foreground" Value="Black"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
 
-            <UniformGrid Columns="4" HorizontalAlignment="Stretch" Grid.Row="1">
-                <Button Content="Profile" Command="{Binding NavigateProfileCommand}" Margin="5" />
-                <Button Content="Monobank" Command="{Binding NavigateMonobankCommand}" Margin="5" />
-                <Button Content="Posting" Command="{Binding NavigatePostingCommand}" Margin="5" />
-                <Button Content="Admin panel" Command="{Binding NavigateAdminCommand}" Margin="5" />
-            </UniformGrid>
-        </Grid>
+    <Grid>
+        <!-- Define two rows: one for the header, one for the buttons and content -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Auto height for the header -->
+            <RowDefinition Height="Auto"/>
+            <!-- Auto height for the buttons -->
+            <RowDefinition Height="*"/>
+            <!-- Remaining space for content -->
+        </Grid.RowDefinitions>
 
         <Button Content="Log in" 
                 Width="200" 
@@ -31,4 +58,84 @@
 
         <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden" />
     </DockPanel>
+        <!-- Header -->
+        <TextBlock Text="Monopost" FontSize="24" FontWeight="Bold" 
+                   HorizontalAlignment="Center" VerticalAlignment="Center" 
+                   Margin="0,10,0,10" Foreground="Black"
+                   Grid.Row="0"/>
+
+        <!-- Button Panel -->
+        <UniformGrid Columns="4" HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Center">
+            <!-- Profile Tab -->
+            <Button Content="Profile" Command="{Binding NavigateProfileCommand}" 
+                    Style="{StaticResource TabButtonStyle}" Margin="5"
+                    CommandParameter="0" Click="Button_Click_1">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+
+            <!-- Monobank Tab -->
+            <Button Content="Monobank" Command="{Binding NavigateMonobankCommand}" 
+                    Style="{StaticResource TabButtonStyle}" Margin="5"
+                    CommandParameter="1">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+
+            <!-- Posting Tab -->
+            <Button Content="Posting" Command="{Binding NavigatePostingCommand}" 
+                    Style="{StaticResource TabButtonStyle}" Margin="5"
+                    CommandParameter="2">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+
+            <!-- Admin Panel Tab -->
+            <Button Content="Admin panel" Command="{Binding NavigateAdminCommand}" 
+                    Style="{StaticResource TabButtonStyle}" Margin="5"
+                    CommandParameter="3">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+        </UniformGrid>
+
+        <!-- Main Content Area -->
+        <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden" Grid.Row="2"/>
+    </Grid>
 </Window>

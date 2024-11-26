@@ -2,37 +2,68 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:helpers="clr-namespace:Monopost.Web.Helpers">
 
+    <!-- Existing resources -->
     <SolidColorBrush x:Key="ButtonBackgroundColor" Color="Black" />
     <SolidColorBrush x:Key="ButtonTextColor" Color="White" />
+    <SolidColorBrush x:Key="ButtonHoverBackgroundColor" Color="LightBlue" />
+    <SolidColorBrush x:Key="ButtonPressedBackgroundColor" Color="White" />
+    <SolidColorBrush x:Key="ButtonPressedTextColor" Color="Black" />
+    <SolidColorBrush x:Key="ButtonBorderColor" Color="Black" />
     <SolidColorBrush x:Key="TextBoxBackgroundColor" Color="White" />
     <SolidColorBrush x:Key="TextBoxTextColor" Color="Black" />
     <SolidColorBrush x:Key="WindowBackgroundColor" Color="LightGray" />
 
+    <!-- Style for Button -->
     <Style TargetType="Button">
         <Setter Property="Background" Value="{StaticResource ButtonBackgroundColor}" />
         <Setter Property="Foreground" Value="{StaticResource ButtonTextColor}" />
         <Setter Property="FontSize" Value="14" />
-        <Setter Property="Padding" Value="10,5" />
+        <Setter Property="Padding" Value="12,8" />
         <Setter Property="Margin" Value="5" />
         <Setter Property="Height" Value="35" />
-            
-        <Setter Property="BorderBrush" Value="{x:Static SystemColors.GrayTextBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ButtonBorderColor}" />
         <Setter Property="BorderThickness" Value="1" />
+
+        <!-- ControlTemplate for the button -->
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Border Background="{TemplateBinding Background}" 
-                        BorderBrush="{TemplateBinding BorderBrush}" 
-                        BorderThickness="{TemplateBinding BorderThickness}" 
-                        CornerRadius="5">
+                            BorderBrush="{TemplateBinding BorderBrush}" 
+                            BorderThickness="{TemplateBinding BorderThickness}" 
+                            CornerRadius="5">
+                        <!-- Apply CornerRadius to Border here -->
                         <ContentPresenter HorizontalAlignment="Center" 
-                                      VerticalAlignment="Center" />
+                                          VerticalAlignment="Center" />
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-    </Style>
 
+        <!-- Triggers for Hover and Pressed States -->
+        <Style.Triggers>
+            <!-- Trigger for mouse over -->
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource ButtonHoverBackgroundColor}"/>
+                <Setter Property="Foreground" Value="Black"/>
+                <Setter Property="BorderBrush" Value="LightBlue"/>
+            </Trigger>
+
+            <!-- Trigger for button press -->
+            <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="{StaticResource ButtonPressedBackgroundColor}"/>
+                <Setter Property="Foreground" Value="{StaticResource ButtonPressedTextColor}"/>
+                <Setter Property="BorderBrush" Value="Black"/>
+            </Trigger>
+
+            <!-- Trigger for Selected Tab (you can customize this trigger) -->
+            <DataTrigger Binding="{Binding IsTabSelected}" Value="True">
+                <Setter Property="Background" Value="{StaticResource ButtonPressedBackgroundColor}"/>
+                <Setter Property="Foreground" Value="{StaticResource ButtonPressedTextColor}"/>
+                <Setter Property="BorderBrush" Value="Black"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
 
     <Style TargetType="TextBox">
         <Setter Property="Background" Value="{StaticResource TextBoxBackgroundColor}" />
@@ -43,7 +74,6 @@
         <Setter Property="BorderBrush" Value="{x:Static SystemColors.GrayTextBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="helpers:PlaceholderService.PlaceholderText" Value="Enter text here" />
-
     </Style>
 
     <Style TargetType="Window">

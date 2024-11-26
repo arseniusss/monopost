@@ -1,10 +1,9 @@
 <Page x:Class="Monopost.Web.Views.PostingPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      Title="Posting">
+      Title="Posting" Height="1080" Width="1920">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-
         <Grid Margin="20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -27,12 +26,20 @@
                 <TextBox x:Name="PostTextBox" Width="400" Height="100" TextWrapping="Wrap" 
                          MaxLength="{Binding MaxTextLength}" TextChanged="PostTextBox_TextChanged" Margin="0,0,0,5"/>
                 <TextBlock x:Name="CharacterCountText" Text="0/MaxTextLength" Foreground="Gray" HorizontalAlignment="Right"/>
+
+                <Button x:Name="ClearButton"
+        Content="Clear Form"
+        Visibility="Collapsed"
+        Click="ClearButton_Click"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Top"
+        Width="200"   />
             </StackPanel>
 
-            <ItemsControl Grid.Row="2" x:Name="ImagesControl" Margin="10">
+            <ItemsControl Grid.Row="2" x:Name="ImagesControl" Margin="10"  HorizontalAlignment="Center">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <WrapPanel Orientation="Horizontal" VerticalAlignment="Top"/>
+                        <WrapPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Center" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
@@ -84,14 +91,13 @@
                 </StackPanel>
             </ScrollViewer>
 
-            <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
+            <!-- Social Media Checkboxes -->
+            <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Left" Margin="867,35,0,206">
                 <CheckBox x:Name="InstagramCheckBox" Content="Instagram" Margin="5" Checked="InstagramCheckBox_Checked"/>
                 <CheckBox x:Name="TelegramCheckBox" Content="Telegram" Margin="5"/>
             </StackPanel>
 
-            <StackPanel Grid.Row="7" Margin="10" HorizontalAlignment="Center">
-                <Button x:Name ="PostButton" Content="Post" Width="200" Height="50" FontSize="16" FontWeight="Bold" Background="Black" Foreground="White" Click="PostButton_Click"/>
-            </StackPanel>
+            <Button x:Name ="PostButton" HorizontalAlignment="Left" Content="Post" Width="200" Height="50" FontSize="16" FontWeight="Bold" Background="Black" Foreground="White" Click="PostButton_Click" Margin="848,74,0,546" Grid.Row="5"/>
 
         </Grid>
     </ScrollViewer>
