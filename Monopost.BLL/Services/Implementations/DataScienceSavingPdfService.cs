@@ -23,8 +23,6 @@ namespace Monopost.BLL.Services.Implementations
             manager.LoadFromCSVs(new List<Tuple<string, string>> {new Tuple<string,string> (filepath, "") });
         }
 
-
-
         private void GenerateStatisticsPdf(
             Dictionary<string, decimal> donationTotalAmountsByTimeOfDay,
             Dictionary<string, decimal> donationCountByTimeOfDay,

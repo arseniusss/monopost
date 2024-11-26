@@ -13,6 +13,7 @@ namespace Monopost.BLL.Services.Implementations
     {
         public static Result ValidateDateRange(DateTime? from, DateTime? to)
         {
+            var MINIMUM_VIABLE_DATE = new DateTime(2000, 1, 1);
             if (from == null && to == null)
             {
                 return new Result(true, "Date range is valid.");
@@ -25,7 +26,7 @@ namespace Monopost.BLL.Services.Implementations
 
             if (from != null && to == null)
             {
-                if (from < new DateTime(2000, 1, 1))
+                if (from < MINIMUM_VIABLE_DATE)
                 {
                     return new Result(false, "'From' date must be after January 1, 2000.");
                 }
@@ -38,7 +39,7 @@ namespace Monopost.BLL.Services.Implementations
                 return new Result(false, "'From' date must be earlier than or equal to the 'To' date.");
             }
 
-            if (from < new DateTime(2000, 1, 1))
+            if (from < MINIMUM_VIABLE_DATE)
             {
                 return new Result(false, "'From' date must be after January 1, 2000.");
             }

@@ -42,9 +42,6 @@ namespace Monopost.Web
                 Directory.CreateDirectory(outputDirectory);
             }
 
-            DataScienceSavingPdfService pdf = new DataScienceSavingPdfService("Jar_statement_13.10.2024_193241.csv");
-            pdf.SaveResults("FinalReport.pdf", outputDirectory);
-
             var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
             mainWindow.Show();
 
