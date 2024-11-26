@@ -13,6 +13,8 @@ namespace Monopost.Web.Views
         private readonly IPostRepository _postRepository;
         private readonly IPostMediaRepository _postMediaRepository;
 
+
+
         public MainWindow()
         {
             InitializeComponent();
@@ -23,7 +25,6 @@ namespace Monopost.Web.Views
             _userRepository = App.ServiceProvider.GetRequiredService<IUserRepository>();
             _postRepository = App.ServiceProvider.GetRequiredService<IPostRepository>();
             _postMediaRepository = App.ServiceProvider.GetRequiredService<IPostMediaRepository>();
-
 
             this.Content = new LoginPage(this, _userRepository);
         }
@@ -54,10 +55,20 @@ namespace Monopost.Web.Views
             this.Content = logInPage;
         }
 
+        private void MainFrame_Navigated_1(object sender, System.Windows.Navigation.NavigationEventArgs e)
+        {
+
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+
+        }
+
         //public void NavigateToReset()
         //{
         //    var resetPage = new ResetPasswordPage()
         //}
-        
+
     }
 }

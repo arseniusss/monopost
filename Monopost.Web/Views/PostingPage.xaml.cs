@@ -75,6 +75,7 @@ namespace Monopost.Web.Views
 
         private async Task LoadTemplates()
         {
+            TemplateDropdown.IsEnabled = false; 
             var templates = await _templateRepository.GetAllAsync();
             templates = templates.Where(t => t.AuthorId == UserSession.GetUserId()).ToList();
 
@@ -94,18 +95,9 @@ namespace Monopost.Web.Views
                 TemplateDropdown.Items.Add(templateItem);
             }
 
-            if (_currentTemplate != null)
-            {
-                var selectedTemplateItem = TemplateDropdown.Items
-                    .Cast<TemplateDropdownItem>()
-                    .FirstOrDefault(item => item.Template.Name == _currentTemplate.Name);
-
-                if (selectedTemplateItem != null)
-                {
-                    TemplateDropdown.SelectedItem = selectedTemplateItem;
-                }
-            }
+            TemplateDropdown.IsEnabled = true; 
         }
+
 
         private async void SaveTemplateButton_Click(object sender, RoutedEventArgs e)
         {
@@ -123,7 +115,6 @@ namespace Monopost.Web.Views
 
             if (_currentTemplate == null)
             {
-                // Directly use TemplateNameTextBox here instead of opening a separate dialog
                 if (string.IsNullOrWhiteSpace(TemplateNameTextBox.Text))
                 {
                     MessageBox.Show("Please enter a template name.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -132,7 +123,7 @@ namespace Monopost.Web.Views
 
                 _currentTemplate = new Template
                 {
-                    Name = TemplateNameTextBox.Text,  // Directly use the textbox value
+                    Name = TemplateNameTextBox.Text,  
                     Text = PostTextBox.Text,
                     TemplateFiles = new List<TemplateFile>(),
                     AuthorId = UserSession.GetUserId()
@@ -140,7 +131,6 @@ namespace Monopost.Web.Views
             }
             else
             {
-                // Update existing template
                 _currentTemplate.Name = TemplateNameTextBox.Text;
                 _currentTemplate.Text = PostTextBox.Text;
             }
@@ -272,37 +262,38 @@ namespace Monopost.Web.Views
 
         private async void TemplateDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (TemplateDropdown.SelectedIndex >= 0 && TemplateDropdown.SelectedItem is TemplateDropdownItem selectedTemplateItem)
+            if (e.AddedItems.Count == 0) return; 
+
+            if (TemplateDropdown.SelectedItem is TemplateDropdownItem selectedTemplateItem)
             {
-                _currentTemplate = selectedTemplateItem.Template;
-
-                if (_currentTemplate != null)
+                if (selectedTemplateItem.Template == null)
                 {
-                    TemplateNameTextBox.Text = _currentTemplate.Name;
-                    TemplateNameTextBox.Visibility = Visibility.Visible;
-                    PostTextBox.Text = _currentTemplate.Text;
-                    UpdateCharacterCounter();
-
-                    ImagesControl.Items.Clear();
-                    foreach (var templateFile in _currentTemplate.TemplateFiles)
-                    {
-                        BitmapImage image = new BitmapImage();
-                        using (var memoryStream = new System.IO.MemoryStream(templateFile.FileData))
-                        {
-                            image.BeginInit();
-                            image.StreamSource = memoryStream;
-                            image.CacheOption = BitmapCacheOption.OnLoad;
-                            image.EndInit();
-                        }
-                        ImagesControl.Items.Add(new ImageItem { Image = image, FileName = templateFile.FileName });
-                    }
+                    MessageBox.Show("Template data not loaded. Please try again.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
                 }
 
-                PostButton.Visibility = Visibility.Visible;
-                InstagramCheckBox.Visibility = Visibility.Visible;
-                TelegramCheckBox.Visibility = Visibility.Visible;
+                _currentTemplate = selectedTemplateItem.Template;
+
+                TemplateNameTextBox.Text = _currentTemplate.Name;
+                PostTextBox.Text = _currentTemplate.Text;
+                UpdateCharacterCounter();
+
+                ImagesControl.Items.Clear();
+                foreach (var templateFile in _currentTemplate.TemplateFiles)
+                {
+                    BitmapImage image = new BitmapImage();
+                    using (var memoryStream = new System.IO.MemoryStream(templateFile.FileData))
+                    {
+                        image.BeginInit();
+                        image.StreamSource = memoryStream;
+                        image.CacheOption = BitmapCacheOption.OnLoad;
+                        image.EndInit();
+                    }
+                    ImagesControl.Items.Add(new ImageItem { Image = image, FileName = templateFile.FileName });
+                }
             }
         }
+
 
         private void PostTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {

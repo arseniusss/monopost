@@ -124,6 +124,8 @@ namespace Monopost.Web.Views
         #region UI Display
         private void OnGetStatisticsClicked(object sender, RoutedEventArgs e)
         {
+            SaveStatsButton.Visibility = Visibility.Visible;
+
             if (selectedFilePaths.Count == 0)
             {
                 MessageBox.Show("Please select at least one CSV file.");
