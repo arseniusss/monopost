@@ -8,7 +8,7 @@ using System.Text.Json;
 
 namespace Monopost.BLL.Services.Implementations
 {
-    public class DataExtractionService: IDataExtractionService
+    public class DataExtractionService : IDataExtractionService
     {
         private readonly IUserRepository _userRepository;
         private readonly ICredentialRepository _credentialRepository;
@@ -52,16 +52,24 @@ namespace Monopost.BLL.Services.Implementations
                         CredentialType = c.CredentialType,
                         CredentialValue = c.CredentialValue
                     }).ToList() : new List<DecodedCredential>(),
-                    Templates = includeTemplates || totalDataExtraction ? (await _templateRepository.GetTemplatesByAuthorIdAsync(userID)).Select(async t => new ExtractedTemplateModel
-                    {
-                        Name = t.Name,
-                        Text = t.Text,
-                        TemplateFiles = (await Task.WhenAll((await _templateFileRepository.GetTemplateFilesByTemplateIdAsync(t.Id)).Select(async f => new ExtractedTemplateFileModel
-                        {
-                            FileName = f.FileName,
-                            FileData = f.FileData,
-                        }))).ToList()
-                    }).Select(t => t.Result).ToList() : new List<ExtractedTemplateModel>(),
+                    Templates = includeTemplates || totalDataExtraction ?
+                        (await Task.WhenAll(
+                            (await _templateRepository.GetTemplatesByAuthorIdAsync(userID))
+                                .Select(async t => new ExtractedTemplateModel
+                                {
+                                    Name = t.Name,
+                                    Text = t.Text,
+                                    TemplateFiles = (await Task.WhenAll(
+                                        (await _templateFileRepository.GetTemplateFilesByTemplateIdAsync(t.Id))
+                                            .Select(async f => new ExtractedTemplateFileModel
+                                            {
+                                                FileName = f.FileName,
+                                                FileData = f.FileData,
+                                            })
+                                    )).ToList()
+                                })
+                        )).ToList()
+                        : new List<ExtractedTemplateModel>(),
                     Posts = includePosts || totalDataExtraction ? (await _postRepository.GetPostsByAuthorIdAsync(userID)).Select(async p => new ExtractedPostModel
                     {
                         DatePosted = p.DatePosted,

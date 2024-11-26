@@ -3,8 +3,33 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Title="Profile">
     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-        <TextBlock Text="Profile" FontSize="24" FontWeight="Bold" />
-        <Button Content="Connect Telegram" Width="200" Margin="10"/>
-        <Button Content="Connect Instagram" Width="200" Margin="10"/>
+        <TextBlock Text="Profile" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" 
+               VerticalAlignment="Center"/>
+        <TextBox x:Name="NameTextBox" 
+              Width="200" Margin="10"
+              Text="Name"
+              />
+        <TextBox x:Name="LastNameTextBox" 
+              Width="200" Margin="10"
+              Text="LastName"
+              />
+        <TextBox x:Name="AgeTextBox"  
+              Width="200" Margin="10" 
+               Text="Age"
+              />
+        <Button Content="Update" Width="100" Margin="10" Name="UpdateButton" Click="UpdateButton_Click"/>
+        <Button Content="Revert" Width="100" Margin="1" Click="RevertButton_Click"/>
+
+        <TextBlock Text="Manage data" FontSize="20" FontWeight="Bold" Margin="10"/>
+        <CheckBox x:Name="CredentialsTextBox" Content="Creds" Margin="5" FontSize="15"/>
+        <CheckBox x:Name="TemplatesTextBox" Content="Templates" Margin="5" FontSize="15"/>
+        <CheckBox x:Name="PostsTextBox" Content="Posts" Margin="5" FontSize="15"/>
+        <CheckBox x:Name="TotalExtractionTextBox" Content="Total extraction" Margin="5" FontSize="15"/>
+
+
+        <StackPanel Orientation="Horizontal" Margin="10">
+            <Button Content="Extract" Width="110" Margin="10" Name="ExtractButton" Click="ExtractButton_Click" />
+            <Button Content="Delete" Width="110" Margin="10" Name="DeleteButton" Click="DeleteButton_Click" Background="DarkRed" Foreground="White"/>
+        </StackPanel>
     </StackPanel>
 </Page>

@@ -62,7 +62,7 @@ namespace Monopost.Web.ViewModels
             _postRepository = postRepository;
             _postMediaRepository = postMediaRepository;
 
-            NavigateProfileCommand = new RelayCommand(_ => MainFrame.Navigate(new ProfilePage()));
+            NavigateProfileCommand = new RelayCommand(_ => MainFrame.Navigate(new ProfilePage(userRepository, credentialRepository, templateRepository, templateFileRepository, postRepository, postMediaRepository)));
             NavigateMonobankCommand = new RelayCommand(_ => MainFrame.Navigate(new MonobankPage()));
             NavigatePostingCommand = new RelayCommand(_ => MainFrame.Navigate(new PostingPage(
                 _templateRepository, _templateFileRepository, _credentialRepository, _userRepository, _postRepository, _postMediaRepository)));

@@ -43,7 +43,7 @@ namespace Monopost.Web.Views
 
         private void NavigateToProfilePage()
         {
-            MainFrame.Navigate(new ProfilePage());
+            MainFrame.Navigate(new ProfilePage(_userRepository, _credentialRepository, _templateRepository, _templateFileRepository, _postRepository, _postMediaRepository));
         }
 
         private void NavigateToMonobankPage()
